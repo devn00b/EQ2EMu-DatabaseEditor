@@ -1,0 +1,44 @@
+EQ2Editor v2.0 Changelog (Started on May 11, 2009 07:45)
+--------------------------------------------------------
+
+=> 2009.07.12:
+	JA: Added DB Picker to select working database
+
+=> 2009.07.11:
+	JA: Re-designed (yes, one more time) the entire script structure to better organize the functions
+	JA: Updated existing functions to work, and cleaned up some old ones no longer needed
+
+=> 2009.07.07:
+	JA: Created all parent scripts for all systems of the editor
+	JA: Added docs/LICENSE.txt, docs/3RD-PARTY.txt, and docs/changelog.txt to package
+	JA: Initial (local) SVN checkin of EQ2 Database Editor v1.0 and v2.0 (sandbox) files
+	
+=> 2009.07.06:
+	JA: Finally, all DB, Functions, Classes, User/Config data working as intended.
+	JA: Implemented generic "site text" functions for news, help and welcome messaging
+	JA: Implemented massive DEBUG functions, togglable in eq2editor.config table
+	
+=> 2009.07.04:
+	JA: Hate the Class structures, re-designing to be a little simpler, less parent/child layout
+	JA: Broke all DB connectivity, persistent user login; fixing :(
+	
+=> 2009.07.01:
+	JA: Designed new Script Editors into new version of EQ2Editor (first UI code work, woot!)
+
+=> 2009.06.27:
+	JA: Designed folder structures, header/footer for new pages
+	JA: Implemented $_COOKIE() vars to persist login information (currently expires 30 days)
+
+=> 2009.06.15:
+	JA: Implemented Dynamic Configuration (eq2editor.config table)
+	JA: More research needed for Class structures I plan to use. Something not working right
+
+=> 2009.06.07:
+	JA: Started designing new Quest Script Wizard module
+
+=> 2009.05.27:
+	JA: Worked out new Class structures for eq2Functions and eq2Database functions
+	JA: Initial DB connections, public, private and protected member and method testing (got a lot to learn here...)
+
+=> 2009.05.11:
+	JA: Started new version of EQ2Editor (v2.0)

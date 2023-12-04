@@ -1,0 +1,857 @@
+/* CSS Document */
+
+/* re-write standard tags */
+body {
+	font:12px Arial, Helvetica, sans-serif;
+}
+a:link { color:#069; text-decoration:none; }
+a:visited { color:#069; text-decoration:none; }
+a:hover { color:#000; text-decoration:none; }
+
+/* div containers */
+#site-container {
+	width: 100%;
+	min-width:1024px;
+	min-height:768px;
+	border-left:1px solid #999;
+	border-top:1px solid #999;
+	border-right:1px solid #ddd;
+	border-bottom:1px solid #ddd;
+}
+#site-banner {
+	/*position:relative;*/
+	background:#eee url(../images/eq2.png) left top no-repeat;
+	height:45px;
+	text-align:left;
+	font-size:1.5em;
+	font-weight:bold;
+	padding-left:75px;
+	padding-top:20px;
+}
+
+#db-picker {
+	position:absolute;
+	font-size:11px;
+	text-align:right;
+	float:right;
+	top:0px;
+	right:0px;
+	padding:3px;
+}
+
+#user-info {
+	position:absolute;
+	font-size:11px;
+	font-weight:normal;
+	color:#456;
+	text-align:right;
+	float:right;
+	top:10px;
+	right:10px;
+	padding:3px;
+}
+
+#top-menu td {
+	font-size:13px;
+	font-weight:bold;
+	width:90px;
+	background-color:#abc;
+	padding:3px;
+}
+#top-menu td.spacer {
+	width:auto;
+}
+#sub-menu1 {
+	padding:5px;
+}
+
+#main-body input.box {
+	font-size:12px;
+	width:200px;
+}
+
+#main-body input.submit, button {
+	font-size:11px;
+	width:70px;
+}
+
+#main-body input.submit-wide {
+	font-size:11px;
+	width:80px;
+}
+
+#main-body .submit-template {
+	font-size:11px;
+	width:150px;
+}
+
+#main-body select.combo {
+	font-size:12px;
+}
+
+#main-body input:focus, select:focus, textarea:focus {
+	background-color:#cde;
+}
+
+#main-body input.lookup {
+	font-size:9px;
+	max-width:20px;
+}
+
+
+#connType {
+	float:right;
+	font-size:9px;
+	font-weight:normal;
+	padding-right:3px;
+}
+.heading {
+	font-size:18px;
+	font-weight:bold;
+}
+.warning {
+	color:#FF0000;
+	font-size:13px;
+	font-weight:bold;
+}
+
+/* DB Manager Styles */
+/*#db-picker {
+	position:absolute;
+	font-size:11px;
+	text-align:right;
+	float:right;
+	top:0px;
+	right:0px;
+	padding:3px;
+}*/
+
+#top-menu-mgr td {
+	font-size:13px;
+	font-weight:bold;
+	width:95px;
+	background-color:#abc;
+	padding:3px;
+	text-align:left;
+}
+
+#dbmanager-body {
+	position:relative;
+	padding:10px;
+}
+
+#zone-select {
+	position:relative;
+	font-size:10px;
+	padding-top:10px;
+	padding-left:5px;
+}
+
+#zone-select .zone {
+	width:300px;
+	font-size:10px;
+}
+
+/* AJAX Search Suggestion CSS */
+.suggest_link {
+	position:relative;
+	background-color: #FFFFFF;
+	padding: 2px 6px 2px 6px;
+}
+.suggest_link_over {
+	background-color:#abc;
+	color:#fff;
+	padding: 2px 6px 2px 6px;
+	cursor:pointer;
+	background-color:#CCC;
+}
+#search_suggest, .suggest_shadow {
+	position:absolute;
+	max-width:200px;
+	background-color:#FFFFFF; 
+	text-align:left;
+	z-index:2;
+}		
+.suggest_shadow {
+	box-shadow: 2px 2px 5px #888888;
+}
+
+#EditorTable th, .EditorTable th {
+	background-color:#abc;
+	padding:5px;
+	border-left:1px solid #000;
+	border-right:1px solid #000;
+}
+
+/* Common Editor CSS */
+#Editor {
+	position:relative;
+	margin:0px 0px 0px 2px;
+	padding-bottom:10px;
+	max-width:1152px;
+}
+
+#Editor table.SubPanel {
+	background-color:#eee;
+	border-left		:1px solid #333;
+	border-right	:1px solid #999;
+	border-bottom	:1px solid #999;
+	margin:5px;
+
+}
+
+#Editor table.SectionMain {
+	background-color:#fff;
+	width:880px;
+}
+
+#Editor table.SectionMainFloat {
+	background-color:#fff;
+}
+
+#Editor table.SectionToggles {
+	background-color:#fff;
+	width:270px;
+}
+
+#Editor table.SectionMenuLeft {
+	background-color:#fff;
+	width:180px;
+	border:1px solid #abc;
+}
+
+#Editor tr.Row1 {
+	background-color:#ccc;
+}
+#Editor tr.Row2 {
+	background-color:#ddd;
+}
+
+#Editor td.Title {
+	background-color:#ccc;
+	font-size:15px;
+	font-weight:bold;
+	height:25px;
+	text-align:center;
+}
+
+#Editor td.SectionTitle {
+	font-size:12px;
+	font-weight:bold;
+	background-color:#abc;
+	padding:5px 5px 5px 5px;
+	height:22px;
+}
+
+#ScriptToolbar {
+	background-color:#c1d9e3;
+	padding:5px 5px 5px 5px;
+	height:22px;
+}
+
+#Editor td.SectionBody {
+	padding:5px;
+}
+
+#Editor td.Label {
+	text-align:right;
+	font-weight:bold;
+}
+
+#Editor td.Detail {
+	padding:2px 5px 2px 5px;;
+}
+
+#Editor td.ReadOnlyDetail {
+	background-color:#eee;
+	padding:2px 5px 2px 5px;;
+}
+
+#Editor td.ReadOnlyAlert {
+	background-color:#f99;
+	padding:2px 5px 2px 5px;;
+}
+
+#Editor td.Submit {
+	text-align:center;
+	vertical-align:middle;
+	height:40px;
+}
+
+#Editor ul.menu-list {
+	list-style-type:none;
+	padding:0;
+	margin:0;
+}
+
+#Editor li.menu-list {
+	padding:0px 0px 2px 0px;
+}
+
+#Editor li.active-menu-list {
+	padding:0px 0px 3px 0px;
+	background-color:#ccc;
+}
+
+
+/* Module Management CSS */
+#mmtabs {
+	line-height: normal;
+	margin: 0 0 -20px 7px;
+	min-width: 600px;
+	position: relative;
+	z-index: 1;
+}
+
+#mmtabs ul {
+	margin:0px 0px -6px 0px;
+	padding: 0;
+	list-style: none;
+}
+
+#mmtabs li {
+	display: inline;
+	margin: 0;
+	padding: 0;
+	font-size: 0.85em;
+	font-weight: normal;
+}
+
+#mmtabs a {
+	float: left;
+	background:url("../images/bg_tabs1.gif") no-repeat 0% -34px;
+	margin: 0 1px 0 0;
+	padding: 0 0 0 7px;
+	text-decoration: none;
+	position: relative;
+	border-bottom:1px dotted #000;
+	width:90px;
+	text-align:center;
+}
+
+.rtl #mmtabs a {
+	float: right;
+}
+
+#mmtabs a span {
+	float: left;
+	display: block;
+	background: url("../images/bg_tabs2.gif") no-repeat 100% -34px;
+	padding: 7px 10px 4px 4px;
+	color: #767676;
+	white-space: nowrap;
+	font-family: Arial, Helvetica, sans-serif;
+	text-transform: uppercase;
+	font-weight: bold;
+
+}
+
+.rtl #mmtabs a span {
+	float: right;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac \*/
+#mmtabs a span, .rtl #mmtabs a span { float:none;}
+/* End hack */
+
+#mmtabs a:hover span {
+	color: #BC2A4D;
+}
+
+#mmtabs #activetab a {
+	background-position: 0 0;
+	border-bottom: 1px solid #DCDEE2;
+}
+
+#mmtabs #activetab a span {
+	background-position: 100% 0;
+	padding-bottom: 5px;
+	color: #23649F;
+}
+
+#mmtabs a:hover {
+	background-position: 0 -69px;
+}
+
+#mmtabs a:hover span {
+	background-position: 100% -69px;
+}
+
+#mmtabs #activetab a:hover span {
+	color: #115098;
+}
+
+.mmcolortabsline{
+clear: both;
+padding: 0;
+width: 100%;
+height: 4px;
+line-height: 8px;
+background: #345;
+border-top: 1px solid #789; /*Remove this to remove border between bar and tabs*/
+}
+
+/* EQ2DB2 CSS */
+#login-box input.submit {
+	width:90px;
+	height:25px;
+	font-size:11px;
+}
+
+#login-box input.text {
+	width:150px;
+	font-size:12px;
+	border-left:1px solid #666;
+	border-top:1px solid #666;
+	border-right:1px solid #ddd;
+	border-bottom:1px solid #ddd;
+}
+
+#login-box a:link 		{ color:#000; text-decoration:underline; }
+#login-box a:visited 	{ color:#000; text-decoration:underline; }
+#login-box a:hover 		{ color:#fff; text-decoration:underline; }
+
+#login-box {
+	height:400px;
+	padding-top:100px;
+}
+#login-box table {
+	width:300px;
+	background-color:#abc;
+	border-left:1px solid #ddd;
+	border-top:1px solid #ddd;
+	border-right:1px solid #666;
+	border-bottom:1px solid #666;
+}
+#login-box td {
+	padding:5px;
+}
+#login-box td.title {
+	color:#CCC;
+	background-color:#789;
+	font-size:15px;
+	font-weight:bold;
+	text-align:center;
+	border-bottom:1px solid #345;
+}
+#login-box td.label {
+	font-weight:bold;
+	text-align:right;
+	padding-right:5px;
+}
+
+#error-box
+{
+	width:100%;
+	padding-top:100px;
+}
+#error-box table {
+	width:800px;
+	background-color:#fff;
+	border-left:1px solid #333;
+	border-top:1px solid #333;
+	border-right:1px solid #999;
+	border-bottom:1px solid #999;
+}
+#error-box td {
+	padding:5px;
+}
+#error-box tr {
+	height:50px;
+}
+#error-box td.title {
+	color:#f00;
+	background-color:#ccc;
+	font-size:15px;
+	font-weight:bold;
+	text-align:center;
+	border-bottom:2px solid #999;
+}
+#error-box td.label {
+	font-weight:bold;
+	text-align:right;
+	vertical-align:top;
+	padding-right:5px;
+	border-bottom:1px solid #ccc;
+}
+#error-box td.detail {
+	vertical-align:top;
+	padding-right:5px;
+	border-bottom:1px solid #ccc;
+}
+
+td.tabOn 	{ background-color:#789; }
+td.tabOff { background-color:#abc; }
+td.tabOn a:link 		{ color:#eee; text-decoration:none; }
+td.tabOn a:hover 		{ color:#eee; text-decoration:underline; }
+td.tabOn a:visited 	{ color:#eee; text-decoration:none; }
+
+.warning {
+	color:#FF0000;
+	font-size:13px;
+	font-weight:bold;
+}
+
+.debug {
+	color:#999;
+	font-size:11px;
+}
+
+.filter_labels {
+	font-weight:bold; 
+	width:60px; 
+	text-align:right;
+	vertical-align:top;
+}
+
+#EditorStatus {
+	height:30px;
+	text-align:center;
+}
+
+input[type="text"][readonly] {
+	background:#ddd;
+}
+
+/* Blue checkboxes */
+ .blue_checkbox {
+	display: block;
+	position: relative;
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	height: 13px;
+	width: 13px;
+	outline-color:black;
+	outline-style: solid;
+	outline-width: 1px;
+	margin: 2px;
+  }
+  
+ .blue_checkbox input {
+	position: absolute;
+	opacity: 0;
+	cursor: pointer;
+	height: 0;
+	width: 0;
+  }
+  
+ .blue_checkbox .checkmark {
+	position: absolute;
+	top: 0;
+	left: 0;
+	height: 13px;
+	width: 13px;
+  }
+  
+  .blue_checkbox:hover input ~ .checkmark {
+	background-color: #ccc;
+  }
+  
+  .blue_checkbox input:checked ~ .checkmark {
+	background-color: #2196F3;
+  }
+  
+  .blue_checkbox .checkmark:after {
+	content: "";
+	position: absolute;
+	display: none;
+  }
+  
+ .blue_checkbox input:checked ~ .checkmark:after {
+	display: block;
+  }
+  
+  .blue_checkbox .checkmark:after {
+	left: 4px;
+	top: 1px;
+	width: 2px;
+	height: 6px;
+	border: solid white;
+	border-width: 0 3px 3px 0;
+	-webkit-transform: rotate(45deg);
+	-ms-transform: rotate(45deg);
+	transform: rotate(45deg);
+  } 
+
+  /* Item Pages */
+ #itemHighlightedRow td {
+	 background-color: #eee;
+ }
+
+ #itemClassesTable {
+	 border-collapse: collapse;
+	 width: 100%;
+ }
+
+ .itemAppGrid {
+	display: inline-grid;
+	grid-template-columns: repeat(11, min-content);
+	gap: 5px 10px;
+	align-items: center;
+	justify-items: center;
+}
+
+ #itemTogglesGrid {
+	display: inline-grid;
+	grid-template-columns: repeat(2, min-content);
+	gap: 2px 2px;
+	align-items: right;
+	justify-items: right;
+	white-space: nowrap;
+ }
+
+ #itemSlotsGrid {
+	display: inline-grid;
+	grid-template-columns: repeat(2, min-content);
+	gap: 5px 10px;
+	align-items: center;
+	justify-items: right;
+ }
+
+ #itemAdornmentsGrid {
+	display: inline-grid;
+	grid-template-columns: repeat(2, min-content);
+	gap: 5px 10px;
+	align-items: center;
+	justify-items: right;
+ }
+
+ #itemTSClassesGrid {
+	display: inline-grid;
+	grid-template-columns: repeat(4, min-content);
+	gap: 2px 2px;
+	align-items: center;
+	justify-items: right;
+ }
+
+ /* Spell Pages */
+  #spellTogglesGrid {
+	display: inline-grid;
+	grid-template-columns: min-content;
+	gap: 0px 5px;
+	align-items: center;
+	justify-items: right;
+  }
+
+  /* Spawn Pages */
+  #spawnHolidayFlagsGrid {
+	display: inline-grid;
+	grid-template-columns: repeat(2, min-content);
+	gap: 0px 5px;
+	align-items: center;
+	justify-items: right;
+	white-space: nowrap;
+  }
+
+  #spawnExpansionFlagsGrid {
+	display: inline-grid;
+	grid-template-columns: repeat(4, min-content);
+	gap: 0px 5px;
+	align-items: center;
+	justify-items: right;
+	white-space: nowrap;
+  }
+
+  .rgb_colorbox {
+	  display: block;
+	  width: 13px;
+	  height: 13px;
+	  outline-style: dashed;
+	  outline-width: 1px;
+	  outline-color: black;
+  }
+
+  .ContrastTable {
+	border-spacing: 0px;
+  }
+
+  .ContrastTable tr:nth-child(odd) {
+	background-color: #CCC;
+	height: 32px;
+  }
+
+  .ContrastTable tr:nth-child(even) {
+	background-color: rgb(176, 178, 185);
+	height: 32px;
+  }
+
+  .ContrastTable tr:hover {
+	background-color: rgb(153, 160, 189);
+  }
+
+  .ContrastTable th {
+	background-color:#abc;
+	border-left:1px solid #000;
+	border-right:1px solid #000;
+	border-top: 1px solid #000;
+	height: 35px;
+	padding: 5px;
+  }
+
+  .ContrastTable td {
+	padding: 3px;
+  }
+
+  .SpawnDelete[disabled] {
+	filter: grayscale(100%);
+  }
+
+  .RecipeDataTable {
+	color:#3b271c;
+	border-collapse:collapse;
+	background-color:#EEDFB8;
+  }
+
+  .RecipeDataRow[incomplete] {
+	background-color:#f99
+  }
+
+  .RecipeDataTable .RecipeDataRow:hover {
+	background-color: #D7C499;
+  }
+
+  .RecipeProductRow {
+	border-style:solid;
+	border-color:#3b271c;
+	border-width:2px;
+  }
+
+  #RecipeSearchFilters {
+	display: inline-grid;
+	grid-template-columns: repeat(7, min-content);
+	gap: 0px 5px;
+	align-items: center;
+	justify-items: right;
+	white-space: nowrap;
+  }
+
+  .tooltip {
+	position: relative;
+	display: inline-block;
+	border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+  }
+  
+  .tooltip .tooltiptext {
+	visibility: hidden;
+	width: 320px;
+	background-color: #000000;
+	padding: 5px 0;
+	border-radius: 6px;
+  
+	position: absolute;
+	z-index: 1;
+	bottom: 125%;
+	left: 50%;
+	margin-left: -160px;
+  
+	opacity: 0;
+	transition: opacity 0.3s;
+  }
+
+  #tooltipTitle a:link,
+  #tooltipTitle a:visited,
+  #tooltipTitle a:hover,
+  #tooltipTitle a:active{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 17px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	text-align: left;
+	color: #ffffff;
+  }
+
+  .tooltiptext img{
+	float:right;
+	padding: 10px;
+  }
+
+  #tooltipTier{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 20px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	line-height: 12px;
+	text-align: left;
+	color:#93d9ff
+  }
+
+  #tooltipToggles{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 17px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	line-height: 18.7px;
+	text-align: left;
+	color:#fee65c
+  }
+  #tooltipStats{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 15px;
+	font-style: normal;
+	font-variant: normal;
+	font-weight: 400;
+	text-align: left;
+	color:#22ff22
+  }
+
+  #tooltipDetails{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	color:#ffffff
+  }
+
+  #tooltipEffects{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 9px;
+	color:#ffffff
+  }
+
+  #tooltipClass{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 14px;
+	color:#ffffff
+  }
+
+  #tooltipSlots{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 14px;
+	color:#ffffff
+  }
+
+  #tooltipSkills{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 14px;
+	color:#ffffff
+  }
+  #tooltipLevel{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 14px;
+	color:#ffffff
+  }
+
+  #tooltipAdvClass{
+	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
+	font-size: 14px;
+	color:#ceb1b1
+  }
+ 
+  .tooltip .tooltiptext::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: #555 transparent transparent transparent;
+  }
+  
+  .tooltip:hover .tooltiptext {
+	visibility: visible;
+	opacity: 1;
+  }

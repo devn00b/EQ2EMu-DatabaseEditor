@@ -1,0 +1,23 @@
+/* CSS Document */
+
+a:link						{ color:#456; text-decoration:none; }
+a:visited					{ color:#456; text-decoration:none; }
+a:hover						{ color:#000; text-decoration:none; }
+
+#login-box a:link 			{ color:#000; text-decoration:underline; }
+#login-box a:visited 		{ color:#000; text-decoration:underline; }
+#login-box a:hover 			{ color:#fff; text-decoration:underline; }
+
+#SelectGrid a:link.add		{ font-size:12px; font-weight:normal; color:#ccc; text-decoration:none; }
+#SelectGrid a:visited.add	{ font-size:12px; font-weight:normal; color:#ccc; text-decoration:none; }
+#SelectGrid a:hover.add		{ font-size:12px; font-weight:normal; color:#fff; text-decoration:underline; }
+
+#TopMenu td.tabOn a:link 	{ color:#eee; text-decoration:none; }
+#TopMenu a:link 			{ color:#456; text-decoration:none; }
+#TopMenu td.tabOn a:visited { color:#eee; text-decoration:none; }
+#TopMenu a:visited			{ color:#456; text-decoration:none; }
+#TopMenu a:hover			{ color:#fff; text-decoration:none; }
+
+#ServerStats a:link			{ color:#000; text-decoration:underline; }
+#ServerStats a:visited		{ color:#000; text-decoration:underline; }
+#ServerStats a:hover		{ color:#fff; text-decoration:underline; }

@@ -1,0 +1,121 @@
+/* CSS Document */
+
+/* re-write standard tags */
+body {
+	font:12px Arial, Helvetica, sans-serif;
+  background-color:#ccc;
+  margin:0px;
+  scrollbar-face-color:#CCD2D8;
+  scrollbar-highlight-color:#E9EEF3;
+  scrollbar-shadow-color:#B4BEC8;
+  scrollbar-3dlight-color:#B4BEC8;
+  scrollbar-arrow-color:#000000;
+  scrollbar-track-color:#EAEAEA;
+  scrollbar-darkshadow-color:#7A828A;
+}
+
+
+/* div containers */
+#site-container {
+	width:100%;
+}
+
+
+#site-banner {
+	/*position:relative;*/
+	background:#99AEBB url(../images/eq2.png) left top no-repeat;
+	height:45px;
+	text-align:left;
+	font-size:1.5em;
+	font-weight:bold;
+	padding-left:75px;
+	padding-top:20px;
+}
+
+
+#EditorStatus {
+	position:relative;
+	height:30px;
+	text-align:center;
+}
+
+
+#db-picker {
+	position:absolute;
+	font-size:11px;
+	text-align:right;
+	float:right;
+	top:0px;
+	right:0px;
+	padding:3px;
+}
+
+#user-info {
+	position:absolute;
+	font-size:11px;
+	font-weight:normal;
+	color:#456;
+	text-align:right;
+	float:right;
+	top:45px;
+	right:0px;
+	padding:3px;
+}
+
+.warning {
+	wisth:100%;
+	color:#FF0000;
+	font-size:13px;
+	font-weight:bold;
+}
+
+.instruct {
+}
+
+.debug {
+	width:100%;
+	color:#999;
+	font-size:11px;
+}
+
+.footer {
+	width:100%;
+	font-size:9px;
+	color:#abc;
+	background-color:#666;
+	
+	/* cellspacing */
+	border-collapse	:collapse;
+	border-spacing	:0;
+}
+
+.suggest_link {
+	background-color: #FFFFFF;
+	padding: 2px 6px 2px 6px;
+}
+.suggest_link_over {
+	background-color:#abc;
+	color:#fff;
+	padding: 2px 6px 2px 6px;
+	cursor:pointer;
+}
+#search_suggest {
+	position:relative;
+	background-color:#FFFFFF; 
+	text-align:left;
+	/*z-index:2;*/
+}		
+.site_text {
+	width:100%;
+	
+	/* cellspacing */
+	border-collapse	:collapse;
+	border-spacing	:0;
+	
+	/* cellpadding */
+	padding:4px;
+}
+
+.log_viewer {
+    color: #fff;
+}

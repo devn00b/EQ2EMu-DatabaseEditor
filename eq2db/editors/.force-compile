@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+CURR=$(date +"Date : %m/%d/%Y Time : %I:%M:%S")
+LOG=/home/eq2dev/compileScripts/webcompileerror.log
+CMPLOG=/home/eq2dev/compileScripts/webcompile.log
+CMPLOCKFILE=/var/www/html/editors/eq2db/editors/.cmplock
+
+if [ -f "$CMPLOCKFILE" ]; then
+	echo "[ $CURR ] $CMPLOCKFILE file exists. Haulting until next check." >> "$LOG"
+exit
+fi
+
+cd /home/eq2dev
+./compile >> $LOG
+exit

@@ -1,0 +1,175 @@
+/* CSS Document */
+
+#login-box input.submit {
+	width:90px;
+	height:25px;
+	font-size:13px;
+	font-weight:bold;
+}
+
+#login-box input.text {
+	width:150px;
+	font-size:12px;
+	border-left:1px solid #666;
+	border-top:1px solid #666;
+	border-right:1px solid #ddd;
+	border-bottom:1px solid #ddd;
+}
+
+
+#SearchControls select {
+	width:297px;
+	font-size:.9em;
+}
+#SearchControls input.box {
+	width:294px;
+	font-size:.9em;
+}
+#SearchControls input.submit {
+	width:70px;
+	font-size:.9em;
+	margin: 0px 0px 0px 5px;
+}
+
+
+#Editor textarea.Script {
+	width:100%;
+	max-width:99.7%;
+	height:480px;
+}
+#Editor input.submit {
+	width:60px;
+	font-size:0.9em;
+}
+#Editor input.EditInfo {
+	width:50px;
+	font-size:10px;
+	font-weight:bold;
+	background-color:#ccc;
+	border-left:1px solid #abc;
+	border-top:1px solid #abc;
+	border-right:1px solid #345;
+	border-bottom:1px solid #345;
+}
+
+
+#ZoneSelect .zone {
+	width:300px;
+	font-size:.9em;
+}
+#ZoneSelect td.select {
+	padding-left:2px;
+	padding-bottom:5px;
+}
+
+
+#UserSelect .user {
+	width:300px;
+	font-size:.9em;
+}
+#UserSelect td.select {
+	padding-left:2px;
+	padding-bottom:5px;
+}
+
+
+#quest-select .grid {
+	width:250px;
+	font-size:.9em;
+}
+
+#quest-add .add {
+	width:50px;
+	font-size:.9em;
+}
+
+#quest-options input {
+	width:70px;
+}
+
+#quest-wizard input {
+	font-size:.9em;
+}
+
+#quest-steps input.submit {
+	width:70px;
+	font-size:0.9em;
+}
+
+#ZoneEditor textarea.script {
+	width:100%;
+	max-width:97%;
+	height:480px;
+}
+#ZoneEditor input.submit {
+	width:60px;
+	font-size:1.1em;
+}
+#ZoneEditor input {
+	font-size:12px;
+	font-weight:normal;
+	background-color:#eee;
+	border-left:1px solid #abc;
+	border-top:1px solid #abc;
+	border-right:1px solid #345;
+	border-bottom:1px solid #345;
+}
+#ZoneEditor .zone {
+	width:300px;
+	font-size:.9em;
+}
+#ZoneEditor td.select {
+	padding-left:2px;
+	padding-bottom:5px;
+}
+
+
+#SettingsGrid input {
+	border:1px solid #ccc;
+}
+
+
+#Editor input {
+	font-size:11px;
+}
+#Editor input.small {
+	font-size:11px;
+	width:30px;
+}
+#Editor input.medium {
+	font-size:11px;
+	width:50px;
+}
+#Editor input.large {
+	font-size:11px;
+	width:70px;
+}
+#Editor input.xl {
+	font-size:11px;
+	width:90px;
+}
+#Editor input.full {
+	font-size:11px;
+	/* Did 99% here as 100% could over flow into the next column in a table */
+	width:99%;
+}
+#Editor input.longtext {
+	width:240px
+}
+#Editor input.chkbox {
+	margin-left:1px;
+	float:left;
+	/*width:10px;*/
+}
+#Editor select {
+	font-size:11px;
+	width:145px;
+}
+#Editor select.small {
+	font-size:11px;
+	width:100px;
+}
+#Editor select.yesno {
+	font-size:11px;
+	width:60px;
+}

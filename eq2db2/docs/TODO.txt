@@ -1,0 +1,17 @@
+item icon searcher by items.item_type - as a combo box
+	lookup icon_item by "armor" for instance, shows only armor icons
+	
+make lookup visual (and other popups) easier to get to
+
+integrate ajax / dhtml grids and tab views
+
+add 'account inactive' check to login
+
+BUG: $_SESSION[] does not get passed to Ajax scripts - figure out how to tell current_database
+	-- write current_database to the cookie?
+
+separate eq2editor sql server config from new datasources configs ($db vs $editordb instances)
+	add check for valid datasources
+
+load common db data into arrays so mysql isn't hit repeatedly during grid operations
+	see Admin \ Last 10 Players debugqueries

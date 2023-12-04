@@ -1,0 +1,579 @@
+/* CSS Document */
+
+#TopMenu {
+}
+#TopMenu table {
+	width:100%;
+	height:20px;
+	background-color:#abc;
+
+	font-size:12px;
+	font-weight:bold;
+
+	border-left:1px solid #789;
+	border-top:1px solid #789;
+	border-right:1px solid #456;
+	border-bottom:1px solid #456;
+}
+#TopMenu td {
+	width:8%;
+	padding:0px;
+	text-align:center;
+}
+#TopMenu td.tabOn {
+	background-color:#789;
+}
+#TopMenu td.tabOff {
+	background-color:#abc;
+}
+
+
+#main-body {
+	background-color:#ddd;
+	border:1px solid #345;
+}
+#main-body table.main {
+	width:100%;
+	border:0px;
+}
+#main-body td.sidebar {
+	width:180px;
+	background-color:#9ab;
+	border-right:1px solid #345;
+	padding:5px;
+	vertical-align:top;
+}
+#main-body td.page-title {
+	font-size:18px;
+	font-weight:bold;
+	height:40px;
+	vertical-align:top;
+}
+#main-body td.page-text {
+	border-left:1px solid #ddd;
+	padding:5px;
+	vertical-align:top;
+}
+
+
+#login-box {
+	height:400px;
+	padding-top:100px;
+}
+#login-box table {
+	width:300px;
+	background-color:#789;
+	border-left:1px solid #ddd;
+	border-top:1px solid #ddd;
+	border-right:1px solid #666;
+	border-bottom:1px solid #666;
+}
+#login-box td {
+	padding:5px;
+}
+#login-box td.title {
+	font-size:15px;
+	font-weight:bold;
+	text-align:center;
+	border-bottom:1px solid #345;
+}
+#login-box td.label {
+	font-weight:bold;
+	text-align:right;
+	padding-right:5px;
+}
+
+
+#PageTitle {
+	width:99%;
+	padding:3px 0px 10px 5px;
+	font-size:18px;
+	color:#678;
+	text-align:right;
+}
+
+
+#SearchControls {
+	background-color:#ccc;
+	padding: 10px 0px 10px 10px;
+	border-left		: 1px solid #456;
+	border-top		: 1px solid #456;
+	border-right	: 1px solid #aaa;
+	border-bottom	: 1px solid #aaa;
+}
+#SearchControls td {
+	vertical-align:bottom;
+}
+#SearchControls td.label {
+	font-size:12px;
+	font-weight:bold;
+	text-align:right;
+	width:75px;
+	height:25px;
+	padding-right:5px;
+}
+
+
+/*
+#Editor td.title {
+	background-color:#567;
+	color:#ccc;
+	font-size:15px;
+	font-weight:bold;
+}
+*/
+#Editor {
+	position:relative;
+	margin-top:10px;
+	padding-bottom:10px;
+}
+#Editor table {
+	background-color:#abc;
+	border-left		:1px solid #333;
+	border-top		:1px solid #333;
+	border-right	:1px solid #999;
+	border-bottom	:1px solid #999;
+	margin:5px;
+	padding:0px;
+}
+/* Zones/Locations, expanding Location Details */
+#Editor table.SubPanel {
+	background-color:#89a;
+	border-left		:1px solid #333;
+	border-top		:1px solid #333;
+	border-right	:1px solid #999;
+	border-bottom	:1px solid #999;
+	margin:5px;
+	padding-bottom:5px;
+	/*width:98.5%;*/
+}
+#Editor tr.Row1 {
+	background-color:#ccc;
+}
+#Editor tr.Row2 {
+	background-color:#ddd;
+}
+#Editor td.Title {
+	background-color:#567;
+	color:#ccc;
+	font-size:15px;
+	font-weight:bold;
+	height:25px;
+}
+#Editor td.Label {
+	font-size:13px;
+	font-weight:bold;
+	padding:5px 0px 0px 5px;
+}
+#Editor td.LabelLeft {
+	font-size:13px;
+	font-weight:bold;
+	text-align:left;
+	padding:0px 5px 0px 0px;
+}
+#Editor td.LabelRight {
+	font-size:13px;
+	font-weight:bold;
+	text-align:right;
+	padding:0px 5px 0px 0px;
+}
+#Editor td.Detail {
+	font-size:11px;
+	padding:0px 10px 10px 5px;
+}
+#Editor td.Section {
+	font-weight:bold;
+	color:#ccc;
+	background-color:#567;
+	padding-top:10px;
+	padding-bottom:10px;
+
+}
+#Editor td.SectionTitle {
+	font-size:13px;
+	font-weight:bold;
+	color:#ccc;
+	background-color:#678;
+	padding:5px 5px 5px 5px;
+}
+#Editor td.Submit {
+	text-align:center;
+	vertical-align:middle;
+	height:40px;
+}
+
+
+
+
+#SelectGrid {
+	position:relative;
+	width:100%;
+	z-index:1;
+}
+#SelectGrid table {
+	width			:100%;
+	background-color:#abc;
+	border-left		:1px solid #333;
+	border-top		:1px solid #333;
+	border-right	:1px solid #999;
+	border-bottom	:1px solid #999;
+	
+	/* cellspacing */
+	border-collapse	:collapse;
+	border-spacing	:0;
+}
+#SelectGrid td.title {
+	background-color:#567;
+	color:#ccc;
+	font-size:15px;
+	font-weight:bold;
+}
+#SelectGrid th {
+	background-color:#789;
+	color:#fff;
+	font-size:13px;
+	font-weight:bold;
+	text-align:left;
+}
+#SelectGrid tr {
+	background-color:#ddd;
+}
+#SelectGrid tr:nth-child(even) {
+	background-color:#ccc;
+}
+#SelectGrid tr:hover {
+	background-color:#567;
+}
+#SelectGrid input.Submit {
+	height:26px;
+	font-size:11px;
+}
+
+
+#SettingsGrid {
+	position:relative;
+	width:600px;
+	height:600px;
+	z-index:1;
+	margin-left:4px;
+}
+#SettingsGrid table {
+	background-color:#abc;
+	border-left		:1px solid #333;
+	border-top		:1px solid #333;
+	border-right	:1px solid #999;
+	border-bottom	:1px solid #999;
+	margin-bottom	:20px;
+}
+#SettingsGrid td.label {
+	font-size:13px;
+	font-weight:bold;
+	padding:3px 5px 3px 0px;
+	text-align:right;
+	width:200px;
+}
+#SettingsGrid td.detail {
+	font-size:11px;
+	padding:0px 0px 0px 5px;
+	background-color:#eee;
+	/*width:450px;*/
+}
+#SettingsGrid input.text {
+	width:350px;
+}
+#SettingsGrid .status {
+	height:25px;
+	vertical-align:top;
+}
+
+
+#ZoneEditor {
+	position:relative;
+	width:80%;
+}
+#ZoneEditor table {
+	background-color:#abc;
+	border-left		:1px solid #333;
+	border-top		:1px solid #333;
+	border-right	:1px solid #999;
+	border-bottom	:1px solid #999;
+}
+#ZoneEditor table.details {
+	width:100%;
+	/*background-color:#89a;*/
+	border:0px;
+}
+#ZoneEditor table.script {
+	background-color:#89a;
+	border:0px;
+}
+#ZoneEditor td.ZoneTitle {
+	background-color:#567;
+	color:#ccc;
+	font-size:15px;
+	font-weight:bold;
+	height:25px;
+}
+#ZoneEditor td.label {
+	font-size:13px;
+	font-weight:bold;
+	padding:0px 0px 0px 5px;
+	text-align:right;
+	width:20%;
+}
+#ZoneEditor td.detail {
+	font-size:11px;
+	padding:0px 10px 10px 5px;
+	background-color:#ddd;
+}
+#ZoneEditor td.section {
+	font-weight:bold;
+	color:#ccc;
+	background-color:#567;
+	padding-top:10px;
+	padding-bottom:10px;
+
+}
+#ZoneEditor td.SectionTitle {
+	font-size:13px;
+	font-weight:bold;
+	color:#ccc;
+	background-color:#678;
+	padding:5px 5px 5px 5px;
+}
+
+
+
+
+/* Module Management CSS */
+#mmtabs {
+	line-height: normal;
+	margin: 0 0 -6px 7px;
+	min-width: 600px;
+}
+
+#mmtabs ul {
+	margin:0;
+	padding: 0;
+	list-style: none;
+}
+
+#mmtabs li {
+	display: inline;
+	margin: 0;
+	padding: 0;
+	font-size: 0.85em;
+	font-weight: bold;
+}
+
+#mmtabs a {
+	float: left;
+	background:url("../images/bg_tabs1.gif") no-repeat 0% -34px;
+	margin: 0 1px 0 0;
+	padding: 0 0 0 7px;
+	text-decoration: none;
+	position: relative;
+	border-bottom:1px dotted #000;
+}
+
+.rtl #mmtabs a {
+	float: right;
+}
+
+#mmtabs a span {
+	float: left;
+	display: block;
+	background: url("../images/bg_tabs2.gif") no-repeat 100% -34px;
+	padding: 7px 10px 4px 4px;
+	color: #767676;
+	white-space: nowrap;
+	font-family: Arial, Helvetica, sans-serif;
+	text-transform: uppercase;
+	font-weight: bold;
+
+}
+
+.rtl #mmtabs a span {
+	float: right;
+}
+
+/* Commented Backslash Hack hides rule from IE5-Mac \*/
+#mmtabs a span, .rtl #mmtabs a span { float:none;}
+/* End hack */
+
+#mmtabs a:hover span {
+	color: #BC2A4D;
+}
+
+#mmtabs #activetab a {
+	background-position: 0 0;
+	border-bottom: 1px solid #DCDEE2;
+}
+
+#mmtabs #activetab a span {
+	background-position: 100% 0;
+	padding-bottom: 5px;
+	color: #23649F;
+}
+
+#mmtabs a:hover {
+	background-position: 0 -69px;
+}
+
+#mmtabs a:hover span {
+	background-position: 100% -69px;
+}
+
+#mmtabs #activetab a:hover span {
+	color: #115098;
+}
+
+.mmcolortabsline{
+clear: both;
+padding: 0;
+width: 100%;
+height: 4px;
+line-height: 8px;
+background: #345;
+border-top: 1px solid #789; /*Remove this to remove border between bar and tabs*/
+}
+
+
+
+.SearchFilters {
+	width: 100%;
+	border: 1px solid;
+	border-spacing: 0px;
+	background-color: #ccc;
+	padding-bottom: 5px;
+}
+
+.SearchFilters th {
+	background-color: #abc;
+	font-size: 12px;
+	font-weight: bold;
+	// color: #456;
+	padding-left: 5px;
+	height: 22px;
+	width: 100%;
+	text-align: left;
+}
+
+.SearchFilters .label {
+	font-size: 12px;
+	font-weight: bold;
+	padding-top: 5px;
+}
+
+.SearchFilters input {
+	font-size:11px;
+}
+
+.SearchFilters input.small {
+	font-size:11px;
+	width:30px;
+}
+
+.SearchFilters select {
+	width:297px;
+	font-size:.9em;
+}
+
+
+.SearchResultsTemp {
+	position:relative;
+	width:100%;
+	z-index:1;
+	border-spacing: 0px;
+}
+
+.SearchResultsTemp tr.Title {
+	background-color: #789;
+	color: #fff;
+	font-size: 12px;
+	font-weight: bold;
+	text-align: left;
+	height: 22px;
+}
+
+.SearchResultsTemp tr:hover td {
+	background-color:#abc;//567;
+}
+
+.SearchResultsTemp tr:nth-child(even) {
+	background-color:#ccc;
+}
+
+/********************* Obsolete *********************/ 
+#ZoneSelect {
+	position:relative;
+}
+
+
+#UserSelect {
+	position:relative;
+}
+
+#quest-select {
+	position:absolute;
+	padding-left:10px;
+}
+
+
+#quest-add {
+	position:absolute;
+	padding-left:10px;
+}
+
+
+#quest-wizard {
+	position:relative;
+}
+
+
+#quest-options {
+	position:relative;
+	top:10px;
+}
+
+
+#quest-steps {
+	position:relative;
+	width:97%;
+}
+#quest-steps td.instruct {
+	font-size:12px;
+	padding-bottom:10px;
+}
+#quest-steps td.label {
+	text-align:right;
+	vertical-align:top;
+	font-weight:bold;
+	width:125px;
+}
+#quest-steps input.field {
+	width:200px;
+	background-color:#eee;
+	font-size:12px;
+}
+#quest-steps textarea {
+	width:550px;
+	height:50px;
+}
+
+
+#quest-preview {
+	position:relative;
+	font-size:18px;
+	font-weight:bold;
+	color:#f00;
+	text-align:center;
+}
+#quest-preview textarea.preview {
+	width:800px;
+	height:500px;
+}
+
+tr.form:hover {
+	background-color:#567;
+}

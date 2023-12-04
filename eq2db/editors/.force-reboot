@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+CURR=$(date +"Date : %m/%d/%Y Time : %I:%M:%S")
+LOG=/home/eq2dev/compileScripts/webrebooterror.log
+CMPLOG=/home/eq2dev/compileScripts/webreboot.log
+CMPLOCKFILE=/var/www/html/editors/eq2db/editors/.rbtlock
+
+if [ -f "$CMPLOCKFILE" ]; then
+	echo "[ $CURR ] $CMPLOCKFILE file exists. Halting until next check." >> "$LOG"
+	exit
+fi
+
+touch "$CMPLOCKFILE"
+
+reboot_world_server() {
+	echo "Check if world is running"
+	if pgrep eq2world > /dev/null
+	echo "World is running"
+	then
+		echo "Stopping eq2world..."
+		killall eq2world
+		echo "Sleep for 60 seconds"
+		sleep 10
+	fi
+
+	mv /var/www/html/editors/eq2db/editors/.running-reboot /var/www/html/editors/eq2db/editors/.force-reboot
+}
+
+
+reboot_world_server >> "$CMPLOG" 2>&1
