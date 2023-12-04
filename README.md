@@ -31,6 +31,6 @@ Currently, there is an effort to move all the needed bits from eq2db2 to eq2db w
 Support for this will be very limited to if/when any of the current developers/admins have time to answer questions.
 ***
 
-Files of note: 
-EQ2DB->.env.example  --  Must be edited and renamed .env
-EQ2DB->eq2editor.sql --  Must be merged into your MYSQL/MariaDB server.
+Files of note:\
+EQ2DB->.env.example  --  Must be edited and renamed .env\
+EQ2DB->eq2editor.sql --  Must be merged into your MYSQL/MariaDB server.\
