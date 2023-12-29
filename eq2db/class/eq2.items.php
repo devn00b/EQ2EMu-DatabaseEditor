@@ -1,10 +1,11 @@
 <?php
 
-
 class eq2Items 
 {
+
 	public function __construct() {
 		natcasesort($this->emuItemToggles['items']);
+		
 	}
 
     var $eq2ItemTypes = array(
@@ -28,128 +29,29 @@ class eq2Items
 	    17 => "Armor Set"
 	);
 
-    var $eq2ItemStats = array(
-		0 => "STR",
-		1 => "STA",
-		2 => "AGI",
-		3 => "WIS",
-		4 => "INT",
-		200 => "VS_SLASH",
-		201 => "VS_CRUSH",
-		202 => "VS_PIERCE",
-		203 => "VS_HEAT",
-		204 => "VS_COLD",
-		205 => "VS_MAGIC",
-		206 => "VS_MENTAL",
-		207 => "VS_DIVINE",
-		208 => "VS_DISEASE",
-		209 => "VS_POISON",
-		210 => "VS_DROWNING",
-		211 => "VS_FALLING",
-		212 => "VS_PAIN",
-		213 => "VS_MELEE",
-		300 => "DMG_SLASH",
-		301 => "DMG_CRUSH",
-		302 => "DMG_PIERCE",
-		303 => "DMG_HEAT",
-		304 => "DMG_COLD",
-		305 => "DMG_MAGIC",
-		306 => "DMG_MENTAL",
-		307 => "DMG_DIVINE",
-		308 => "DMG_DISEASE",
-		309 => "DMG_POISON",
-		310 => "DMG_DROWNING",
-		311 => "DMG_FALLING",
-		312 => "DMG_PAIN",
-		313 => "DMG_MELEE",
-		500 => "HEALTH",
-		501 => "POWER",
-		502 => "CONCENTRATION",
-		600 => "HPREGEN",
-		601 => "MANAREGEN",
-		602 => "HPREGENPPT",
-		603 => "MPREGENPPT",
-		604 => "COMBATHPREGENPPT",
-		605 => "COMBATMPREGENPPT",
-		606 => "MAXHP",
-		607 => "MAXHPPERC",
-		608 => "SPEED",
-		609 => "SLOW",
-		610 => "MOUNTSPEED",
-		611 => "OFFENSIVESPEED",
-		612 => "ATTACKSPEED",
-		613 => "MAXMANA",
-		614 => "MAXMANAPERC",
-		615 => "MAXATTPERC",
-		616 => "BLURVISION",
-		617 => "MAGICLEVELIMMUNITY",
-		618 => "HATEGAINMOD",
-		619 => "COMBATEXPMOD",
-		620 => "TRADESKILLEXPMOD",
-		621 => "ACHIEVEMENTEXPMOD",
-		622 => "SIZEMOD",
-		623 => "UNKNOWN",
-		624 => "STEALTH",
-		625 => "INVIS",
-		626 => "SEESTEALTH",
-		627 => "SEEINVIS",
-		628 => "EFFECTIVELEVELMOD",
-		629 => "RIPOSTECHANCE",
-		630 => "PARRYCHANCE",
-		631 => "DODGECHANCE",
-		632 => "AEAUTOATTACKCHANCE",
-		633 => "DOUBLEATTACKCHANCE",
-		634 => "RANGEDDOUBLEATTACKCHANCE",
-		635 => "SPELLDOUBLEATTACKCHANCE",
-		636 => "FLURRY",
-		637 => "EXTRAHARVESTCHANCE",
-		638 => "EXTRASHIELDBLOCKCHANCE",
-		639 => "DEFLECTIONCHANCE",
-		640 => "ITEMHPREGENPPT",
-		641 => "ITEMPPREGENPPT",
-		642 => "MELEECRITCHANCE",
-		643 => "RANGEDCRITCHANCE",
-		644 => "DMGSPELLCRITCHANCE",
-		645 => "HEALSPELLCRITCHANCE",
-		646 => "MELEECRITBONUS",
-		647 => "RANGEDCRITBONUS",
-		648 => "DMGSPELLCRITBONUS",
-		649 => "HEALSPELLCRITBONUS",
-		650 => "UNCONSCIOUSHPMOD",
-		651 => "SPELLTIMEREUSEPCT",
-		652 => "SPELLTIMERECOVERYPCT",
-		653 => "SPELLTIMECASTPCT",
-		654 => "MELEEWEAPONRANGE",
-		655 => "RANGEDWEAPONRANGE",
-		656 => "FALLINGDAMAGEREDUCTION",
-		657 => "SHIELDEFFECTIVENESS",
-		658 => "RIPOSTEDAMAGE",
-		659 => "MINIMUMDEFLECTIONCHANCE",
-		660 => "MOVEMENTWEAVE",
-		661 => "COMBATHPREGEN",
-		662 => "COMBATMANAREGEN",
-		663 => "CONTESTSPEEDBOOST",
-		664 => "TRACKINGAVOIDANCE",
-		665 => "STEALTHINVISSPEEDMOD",
-		666 => "LOOT_COIN",
-		667 => "ARMORMITIGATIONINCREASE",
-		668 => "AMMOCONSERVATION",
-		669 => "STRIKETHROUGH",
-		670 => "STATUSBONUS",
-		671 => "ACCURACY",
-		672 => "COUNTERSTRIKE",
-		673 => "SHIELDBASH",
-		674 => "WEAPONDAMAGEBONUS",
-		675 => "ADDITIONALRIPOSTECHANCE",
-		676 => "CRITICALMITIGATION",
-		677 => "COMBATARTDAMAGE",
-		678 => "SPELLDAMAGE",
-		679 => "HEALAMOUNT",
-		680 => "TAUNTAMOUNT",
-		700 => "SPELL_DAMAGE",
-		701 => "HEAL_AMOUNT",
-		702 => "SPELL_AND_HEAL"
-	);
+	var $eq2ItemStatTypes = array();
+	var $eq2ItemStatSubTypes = array();
+
+    public function populateItemTypeArrays()
+	{
+		global $eq2;
+
+		//POPULATE TYPE
+		$query = "SELECT value, name FROM `eq2meta` WHERE type=6 AND subtype='stat_type';";
+		$data = $eq2->RunQueryMulti($query);
+		foreach($data as $row)
+		{
+			$this->eq2ItemStatTypes[$row['value']] = $row['name'];
+		}
+
+		//POPULATE SUBTYPE
+		$query = "SELECT value, name FROM `eq2meta` WHERE type=6 AND subtype='stat_subtype';";
+		$data = $eq2->RunQueryMulti($query);
+		foreach($data as $row)
+		{
+			$this->eq2ItemStatSubTypes[$row['value']] = $row['name'];
+		}
+	}
 
     var $emuItemTypeIDRanges = 
         array('Normal'=>1000, 'Marketplace'=>20000, 'Profile'=>20100,
@@ -194,11 +96,169 @@ class eq2Items
 	array(255=>'None',0=>'White',1=>'Red',2=>'Blue',3=>'Yellow',4=>'Green',5=>'Purple',6=>'Cyan',7=>'Temporary'
 	,8=>'Orange',9=>'Turquoise',10=>'Black');
 
+	public function BuildLUAFunction($type)
+	{
+		global $eq2;
+		
+		$ret = NULL;
+
+		switch($type)
+		{
+			case "s1.Item1":
+				$ret = "\r\n" .
+							 "function cast(Caster, Target)\r\n" .
+							 "\r\n" .
+							 "end\r\n";
+				break;
+
+			case "s1.Item2":
+				$ret = "\r\n" .
+							 "function cast(Caster, Target, MinVal, MaxVal)\r\n" .
+							 "    if MaxVal ~= nil and MinVal < MaxVal then\r\n" .
+							 "        ModifyHP(Target, math.random(MinVal, MaxVal))\r\n" .
+							 "    else\r\n" .
+							 "        ModifyHP(Target, MinVal)\r\n" .
+							 "    end\r\n" .
+							 "end\r\n";
+				break;
+
+			case "s1.Item3":
+				$ret = "\r\n" .
+							 "function cast(Caster, Target, DmgType, MinVal, MaxVal)\r\n" .
+							 "    if MaxVal ~= nil and MinVal < MaxVal then\r\n" .
+							 "        SpellDamage(Target, DmgType, math.random(MinVal, MaxVal))\r\n" .
+							 "    else\r\n" .
+							 "        SpellDamage(Target, DmgType, MinVal)\r\n" .
+							 "    end\r\n" .
+							 "end\r\n";
+				break;
+				
+			case "s1.Item3":
+				$ret = "\r\n" .
+							 "function cast(Caster, Target, DoTType, MinVal, MaxVal)\r\n" .
+							 "    if MaxVal ~= nil and MinVal < MaxVal then\r\n" .
+							 "        SpellDamage(Target, DoTType, math.random(MinVal, MaxVal))\r\n" .
+							 "    else\r\n" .
+							 "        SpellDamage(Target, DoTType, MinVal)\r\n" .
+							 "    end\r\n" .
+							 "end\r\n" .
+							 "\r\n" .
+							 "function tick(Caster, Target, DoTType, MinVal, MaxVal)\r\n" .
+							 "    if MaxVal ~= nil and MinVal < MaxVal then\r\n" .
+							 "        SpellDamage(Target, DoTType, math.random(MinVal, MaxVal))\r\n" .
+							 "    else\r\n" .
+							 "        SpellDamage(Target, DoTType, MinVal)\r\n" .
+							 "    end\r\n" .
+							 "end\r\n";
+				break;
+				
+			case "s1.Item4":
+				$ret = "    AddSpellBonus(Target, 600, BonusAmt)\n";
+				break;
+				
+			case "s1.Item5":
+				$ret = "    AddSkillBonus(Target, GetSkillIDByName(\"Slashing\"), SkillAmt)\n";
+				break;
+				
+			case "s1.Item6":
+				$ret = "    AddControlEffect(Target, 1)\n";
+				break;
+				
+			case "s1.Item7":
+				$ret = "\r\n" .
+							 "function tick(Caster, Target)\r\n" .
+							 "\r\n" .
+							 "end\r\n";
+				break;
+				
+			case "s1.Item8":
+				$ret = "\r\n" .
+							 "function remove(Caster, Target)\r\n" .
+							 "\r\n" .
+							 "end\r\n";
+				break;
+				
+			case "s2.Item1":
+				$ret = "    RemoveSpellBonus(Target)\n";
+				break;
+				
+			case "s3.Item1":
+				$ret = "    RemoveSkillBonus(Target)\n";
+				break;
+				
+			case "s3.Item2":
+				$ret = "    RemoveControlEffect(Target, 1)\n";
+				break;
+				
+			case "s3.Item3":
+				$ret = "    Interrupt(Target)\n";
+				break;
+				
+			case "s3.Item4":
+				$ret = "    Say(Caster, \"Say What?\")\n";
+				break;
+				
+			case "s4.Item1":
+				$ret = "\r\n" .
+							 "function cast(Caster, Target)\r\n" .
+							 "    Say(Target, \"Hah, nice try! That's not implemented yet!\")\r\n" .
+							 "end\r\n";
+				break;
+				
+			case "s4.Item2":
+				$ret = "\r\nfunction cast(Caster, Target";
+							 
+				$sql = sprintf("SELECT description, bullet FROM `".DEV_DB."`.spell_display_effects WHERE spell_id = %s and tier = 1 GROUP BY `index`;", $_GET['id']);
+				if( !$result = $eq2->db->sql_query($sql) )
+					die("Error while fetching spell_display_effects in %s" . __FUNCTION__);
+					
+				while( $data = $eq2->db->sql_fetchrow($result) )
+				{
+					$myArr = array();
+					$data_values = array();
+					
+					// let the parsing begin!
+					$myArr = explode(" ", $data['description']);
+					$direction = ( in_array("Decreases", $myArr) > 0 ) ? "-" : "";
+			
+					foreach($myArr as $key)
+					{
+						if( intval($key) )
+						{
+							$val = $direction . $key;
+							$data_values[] = preg_replace("/\%/", "", $val);
+						}
+						else
+						{
+							foreach($eq2->eq2DamageTypes as $id=>$effect) 
+							{
+								if( strtolower($key) == strtolower($effect) )
+									$dmgType = $key;
+							}
+						}
+					}
+
+				}
+				
+				if( strlen($dmgType) > 0 )
+					$ret .= ", Param1";
+				
+				$params = count($data_values);
+				for( $i = 2; $i <= $params+1; $i++)
+					$ret .= ", Param" . $i;
+				
+				$ret .= ")\r\n    \r\nend\r\n";
+				break;
+		}
+		
+		return $ret;
+	}
+
     function getItemStats($id) 
 	{
         global $eq2;
 
-		$eq2->SQLQuery = sprintf("select * from ".DEV_DB.".item_stats where item_id = %lu", $id);
+		$eq2->SQLQuery = sprintf("select * from `".DEV_DB."`.item_stats where item_id = %lu", $id);
         
         $stats = "";
 		foreach ($eq2->RunQueryMulti() as $data) {
@@ -206,6 +266,10 @@ class eq2Items
 			if( $data['value'] > 0 )
 			{
 				// normal +stats
+				if(!isset($stat_value)){
+					continue;
+				}
+				printf("DEBUG: ".$data['value']." 2: ".$stat_val)."\n";
 				$stats .= sprintf(" +%d %s", $data['value'], $this->eq2ItemStats[$stat_val]);
 			}
 			else
@@ -311,7 +375,7 @@ class eq2Items
         reset($this->emuItemTypeIDRanges);
 
 		$eq2->BeginSQLTransaction();
-		$eq2->RunQuery(true, "LOCK TABLE ".DEV_DB."`items` WRITE;");
+		$eq2->RunQuery(true, "LOCK TABLE `".DEV_DB."`.`items` WRITE;");
 
 		$query = sprintf('SELECT MAX(id) + 1 as newid FROM `%s`.`items` i WHERE i.id BETWEEN %s AND %s',
 		DEV_DB, $minRangeID, $maxRangeID);
@@ -330,7 +394,7 @@ class eq2Items
             $secondaryTable = $this->emuItemTables[$type] ?? NULL;
 
             if (isset($secondaryTable)) {
-                $q = $type != "Scroll" ? "INSERT INTO %s.%s (item_id) VALUES (%s)" : "INSERT INTO %s.%s (item_id, soe_spell_crc) VALUES (%s, 0)";
+                $q = $type != "Scroll" ? "INSERT INTO `%s`.%s (item_id) VALUES (%s)" : "INSERT INTO `%s`.%s (item_id, soe_spell_crc) VALUES (%s, 0)";
 
                 $query = sprintf($q, DEV_DB, $secondaryTable, $nextID);
                 $success = $eq2->RunQuery(true, $query) == 1;
@@ -375,7 +439,7 @@ class eq2Items
 							<?php $eq2->GenerateBlueCheckbox('items|'.$field, $item[$field] == 1); ?>
 							<input type="hidden" name="<?php printf("orig_%s", $field) ?>" value="<?php echo $item[$field]; ?>" />
 							</td>
-						</tr>	
+						</tr>
 					</table>
 				<?php endforeach; ?>
 			</div>
@@ -384,15 +448,6 @@ class eq2Items
 		<?php
 	}
 
-	function ListEnabledToggles($itemNum){
-		//global $eq2;
-		$strReturnText = "test";
-		//foreach($this->emuItemToggles['items'] as $field){
-			//$strReturnText .= "[[".$field."]]";
-		//}
-		return($strReturnText);
-	}
-		
 	function HandleCheckBoxes() {
 		$page = $_GET['tab'] ?? "items";
 
@@ -717,36 +772,36 @@ class eq2Items
 	</table>
 	</fieldset>
 	<?php
-}
+	}
 
-function PreUpdate() {
-	$tab = $_GET['tab'] ?? "";
+	function PreUpdate() {
+		$tab = $_GET['tab'] ?? "";
 
-	if ($tab == "item_stats") {
-		$sqln = new SQLNull;
-		if ($_POST['item_mod_stats|fValue'] == "") {
-			$_POST['item_mod_stats|fValue'] = $sqln;
-			if ($_POST['orig_fValue'] == "") $_POST['orig_fValue'] = $sqln;
-		}
-		if ($_POST['item_mod_stats|iValue'] == "") {
-			$_POST['item_mod_stats|iValue'] = $sqln;
-			if ($_POST['orig_iValue'] == "") $_POST['orig_iValue'] = $sqln;
+		if ($tab == "item_stats") {
+			$sqln = new SQLNull;
+			if ($_POST['item_mod_stats|fValue'] == "") {
+				$_POST['item_mod_stats|fValue'] = $sqln;
+				if ($_POST['orig_fValue'] == "") $_POST['orig_fValue'] = $sqln;
+			}
+			if ($_POST['item_mod_stats|iValue'] == "") {
+				$_POST['item_mod_stats|iValue'] = $sqln;
+				if ($_POST['orig_iValue'] == "") $_POST['orig_iValue'] = $sqln;
+			}
 		}
 	}
-}
 
-function PreInsert() {
-	$tab = $_GET['tab'] ?? "";
+	function PreInsert() {
+		$tab = $_GET['tab'] ?? "";
 
-	if ($tab == "item_stats") {
-		if ($_POST['item_mod_stats|fValue|new'] == "") {
-			unset($_POST['item_mod_stats|fValue|new']);
-		}
-		if ($_POST['item_mod_stats|iValue|new'] == "") {
-			unset($_POST['item_mod_stats|iValue|new']);
+		if ($tab == "item_stats") {
+			if ($_POST['item_mod_stats|fValue|new'] == "") {
+				unset($_POST['item_mod_stats|fValue|new']);
+			}
+			if ($_POST['item_mod_stats|iValue|new'] == "") {
+				unset($_POST['item_mod_stats|iValue|new']);
+			}
 		}
 	}
-}
 
 }
 

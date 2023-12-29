@@ -24,7 +24,7 @@ class eq2Zones
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = "SELECT id,name,description FROM ".DEV_DB.".zones ORDER BY description";
+		$eq2->SQLQuery = "SELECT id,name,description FROM `".DEV_DB."`.zones ORDER BY description";
 		return $eq2->RunQueryMulti();
 	}
 
@@ -36,7 +36,7 @@ class eq2Zones
 		// add this to the querystring only if page= is iset
 		$Page = ( isset($_GET['page']) ) ? sprintf("%s?page=%s&", $eq2->GetPHPScriptName(), $_GET['page']) : sprintf("%s?", $eq2->GetPHPScriptName());
 		
-		$eq2->SQLQuery = sprintf("SELECT id,description FROM ".DEV_DB.".zones ORDER BY description");
+		$eq2->SQLQuery = sprintf("SELECT id,description FROM `".DEV_DB."`.zones ORDER BY description");
 		 
 		$results = $eq2->RunQueryMulti();
 		
@@ -54,7 +54,7 @@ class eq2Zones
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = "SELECT DISTINCT z.id as zid, z.description, z.name FROM ".DEV_DB.".zones z JOIN ".DEV_DB.".spawn_location_placement slp ON z.id = slp.zone_id GROUP BY z.id";
+		$eq2->SQLQuery = "SELECT DISTINCT z.id as zid, z.description, z.name FROM `".DEV_DB."`.zones z JOIN `".DEV_DB."`.spawn_location_placement slp ON z.id = slp.zone_id GROUP BY z.id";
 		return $eq2->RunQueryMulti();
 	}
 
@@ -66,7 +66,7 @@ class eq2Zones
 		// add this to the querystring only if page= is iset
 		$Page = ( strlen($_GET['page']) > 0 ) ? sprintf("%s?page=%s&", $eq2->GetPHPScriptName(), $_GET['page']) : sprintf("%s?", $eq2->GetPHPScriptName());
 			
-		$eq2->SQLQuery = sprintf("SELECT z.id,z.name,z.description FROM ".DEV_DB.".zones z WHERE z.id IN (SELECT DISTINCT zone_id FROM ".DEV_DB.".spawn_location_placement ) ORDER BY z.description");
+		$eq2->SQLQuery = sprintf("SELECT z.id,z.name,z.description FROM `".DEV_DB."`.zones z WHERE z.id IN (SELECT DISTINCT zone_id FROM `".DEV_DB."`.spawn_location_placement ) ORDER BY z.description");
 		
 		$results = $eq2->RunQueryMulti();
 		
@@ -82,8 +82,11 @@ class eq2Zones
 	public function GetZoneData()
 	{
 		global $eq2;
+		if(!is_numeric($this->zone_id)){
+			$this->zone_id = 0;
+		}
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".zones WHERE id = %s", $this->zone_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.zones WHERE id = %s", $this->zone_id);
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -94,7 +97,7 @@ class eq2Zones
 		if( $this->zone_id > 0 )
 			$id = $this->zone_id;
 			
-		$eq2->SQLQuery = sprintf("SELECT name FROM ".DEV_DB.".zones WHERE id = %s", $id);
+		$eq2->SQLQuery = sprintf("SELECT name FROM `".DEV_DB."`.zones WHERE id = %s", $id);
 		$data = $eq2->RunQuerySingle();
 		return ( strlen($data['name']) > 0 ) ? $data['name'] : "Not Found.";
 	}	
@@ -105,7 +108,7 @@ class eq2Zones
 
 		if ($id == 0) $id = $this->zone_id;
 
-		$eq2->SQLQuery = "SELECT id, description FROM ".DEV_DB.".zones ORDER BY description";
+		$eq2->SQLQuery = "SELECT id, description FROM `".DEV_DB."`.zones ORDER BY description";
 		$rows = $eq2->RunQueryMulti();
 		
 		$ret = "";
@@ -125,8 +128,8 @@ class eq2Zones
 			
 			// Step 1: Idenfity all spawn_location_placements in the zone to purge
 			$eq2->SQLQuery = sprintf("SELECT DISTINCT slp.spawn_location_id, sle.spawn_id " . 
-															 "FROM ".DEV_DB.".spawn_location_placement slp " . 
-															 "JOIN ".DEV_DB.".spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " . 
+															 "FROM `".DEV_DB."`.spawn_location_placement slp " . 
+															 "JOIN `".DEV_DB."`.spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " . 
 															 "WHERE slp.zone_id = %s", $id);
 			$results = $eq2->RunQueryMulti();
 			
@@ -144,26 +147,26 @@ class eq2Zones
 			$eq2->TableName = "spawn_location_name";
 
 			// Step 2: Delete all spawn_location_name, entry, placement, group, association data collected in step 1
-			$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spawn_location_name WHERE id IN (%s)", implode(",", $placement_array));
+			$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spawn_location_name WHERE id IN (%s)", implode(",", $placement_array));
 			$eq2->RunQuery();
 
 			// Step 3: Delete spawn records
 			$eq2->TableName = "spawn";
-			$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spawn WHERE id IN (%s)", implode(",", $spawn_id_array));
+			$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spawn WHERE id IN (%s)", implode(",", $spawn_id_array));
 			$eq2->RunQuery();
 
 			// Step 4: Un-set all Processed records in this zone so they can be re-migrated
-			$eq2->SQLQuery = sprintf("UPDATE ".RAW_DB.".spawn_location_placement " . 
+			$eq2->SQLQuery = sprintf("UPDATE `".RAW_DB."`.spawn_location_placement " . 
 															 "SET processed = 0 " . 
 															 "WHERE processed = 1 AND spawn_location_id IN (" .
 																																							"SELECT spawn_location_id " . 
-																																							"FROM ".RAW_DB.".spawn_location_entry " . 
+																																							"FROM `".RAW_DB."`.spawn_location_entry " . 
 																																							"WHERE spawn_id IN (%s)" . 
 																																							")", 
 															 implode(",", $spawn_id_array));
 			$eq2->RunQuery(false);
 			
-			$eq2->SQLQuery = sprintf("UPDATE ".RAW_DB.".spawn " . 
+			$eq2->SQLQuery = sprintf("UPDATE `".RAW_DB."`.spawn " . 
 															 "SET processed = 0 " . 
 															 "WHERE processed = 1 AND id IN (%s)", 
 															 implode(",", $spawn_id_array));
@@ -184,7 +187,7 @@ class eq2Zones
 		if( strlen($_POST['txtSearch']) > 0 )
 		{
 			$search = $eq2->SQLEscape($_POST['txtSearch']);
-			$eq2->SQLQuery = "SELECT * FROM ".DEV_DB.".zones WHERE (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (file RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name";
+			$eq2->SQLQuery = "SELECT * FROM `".DEV_DB."`.zones WHERE (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (file RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name";
 			return $eq2->RunQueryMulti();
 		}
 	}
@@ -197,7 +200,7 @@ class eq2Zones
 		global $eq2;
 
 		$row = $eq2->RunQuerySingle(
-			sprintf("SELECT lua_script FROM %s.zones WHERE id = %s",
+			sprintf("SELECT lua_script FROM `%s`.zones WHERE id = %s",
 			DEV_DB, $id)
 		);
 
@@ -233,7 +236,7 @@ class eq2Zones
 	public function DoesZoneExist($id) {
 		global $eq2;
 
-		$row = $eq2->RunQuerySingle("SELECT COUNT('id') as cnt FROM ".DEV_DB.".zones WHERE id = '".$eq2->SQLEscape($id)."'");
+		$row = $eq2->RunQuerySingle("SELECT COUNT('id') as cnt FROM `".DEV_DB."`.zones WHERE id = '".$eq2->SQLEscape($id)."'");
 
 		return $row['cnt'] == 1;
 	}
@@ -277,7 +280,7 @@ class eq2Zones
 
 		$shortname = preg_replace("/[^\\d\\w]/", "", $name);
 
-		$eq2->SQLQuery = sprintf("INSERT INTO %s.zones (`name`, `description`) VALUES (\"%s\", \"%s\")", DEV_DB, $shortname, $eq2->SQLEscape($name));
+		$eq2->SQLQuery = sprintf("INSERT INTO `%s`.zones (`name`, `description`) VALUES (\"%s\", \"%s\")", DEV_DB, $shortname, $eq2->SQLEscape($name));
 		$eq2->RunQuery();
 
 		header(sprintf("Location: zones.php?zone=%s&tab=zones", $eq2->db->sql_last_insert_id()));

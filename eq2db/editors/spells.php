@@ -198,7 +198,7 @@ if( ($_POST['cmdSearch'] ?? "") == 'Search' )
 if( isset($type) && $spells->spell_id == 0 )
 {
 	$typeKey = array_keys($spells->eq2SOESpellTypes, $type);
-	$select = sprintf("SELECT DISTINCT s.id, soe_spell_crc, name, description, level, type, given_by, is_active, is_aa, last_auto_update, icon, icon_backdrop FROM ".DEV_DB.".spells s LEFT JOIN ".DEV_DB.".spell_classes sc ON s.id = sc.spell_id LEFT JOIN ".DEV_DB.".spell_tiers st ON s.id = st.spell_id");
+	$select = sprintf("SELECT DISTINCT s.id, soe_spell_crc, name, description, level, type, given_by, is_active, is_aa, last_auto_update, icon, icon_backdrop FROM `".DEV_DB."`.spells s LEFT JOIN `".DEV_DB."`.spell_classes sc ON s.id = sc.spell_id LEFT JOIN `".DEV_DB."`.spell_tiers st ON s.id = st.spell_id");
 	
 	switch($type)
 	{
@@ -443,7 +443,7 @@ function spells()
 {
 	global $eq2, $spells, $querystring;
 
-	$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spells WHERE id = %s", $spells->spell_id);
+	$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spells WHERE id = %s", $spells->spell_id);
 	$row = $eq2->RunQuerySingle();
 	
 	$enable_soe = true;
@@ -843,7 +843,7 @@ function spell_tiers()
 			</td>
 		</tr>
 	<?php
-	$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spell_tiers WHERE spell_id = %s ORDER BY tier;", $spells->spell_id);
+	$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spell_tiers WHERE spell_id = %s ORDER BY tier;", $spells->spell_id);
 	$rows = $eq2->RunQueryMulti();
 	
 	foreach($rows as $row)
@@ -1159,7 +1159,7 @@ function spell_data()
 	$tier 				= 0;
 	$current_tier = 0;
 
-	$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spell_data WHERE spell_id = %s ORDER BY tier;", $spells->spell_id);
+	$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spell_data WHERE spell_id = %s ORDER BY tier;", $spells->spell_id);
 	$rows = $eq2->RunQueryMulti();
 
 	?>
@@ -1367,7 +1367,7 @@ function spell_display_effects()
 	$tier 				= 0;
 	$current_tier = 0;
 	
-	$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spell_display_effects WHERE spell_id = %s ORDER BY tier, `index`;", $spells->spell_id);
+	$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spell_display_effects WHERE spell_id = %s ORDER BY tier, `index`;", $spells->spell_id);
 	$rows = $eq2->RunQueryMulti();
 	
 	?>
@@ -1591,7 +1591,7 @@ function spell_classes()
 						<td>&nbsp;</td>
 					</tr>
 					<?php
-					$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spell_classes WHERE spell_id = %s", $spells->spell_id);
+					$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spell_classes WHERE spell_id = %s", $spells->spell_id);
 					$rows = $eq2->RunQueryMulti();
 					
 					if( is_array($rows) )
@@ -1707,7 +1707,7 @@ function spell_script()
 {
 	global $eq2, $spells;	
 
-	$eq2->SQLQuery = sprintf("SELECT lua_script FROM ".DEV_DB.".spells WHERE id = %s", $spells->spell_id);
+	$eq2->SQLQuery = sprintf("SELECT lua_script FROM `".DEV_DB."`.spells WHERE id = %s", $spells->spell_id);
 	$row = $eq2->RunQuerySingle();
 	
 	$clean_spell_name = $spells->GetCleanSpellScriptName($spells->spell_name);
@@ -1751,8 +1751,7 @@ function spell_script()
 		}
 	}
 
-	$eq2->DisplayScriptEditor($script_full_name, $spells->spell_name,
-	sprintf("%s|%s", $spells->spell_name, $spells->spell_id), "spells", $finalTemplates);
+	print($eq2->DisplayScriptEditor($script_full_name, $spells->spell_name,sprintf("%s|%s", $spells->spell_name, $spells->spell_id), "spells", $finalTemplates));
 
 }
 
@@ -1761,9 +1760,9 @@ function spell_trait()
 	global $eq2, $spells;
 
 	$eq2->SQLQuery = sprintf("SELECT s.id as sid, st.tier as spell_tier, st2.* " .
-														 "FROM ".DEV_DB.".spells s " .
-														 "LEFT JOIN ".DEV_DB.".spell_tiers st ON s.id = st.spell_id " .
-														 "LEFT JOIN ".DEV_DB.".spell_traits st2 ON s.id = st2.spell_id AND st.tier = st2.tier " .
+														 "FROM `".DEV_DB."`.spells s " .
+														 "LEFT JOIN `".DEV_DB."`.spell_tiers st ON s.id = st.spell_id " .
+														 "LEFT JOIN `".DEV_DB."`.spell_traits st2 ON s.id = st2.spell_id AND st.tier = st2.tier " .
 														 "WHERE s.id = st.spell_id AND s.id = %s " .
 														 "ORDER BY st.tier;", $spells->spell_id);
 	$rows = $eq2->RunQueryMulti();
@@ -1914,7 +1913,7 @@ function spell_aa()
 {
 	global $eq2, $spells;
 	
-	$eq2->SQLQuery = sprintf("SELECT aa.*, s.soe_spell_crc FROM ".DEV_DB.".spells s, ".DEV_DB.".spell_aa_list aa, ".DEV_DB.".spell_aa_nodelist node WHERE aa.list_id = node.aa_list_fk AND node.spellcrc = s.soe_spell_crc AND s.id = %s", $spells->spell_id);
+	$eq2->SQLQuery = sprintf("SELECT aa.*, s.soe_spell_crc FROM `".DEV_DB."`.spells s, `".DEV_DB."`.spell_aa_list aa, `".DEV_DB."`.spell_aa_nodelist node WHERE aa.list_id = node.aa_list_fk AND node.spellcrc = s.soe_spell_crc AND s.id = %s", $spells->spell_id);
 	$row = $eq2->RunQuerySingle();
 	?>
 	<div id="Editor">
@@ -1992,7 +1991,7 @@ function spell_aa()
 				</td>
 				<td valign="top">
 					<?php 
-					$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spell_aa_nodelist WHERE spellcrc = %s", $row['soe_spell_crc']);
+					$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spell_aa_nodelist WHERE spellcrc = %s", $row['soe_spell_crc']);
 					$row = $eq2->RunQuerySingle();
 					?>
 					<table class="SectionToggles" cellspacing="0">

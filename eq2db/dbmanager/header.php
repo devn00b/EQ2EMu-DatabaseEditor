@@ -14,6 +14,7 @@ if( $eq2->mLev < 100 )
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>EQ2EmuDB Project Manager</title>
 <link type="text/css" rel="stylesheet" href="../css/eq2.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
 <script>
 function dosub(subm) 
 { 

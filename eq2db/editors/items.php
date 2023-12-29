@@ -12,6 +12,7 @@ if ( !$eq2->CheckAccess(M_ITEMS) )
 include("../class/eq2.items.php");
 
 $eq2Items = new eq2Items();
+$eq2Items->populateItemTypeArrays();
 
 /* 
 	TODO: 
@@ -308,7 +309,7 @@ switch($_GET['show'] ?? "")
 						$itemName = $eq2->SQLEscape($_POST['itemname']);
 						if( strlen($_POST['itemname']) > 2 ) {
 							$query="SELECT id, soe_item_id, name, item_type, tier, description, slots, icon, recommended_level as level, skill_id_req, crafted
-											FROM ".DEV_DB.".items 
+											FROM `".DEV_DB."`.items 
 											WHERE bPvpDesc = 0 AND (`name` rlike '".$itemName."' OR id = '".$itemName."') 
 											LIMIT 0,250";
 							$totalRows=getItemSearchResults($query);
@@ -349,7 +350,7 @@ switch($_GET['show'] ?? "")
 						} else {
 
 							$query="SELECT id, soe_item_id, name, item_type, tier, description, slots, icon, recommended_level as level, skill_id_req, crafted
-											FROM ".DEV_DB.".items i
+											FROM `".DEV_DB."`.items i
 											WHERE bPvpDesc = 0";  // has to be at least 1 param, so WHERE is assumed ok
 							// WHERE builder
 							$filters = array();
@@ -612,7 +613,7 @@ function item_details_bauble($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_bauble";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) :
 		$data=$eq2->db->sql_fetchrow($result);
@@ -719,7 +720,7 @@ function item_details_thrown($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_thrown";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -876,7 +877,7 @@ function item_details_house_container($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_house_container";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1014,7 +1015,7 @@ function item_details_house($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_house";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1096,7 +1097,7 @@ function item_details_book($id) {
 	global $eq2,$objectName;
 
 	$table="item_details_book";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$data = $eq2->RunQuerySingle($query);
 	?>
 	<?php if($data) : ?>
@@ -1171,7 +1172,7 @@ function item_details_book($id) {
 function item_details_recipe_items($id) {
 	global $eq2,$objectName,$link;
 	$table="item_details_recipe";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1199,7 +1200,7 @@ function item_details_recipe_items($id) {
 					</tr>
 
 						<?php
-						$query=sprintf("select * from %s.%s where recipe_id = %s",DEV_DB,$table, $rid);
+						$query=sprintf("select * from `%s`.%s where recipe_id = %s",DEV_DB,$table, $rid);
 						$result=$eq2->db->sql_query($query);
 						while($data=$eq2->db->sql_fetchrow($result)) {
 						?>
@@ -1270,7 +1271,7 @@ function item_details_recipe($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_recipe";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1374,7 +1375,7 @@ function item_details_shield($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_shield";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1497,7 +1498,7 @@ function item_details_range($id) {
 	global $eq2,$objectName;
 
 	$table="item_details_range";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1611,7 +1612,7 @@ function item_details_bag($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_bag";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1734,7 +1735,7 @@ function item_details_food($id) {
 	global $eq2,$objectName,$link;
 
 	$table="item_details_food";
-	$query=sprintf("select * from %s.%s where item_id = %d", DEV_DB, $table, $id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d", DEV_DB, $table, $id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1887,7 +1888,7 @@ function item_details_armor($id) {
 	global $eq2, $objectName, $link;
 
 	$table="item_details_armor";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0) {
 		$data=$eq2->db->sql_fetchrow($result);
@@ -1899,7 +1900,7 @@ function item_details_armor($id) {
 					<fieldset>
 					<legend>General</legend>
 					<table width="100%" border="0">
-						<tr>
+					<tr>
 							<td colspan="6"> <span class="heading">Editing: <?= $objectName ?></span><br /></td>
 						</tr>
 						<tr>
@@ -2009,7 +2010,7 @@ function item_details_weapon($id) {
 	global $eq2, $objectName;
 
 	$table="item_details_weapon";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	if($eq2->db->sql_numrows($result) > 0)
 	{
@@ -2143,7 +2144,7 @@ function item_details_skills($id) {
 	global $eq2, $objectName, $link;
 
 	$table="item_details_skills";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 
 	// Show detail, else show insert form
@@ -2321,144 +2322,307 @@ function item_details_skills($id) {
 
 
 function item_stats($id) {
-	global $eq2,$objectName;
+	global $eq2,$objectName,$eq2Items;
+	$disp = (isset($_GET['disp'])?$_GET['disp']:NULL);
 
 	$table="item_mod_stats";
-?>
-	<table border="0" cellpadding="5">
-		<tr>
-			<td width="780" valign="top">
-				<fieldset><legend>General</legend>
-				<table width="100%" cellpadding="0" border="0">
-					<tr>
-						<td colspan="8">
-							<span class="heading">Editing: <?= $objectName ?></span><br />&nbsp;
-						</td>
-					</tr>
-					<tr>
-						<td width="45">id</td>
-						<td width="45">item_id</td>
-						<td width="55">index</td>
-						<td width="55">type</td>
-						<td width="55">subtype</td>
-						<td width="80">int</td>
-						<td width="80">float</td>
-						<td width="120">string</td>
-						<td colspan="2">&nbsp;</td>
-					</tr>
+	$strOffset = str_repeat("\x20",22);
 
-						<?php
-						$query=sprintf("select * from %s.%s where item_id = %s ORDER BY stats_order",DEV_DB,$table, $id);
-						$result=$eq2->db->sql_query($query);
-						$lastStatOrder = null;
-						while($data=$eq2->db->sql_fetchrow($result)) {
-							$lastStatOrder = $data['stats_order'];
-						?>
-					<form method="post" name="multiForm|<?php print($data['id']); ?>">
-					<tr>
-						<td>
-							<input type="text" name="item_mod_stats|id" value="<?php print($data['id']) ?>" style="width:45px;  background-color:#ddd;" readonly />
-							<input type="hidden" name="orig_id" value="<?php print($data['id']) ?>" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|item_id" value="<?php print($data['item_id']) ?>"  style="width:45px;  background-color:#ddd;" readonly />
-							<input type="hidden" name="orig_item_id" value="<?php print($data['item_id']) ?>" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|stats_order" value="<?php print($data['stats_order']) ?>"  style="width:45px;" />
-							<input type="hidden" name="orig_stats_order" value="<?php print($data['stats_order']) ?>" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|type" value="<?php print($data['type']) ?>"  style="width:45px;" />
-							<input type="hidden" name="orig_type" value="<?php print($data['type']) ?>" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|subtype" value="<?php print($data['subtype']) ?>"  style="width:45px;" />
-							<input type="hidden" name="orig_subtype" value="<?php print($data['subtype']) ?>" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|iValue" value="<?php print($data['iValue']) ?>"  style="width:80px;" />
-							<input type="hidden" name="orig_iValue" value="<?php print($data['iValue']) ?>" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|fValue" value="<?php print($data['fValue']) ?>"  style="width:80px;" />
-							<input type="hidden" name="orig_fValue" value="<?php print($data['fValue']) ?>" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|sValue" value="<?php print($data['sValue']) ?>"  style="width:120px;" />
-							<input type="hidden" name="orig_sValue" value="<?php print($data['sValue']) ?>" />
-						</td>
-						<td><?php if($eq2->CheckAccess(G_DEVELOPER)) { ?><input type="submit" name="cmd" value="Update" style="font-size:10px; width:60px" /><?php } ?></td>
-						<td><?php if($eq2->CheckAccess(G_DEVELOPER)) { ?><input type="submit" name="cmd" value="Delete" style="font-size:10px; width:60px" /><?php } ?></td>
-					</tr>
-					<input type="hidden" name="objectName" value="<?= $objectName ?>" />
-					<input type="hidden" name="table_name" value="<?= $table ?>" />
-					</form>
-				<?php
+	$strHTML = "\n";
+
+	//JAVASCRIPT TO HANDLE SUBTYPE SELECT UPDATES
+	$strHTML .= $strOffset . "<script>\n";
+	$strHTML .= $strOffset . "sizeOfArray = function (array) {\n";
+	$strHTML .= $strOffset . "  let size = 0;\n";
+	$strHTML .= $strOffset . "  for (let key in array) {\n";
+	$strHTML .= $strOffset . "    if (array.hasOwnProperty(key)) {\n";
+	$strHTML .= $strOffset . "      size++;\n";
+	$strHTML .= $strOffset . "    }\n";
+	$strHTML .= $strOffset . "  }\n";
+	$strHTML .= $strOffset . "  return size;\n";
+	$strHTML .= $strOffset . "}\n";
+
+	$strHTML .= $strOffset . "  function updateSubType(x,z){\n";
+	
+	$strjs = $strOffset . "    var type ={";
+	foreach($eq2Items->eq2ItemStatTypes as $x =>$type)
+	{
+		$strjs .= $x . ":{";
+		$intX = 0;
+
+		foreach($eq2Items->eq2ItemStatSubTypes as $y => $subtype)
+		{
+			if(intval($x)<=0 AND intval($y)<=99){
+				$strjs .= $intX . ":['" . $y . "','" . $subtype . "'],";
+				$intX++;
+			}elseif(intval($x)>=1 AND intval($y)>=99 AND substr($y,0,1) == $x)
+			{
+				$outterTrim = (strlen($y)>=2?substr($y,1):$y);
+			
+				if(strlen($outterTrim)>=2 AND substr($outterTrim,0,1)==0)
+				{
+					$innerTrim = substr($outterTrim,1);
+				}else{
+					$innerTrim = $outterTrim;
 				}
-				?>
-				<?php if($eq2->CheckAccess(G_DEVELOPER)) { ?>
-					<form method="post" name="sdForm|new">
-					<tr>
-						<td align="center"><strong>new</strong></td>
-						<td>
-							<input type="text" name="item_mod_stats|item_id|new" value="<?php echo $id; ?>" readonly style="width:45px;" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|stats_order|new" value="<?php echo $lastStatOrder == null ? 0 : $lastStatOrder + 1 ?>"  style="width:45px;" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|type|new" value=""  style="width:45px;" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|subtype|new" value=""  style="width:45px;" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|iValue|new" value=""  style="width:80px;" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|fValue|new" value=""  style="width:80px;" />
-						</td>
-						<td>
-							<input type="text" name="item_mod_stats|sValue|new" value=""  style="width:120px;" />
-						</td>
-						<td>
-							<input type="submit" name="cmd" value="Insert" style="font-size:10px; width:60px" />
-						</td>
-					</tr>
-					<input type="hidden" name="table_name" value="<?= $table ?>" />
-					</form>
-				<?php } ?>
-				</table>
-				</fieldset>
-			</td>
-			<td width="200" valign="top">
-				<fieldset><legend>Stats View</legend>
-				<table>
-					<tr>
-						<td> show preview of stats here<br />
-									Well, eventually.
-						</td>
-					</tr>
-				</table>
-				</fieldset>
-			</td>
-		</tr>
-		<tr>
-			<td align="center">
-				<input type="button" value="Help" style="width:100px" onclick="javascript:window.open('help.php#items','help','resizable,width=480,height=640,left=10,top=75,scrollbars=yes');" />						
-			</td>
-		</tr>
-		<tr>
-			<td>Stat Types are a matter of simple math: (type * 100) + subtype.<br />
-				Example: Stat for 'vs_heat' would be <i>type: 2</i> * 100 ( =200 ) + <i>subtype 3</i> ( =203 )<br />
-				Above, you would only enter type = 2, and subtype = 3. The server will do the rest.<br />
-				<br />
-				A list of stat types/subtypes can be found in Help.
-			</td>
-		</tr>
-	</table>
-<?php
+				$strjs .= $intX . ":['" . $innerTrim . "','" . $subtype . "'],";
+				$intX++;
+			}else{
+				//print(">>MADEITHERE<<\n");
+			}
+			
+		}
+		$strjs = substr_replace($strjs,"",-1);
+		$strjs .= "},\n";
+	}
+	$strjs = substr_replace($strjs,"",-2);
+	$strHTML .= $strjs . "};\n";
+	$strHTML .= $strOffset . "    while(x.options.length > 0) {\n";
+	$strHTML .= $strOffset . "      x.remove(x.options.length-1);\n";
+	$strHTML .= $strOffset . "    }\n";
+	$strHTML .= $strOffset . "    var arylen = sizeOfArray(type[z]);\n";
+	$strHTML .= $strOffset . "    for(i=0;i < arylen; i++)\n";
+	$strHTML .= $strOffset . "    {\n";
+	$strHTML .= $strOffset . "        var opt = document.createElement('option');\n";
+	$strHTML .= $strOffset . "        opt.value = type[z][i][0];\n";
+	$strHTML .= $strOffset . "        opt.text = type[z][i][0] + ' - ' + type[z][i][1]\n";
+	$strHTML .= $strOffset . "        x.add(opt, null);\n";
+	$strHTML .= $strOffset . "    }\n";
+	$strHTML .= $strOffset . "  }\n";
+	$strHTML .= $strOffset . "</script>\n";
+
+	$strHTML .= $strOffset . "<table border='0' cellpadding='5'>\n";
+	$strHTML .= $strOffset . "  <tr>\n";
+	$strHTML .= $strOffset . "    <td width='780' valign='top'>\n";
+	$strHTML .= $strOffset . "      <fieldset><legend>General</legend>\n";
+	$strHTML .= $strOffset . "        <table width='100%' cellpadding='0' border='0'>\n";
+	$strHTML .= $strOffset . "          <tr>\n";
+	$strHTML .= $strOffset . "            <td colspan='8'>\n";
+	$strHTML .= $strOffset . "              <span class='heading'>Editing:" . $objectName . "</span><br />&nbsp;\n";
+	$strHTML .= $strOffset . "            </td>\n";
+	$strHTML .= $strOffset . "          </tr>\n";
+	$strHTML .= $strOffset . "          <tr>\n";
+	$strHTML .= $strOffset . "            <td width='45'>id</td>\n";
+	$strHTML .= $strOffset . "            <td width='45'>item_id</td>\n";
+	$strHTML .= $strOffset . "            <td width='35'>index</td>\n";
+	$strHTML .= $strOffset . "            <td width='55'>type</td>\n";
+	$strHTML .= $strOffset . "            <td width='55'>subtype</td>\n";
+	$strHTML .= $strOffset . "            <td width='60'>int</td>\n";
+	$strHTML .= $strOffset . "            <td width='60'>float</td>\n";
+	$strHTML .= $strOffset . "            <td width='100'>string</td>\n";
+	$strHTML .= $strOffset . "            <td colspan='2'>&nbsp;</td>\n";
+	$strHTML .= $strOffset . "          </tr>\n";
+
+	$query=sprintf("select * from `%s`.%s where item_id = %s ORDER BY stats_order",DEV_DB,$table, $id);
+	$result=$eq2->db->sql_query($query);
+	$lastStatOrder = null;
+	while($data=$eq2->db->sql_fetchrow($result)) {
+		$lastStatOrder = $data['stats_order'];
+		
+		$strHTML .= $strOffset . "          <form method='post' name='multiForm|" . $data['id'] . "'>\n";
+		$strHTML .= $strOffset . "            <tr>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|id' value='" . $data['id'] ."' style='width:45px;  background-color:#ddd;' readonly />\n";
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_id' value='" . $data['id'] . "' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|item_id' value='" . $data['item_id'] . "'  style='width:45px;  background-color:#ddd;' readonly />\n";
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_item_id' value='" . $data['item_id'] ."' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|stats_order' value='" . $data['stats_order'] . "'  style='width:45px;' />\n";
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_stats_order' value='" . $data['stats_order'] . "' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		if($disp=='advanced')
+		{
+			$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|type' value='" . $data['type'] . "'  style='width:45px;' />\n";
+		}else{
+			$strHTML .= $strOffset . "                <select name='item_mod_stats|type' id='type_" . $data['id'] . "' onchange='updateSubType(subtype_" . $data['id'] . ", this.value)'/>\n";
+			foreach($eq2Items->eq2ItemStatTypes as $x =>$type)
+			{
+				$isSelected = ($x == intval($data['type'])?" selected ":"");
+				$strHTML .= $strOffset . "                  <option " . $isSelected . " value='" . $x . "'>" . $x . " - " .$type . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                </select>";
+		}
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_type' value='" . $data['type'] . "' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		if($disp=='advanced')
+		{
+			$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|subtype' value='" . $data['subtype'] . "'  style='width:45px;' />\n";
+		}else{
+			$strHTML .= $strOffset . "                <select name='item_mod_stats|subtype' id='subtype_" . $data['id'] . "'>\n";
+			foreach($eq2Items->eq2ItemStatSubTypes as $y => $subtype)
+			{
+				$realSubType = ($data['type']*100)+$data['subtype'];
+				$isSelected = ($y == $realSubType?" selected ":"");
+				$outterTrim = (strlen($y)>=2?substr($y,1):$y);
+				
+				if(strlen($outterTrim)>=2 AND substr($outterTrim,0,1)==0)
+				{
+					$innerTrim = substr($outterTrim,1);
+				}else{
+					$innerTrim = $outterTrim;
+				}
+				$strHTML .= $strOffset . "                  <option " . $isSelected . " value='" . $innerTrim . "'>" . $innerTrim . " - " . $subtype . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                </select>";
+		}
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_subtype' value='" . $data['subtype'] . "' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|iValue' value='" . $data['iValue'] . "'  style='width:80px;' />\n";
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_iValue' value='" . $data['iValue'] . "' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|fValue' value='" . $data['fValue'] . "'  style='width:80px;' />\n";
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_fValue' value='" . $data['fValue'] . "' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>\n";
+		$strHTML .= $strOffset . "              <input type='text' name='item_mod_stats|sValue' value='" . $data['sValue'] . "'  style='width:120px;' />\n";
+		$strHTML .= $strOffset . "              <input type='hidden' name='orig_sValue' value='" . $data['sValue'] . "' />\n";
+		$strHTML .= $strOffset . "            </td>\n";
+		$strHTML .= $strOffset . "            <td>" . ($eq2->CheckAccess(G_DEVELOPER)?"<input type='submit' name='cmd' value='Update' style='font-size:10px; width:60px' />":"") . "</td>\n";
+		$strHTML .= $strOffset . "            <td>" . ($eq2->CheckAccess(G_DEVELOPER)?"<input type='submit' name='cmd' value='Delete' style='font-size:10px; width:60px' />":"") . "</td>\n";
+		$strHTML .= $strOffset . "          </tr>\n";
+		$strHTML .= $strOffset . "          <input type='hidden' name='objectName' value='" . $objectName . "' />\n";
+		$strHTML .= $strOffset . "          <input type='hidden' name='table_name' value='" . $table . "' />\n";
+		$strHTML .= $strOffset . "        </form>\n";
+	}
+
+	if($eq2->CheckAccess(G_DEVELOPER)) {
+		$strHTML .= $strOffset . "          <form method='post' name='sdForm|new'>\n";
+		$strHTML .= $strOffset . "            <tr>\n";
+		$strHTML .= $strOffset . "              <td align='center'><strong>new</strong></td>\n";
+		$strHTML .= $strOffset . "              <td>\n";
+		$strHTML .= $strOffset . "                <input type='text' name='item_mod_stats|item_id|new' value='" . $id . "' readonly style='width:45px;' />\n";
+		$strHTML .= $strOffset . "              </td>\n";
+		$strHTML .= $strOffset . "              <td>\n";
+		$strHTML .= $strOffset . "                <input type='text' name='item_mod_stats|stats_order|new' value='" . ($lastStatOrder == null ? 0 : $lastStatOrder + 1) . "'  style='width:45px;' />\n";
+		$strHTML .= $strOffset . "              </td>\n";
+		$strHTML .= $strOffset . "              <td>\n";
+		if($disp=='advanced')
+		{
+			$strHTML .= $strOffset . "                <input type='text' name='item_mod_stats|type|new' value=''  style='width:45px;' />\n";
+		}else{
+			$strHTML .= $strOffset . "                <select name='item_mod_stats|type|new'>";
+			foreach($eq2Items->eq2ItemStatTypes as $x =>$type)
+			{
+				$strHTML .= $strOffset . "                  <option " . $isSelected . " value='" . $x . "'>" . $x . " - " .$type . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                </select>";
+		}
+			$strHTML .= $strOffset . "              </td>\n";
+			$strHTML .= $strOffset . "              <td>\n";
+		if($disp=='advanced')
+		{
+			$strHTML .= $strOffset . "                <input type='text' name='item_mod_stats|subtype|new' value=''  style='width:45px;' />\n";
+		}else{
+			$strHTML .= $strOffset . "                <select name='item_mod_stats|subtype|new'>";
+			foreach($eq2Items->eq2ItemStatSubTypes as $y => $subtype)
+			{
+				$strHTML .= $strOffset . "                  <option " . $isSelected . " value='" . $y . "'>" . $y . " - " . $subtype . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                </select>";
+		}
+		$strHTML .= $strOffset . "              </td>\n";
+		$strHTML .= $strOffset . "              <td>\n";
+		$strHTML .= $strOffset . "                <input type='text' name='item_mod_stats|iValue|new' value=''  style='width:80px;' />\n";
+		$strHTML .= $strOffset . "              </td>\n";
+		$strHTML .= $strOffset . "              <td>\n";
+		$strHTML .= $strOffset . "                <input type='text' name='item_mod_stats|fValue|new' value=''  style='width:80px;' />\n";
+		$strHTML .= $strOffset . "              </td>\n";
+		$strHTML .= $strOffset . "              <td>\n";
+		$strHTML .= $strOffset . "                <input type='text' name='item_mod_stats|sValue|new' value=''  style='width:120px;' />\n";
+		$strHTML .= $strOffset . "              </td>\n";
+		$strHTML .= $strOffset . "              <td>\n";
+		$strHTML .= $strOffset . "                <input type='submit' name='cmd' value='Insert' style='font-size:10px; width:60px' />\n";
+		$strHTML .= $strOffset . "              </td>\n";
+		$strHTML .= $strOffset . "            </tr>\n";
+		$strHTML .= $strOffset . "            <input type='hidden' name='table_name' value='" . $table . "' />\n";
+		$strHTML .= $strOffset . "          </form>\n";
+	}	
+	
+	//$lastStatOrder = $data['stats_order'];
+	$strHTML .= $strOffset . "        </table>\n";
+	$strHTML .= $strOffset . "      </fieldset>\n";
+	if($disp != "advanced"){
+		$strHTML .= $strOffset . "      <a href='items.php?show=items&type=" . $_GET['type'] . "&tab=" . $_GET['tab'] . "&id=" . $_GET['id'] . "&disp=advanced'>Show Advanced Form</a>\n";
+	}else{
+		$strHTML .= $strOffset . "      <a href='items.php?show=items&type=" . $_GET['type'] . "&tab=" . $_GET['tab'] . "&id=" . $_GET['id'] . "&disp=simple'>Show Simple Form</a>\n";
+	}
+	$strHTML .= $strOffset . "    </td>\n";
+	$strHTML .= $strOffset . "    <td width='350' valign='top'>\n";
+	//NEW STATS
+	$strHTML .= $strOffset . "      <fieldset>\n";
+	$strHTML .= $strOffset . "      <legend>Stats View(New)</legend>\n";
+	$strHTML .= $strOffset . "          <table border='1'>\n";
+	$strHTML .= $strOffset . "            <tr>\n";
+	$strHTML .= $eq2->GenerateItemHover($_GET['id']);
+	$strHTML .= $strOffset . "            <tr>\n";
+	$strHTML .= $strOffset . "        </table>\n";
+	$strHTML .= $strOffset . "      </fieldset>\n";
+	$strHTML .= $strOffset . "    </td>\n";
+	$strHTML .= $strOffset . "  </tr>\n";
+	$strHTML .= $strOffset . "</table>\n";
+	/*
+	//OLD STATS VIEW
+	$strHTML .= $strOffset . "    <td width='200' valign='top'>\n";
+	$strHTML .= $strOffset . "      <fieldset><legend>Stats View</legend>\n";
+	//$strHTML .= $strOffset . "        <table class='ContrastTable'>\n";
+	//$strHTML .= $strOffset . "          <tr>\n";
+	//$strHTML .= $strOffset . "            <td>\n";
+	$strHTML .= $strOffset . "              <table class='ContrastTable'>\n";
+	$strHTML .= $strOffset . "                <tr>\n";
+	$strHTML .= $strOffset . "                  <th>Type</th>\n";
+	$strHTML .= $strOffset . "                  <th>SubType</th>\n";
+	$strHTML .= $strOffset . "                  <th>Combined</th>\n";
+	$strHTML .= $strOffset . "                  <th>Name</th>\n";
+	$strHTML .= $strOffset . "                </tr>\n";
+
+	$query=sprintf("select * from `%s`.%s where item_id = %s ORDER BY stats_order",DEV_DB,$table, $id);
+	$result=$eq2->db->sql_query($query);
+	$lastStatOrder = null;
+	while($data=$eq2->db->sql_fetchrow($result)) {
+		$strHTML .= $strOffset . "            <tr>\n";
+		$strHTML .= $strOffset . "              <td>" . $data['type'] . "</td>\n";
+		$strHTML .= $strOffset . "              <td>" .$data['subtype'] ."</td>\n";
+
+		$statType = (intval($data['type'])*100)+intval($data['subtype']);
+		$statName = $eq2Items->eq2ItemStatSubTypes[$statType];
+		$strHTML .= $strOffset . "              <td>" . $statType ."</td>\n";
+		$strHTML .= $strOffset . "              <td>" . $statName ."</td>\n";
+	
+		$strHTML .= $strOffset . "            </tr>\n";
+	}
+	$strHTML .= $strOffset . "              </table>\n";
+	//$strHTML .= $strOffset . "            </td>\n";
+	//$strHTML .= $strOffset . "          </tr>\n";
+	//$strHTML .= $strOffset . "        </table>\n";
+	$strHTML .= $strOffset . "      </fieldset>\n";
+
+
+	$strHTML .= $strOffset . "    </td>\n";
+	$strHTML .= $strOffset . "  </tr>\n";
+	$strHTML .= $strOffset . "  <tr>\n";
+	$strHTML .= $strOffset . "    <td align='center'>\n";
+	$strHTML .= $strOffset . "      <input type='button' value='Help' style='width:100px' onclick='javascript:window.open('help.php#items','help','resizable,width=480,height=640,left=10,top=75,scrollbars=yes');' />\n";
+	$strHTML .= $strOffset . "    </td>\n";
+	$strHTML .= $strOffset . "  </tr>\n";
+	$strHTML .= $strOffset . "  <tr>\n";
+	$strHTML .= $strOffset . "    <td>Stat Types are a matter of simple math: (type * 100) + subtype.<br />\n";
+	$strHTML .= $strOffset . "      Example: Stat for 'vs_heat' would be <i>type: 2</i> * 100 ( =200 ) + <i>subtype 3</i> ( =203 )<br />\n";
+	$strHTML .= $strOffset . "      Above, you would only enter type = 2, and subtype = 3. The server will do the rest.<br />\n";
+	$strHTML .= $strOffset . "      <br />\n";
+	$strHTML .= $strOffset . "      A list of stat types/subtypes can be found in Help.\n";
+	$strHTML .= $strOffset . "    </td>\n";
+	$strHTML .= $strOffset . "  </tr>\n";
+	$strHTML .= $strOffset . "</table>\n";
+	*/
+
+	print($strHTML);
 }
 
 
@@ -2487,7 +2651,7 @@ function item_mod_strings($id) {
 					</tr>
 
 						<?php
-						$query=sprintf("select * from %s.%s where item_id = %s ORDER BY `index`",DEV_DB,$table, $id);
+						$query=sprintf("select * from `%s`.%s where item_id = %s ORDER BY `index`",DEV_DB,$table, $id);
 						$result=$eq2->RunQueryMulti($query);
 						$itemModIndex = null;
 						foreach ($result as $data) {
@@ -2579,7 +2743,7 @@ function item_classifications($id){
 						<td colspan="2">&nbsp;</td>
 					</tr>
 				<?php
-				$query=sprintf("select * from %s.%s where item_id = %s ORDER BY `classification`",DEV_DB,$table, $id);
+				$query=sprintf("select * from `%s`.%s where item_id = %s ORDER BY `classification`",DEV_DB,$table, $id);
 				$result=$eq2->RunQueryMulti($query);
 				$lastEffectIndex = null;
 				foreach ($result as $data) {
@@ -2658,7 +2822,7 @@ function item_effects($id) {
 						<td colspan="2">&nbsp;</td>
 					</tr>
 				<?php
-				$query=sprintf("select * from %s.%s where item_id = %s ORDER BY `index`",DEV_DB,$table, $id);
+				$query=sprintf("select * from `%s`.%s where item_id = %s ORDER BY `index`",DEV_DB,$table, $id);
 				$result=$eq2->RunQueryMulti($query);
 				$lastEffectIndex = null;
 				foreach ($result as $data) {
@@ -2727,6 +2891,12 @@ function item_effects($id) {
 					</form>
 				<?php } ?>
 				</table>
+				</fieldset>
+			</td>
+			<td width='350'>
+				<fieldset>
+					<legend>Stats</legend>
+					<?= print($eq2->GenerateItemHover($_GET['id'])); ?>
 				</fieldset>
 			</td>
 		</tr>
@@ -2869,7 +3039,7 @@ function item_appearances($id) {
 			<span style="grid-column-start:span 2"></span>
 
 			<?php
-				$query = sprintf("select * from %s.%s where item_id = %s", DEV_DB, $table, $id);
+				$query = sprintf("select * from `%s`.%s where item_id = %s", DEV_DB, $table, $id);
 				$result = $eq2->RunQueryMulti($query);
 			?>
 			<?php if (count($result)) : ?>
@@ -2967,7 +3137,7 @@ function items($id) {
 	global $eq2, $objectName, $eq2Items;
 
 	$table="items";
-	$query=sprintf("select * from %s.%s where id = %d",DEV_DB,$table,$id);
+	$query=sprintf("select * from `%s`.%s where id = %d",DEV_DB,$table,$id);
 	$result=$eq2->db->sql_query($query);
 	$data=$eq2->db->sql_fetchrow($result);
 	
@@ -3109,7 +3279,7 @@ function item_details_skill($item_id) {
 	global $eq2,$objectName;
 
 	$table="item_details_skill";
-	$query=sprintf("select * from %s.%s where item_id = %d",DEV_DB,$table,$item_id);
+	$query=sprintf("select * from `%s`.%s where item_id = %d",DEV_DB,$table,$item_id);
 	$data=$eq2->RunQuerySingle($query);
 
 	if (isset($data)) {
@@ -3211,14 +3381,15 @@ function GetCleanItemScriptName($name)
 }
 
 function item_script($id) {
-	global $eq2;	
-
+	global $eq2, $eq2Items;	
+		
 	$query=sprintf("select id,name,lua_script from %s.items where id = %s", DEV_DB, $id);
 	$data = $eq2->RunQuerySingle($query);
 	$script_name = GetCleanItemScriptName($data['name']);
 	$script_relative_path = ( !empty($data['lua_script']) ) ? $data['lua_script'] : "ItemScripts/".$script_name;
 
-	$eq2->DisplayScriptEditor($script_relative_path, $data['name'], sprintf("%s|%s", $data['name'], $_GET['id']), "items");
+	$strHTML .= $eq2->DisplayScriptEditor($script_relative_path, $data['name'], sprintf("%s|%s", $data['name'], $_GET['id']), "items", $finalTemplates);
+	print($strHTML);
 }
 
 function getItemSearchResults($query) {

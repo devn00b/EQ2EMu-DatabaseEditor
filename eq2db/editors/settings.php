@@ -6,11 +6,11 @@ include("header.php");
 	<form method="post" name="Password" />
 		<table class="SubPanel" cellspacing="0">
 			<tr>
-				<td id="EditorStatus" colspan="2"><? if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
+				<td id="EditorStatus" colspan="2"><?php if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
 			</tr>
 			<tr>
 				<td class="Title" colspan="2">
-					My Settings: <?= $eq2->userdata['username'] ?> (<?= $eq2->userdata['id'] ?>)
+					My Settings: <?php $eq2->userdata['username'] ?> (<?= $eq2->userdata['id'] ?>)
 				</td>
 			</tr>
 			<tr>

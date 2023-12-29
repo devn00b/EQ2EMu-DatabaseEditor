@@ -208,12 +208,12 @@ function ValidateZoneData()
 		$the_data = array();
 		// validate attackable spawns have correct flags
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$source_db.".spawn s 
-											JOIN ".$source_db.".spawn_location_entry sle ON s.id = sle.spawn_id 
-											JOIN ".$source_db.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id 
+											FROM `".$source_db."`.spawn s 
+											JOIN `".$source_db."`.spawn_location_entry sle ON s.id = sle.spawn_id 
+											JOIN `".$source_db."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id 
 											WHERE 
 												slp.zone_id = %d AND
-												command_primary IN (SELECT command_list_id FROM ".$source_db.".entity_commands WHERE command_text = 'attack') AND
+												command_primary IN (SELECT command_list_id FROM `".$source_db."`.entity_commands WHERE command_text = 'attack') AND
 												(targetable = 0 OR show_name = 0 OR show_level = 0 OR attackable = 0)
 											ORDER BY s.id", $_GET['zone']);
 		//echo $query;
@@ -241,12 +241,12 @@ function ValidateZoneData()
 		$the_data = array();
 		// validate non-attackable spawns have correct flags
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$source_db.".spawn s 
-											JOIN ".$source_db.".spawn_location_entry sle ON s.id = sle.spawn_id 
-											JOIN ".$source_db.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id 
+											FROM `".$source_db."`.spawn s 
+											JOIN `".$source_db."`.spawn_location_entry sle ON s.id = sle.spawn_id 
+											JOIN `".$source_db."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id 
 											WHERE 
 												slp.zone_id = %d AND
-												command_primary IN (SELECT command_list_id FROM ".$source_db.".entity_commands WHERE command_text <> 'attack' and command_text <> 'find npc') AND
+												command_primary IN (SELECT command_list_id FROM `".$source_db."`.entity_commands WHERE command_text <> 'attack' and command_text <> 'find npc') AND
 												(targetable = 0 OR show_name = 0 OR show_level = 1 OR attackable = 1)
 											ORDER BY s.id", $_GET['zone']);
 		if( !$result = $eq2->db->sql_query($query) ) {
@@ -273,10 +273,10 @@ function ValidateZoneData()
 		$the_data = array();
 		// validate spawn objects have correct flags
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$source_db.".spawn s 
-											JOIN ".$source_db.".spawn_objects so ON s.id = so.spawn_id
-											JOIN ".$source_db.".spawn_location_entry sle ON s.id = sle.spawn_id 
-											JOIN ".$source_db.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id 
+											FROM `".$source_db."`.spawn s 
+											JOIN `".$source_db."`.spawn_objects so ON s.id = so.spawn_id
+											JOIN `".$source_db."`.spawn_location_entry sle ON s.id = sle.spawn_id 
+											JOIN `".$source_db."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id 
 											WHERE 
 												slp.zone_id = %d AND
 												(targetable = 1 OR show_name = 1 OR show_level = 1 OR attackable = 1)
@@ -305,9 +305,9 @@ function ValidateZoneData()
 		$the_data = array();
 		// validate spawn objects have correct flags
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$source_db.".spawn s
+											FROM `".$source_db."`.spawn s
 											WHERE 
-												s.id not in (select spawn_id from ".$source_db.".spawn_location_entry) AND
+												s.id not in (select spawn_id from `".$source_db."`.spawn_location_entry) AND
 												s.id LIKE '%d____'
 											ORDER BY s.id", $_GET['zone']);
 		if( !$result = $eq2->db->sql_query($query) ) {
@@ -344,9 +344,9 @@ function PreviewZoneData()
 	if( isset($_GET['zone']) )
 	{
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$source_db.".spawn s
-											JOIN ".$source_db.".spawn_location_entry sle ON s.id = sle.spawn_id
-											JOIN ".$source_db.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
+											FROM `".$source_db."`.spawn s
+											JOIN `".$source_db."`.spawn_location_entry sle ON s.id = sle.spawn_id
+											JOIN `".$source_db."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
 											WHERE 
 												slp.zone_id = %d
 											ORDER BY s.id", $_GET['zone']);
@@ -362,9 +362,9 @@ function PreviewZoneData()
 		$eq2->db->sql_freeresult($result);
 	
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$destination_db.".spawn s
-											JOIN ".$destination_db.".spawn_location_entry sle ON s.id = sle.spawn_id
-											JOIN ".$destination_db.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
+											FROM `".$destination_db."`.spawn s
+											JOIN `".$destination_db."`.spawn_location_entry sle ON s.id = sle.spawn_id
+											JOIN `".$destination_db."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
 											WHERE 
 												slp.zone_id = %d
 											ORDER BY s.id", $_GET['zone']);
@@ -380,9 +380,9 @@ function PreviewZoneData()
 
 		// spawns without spawn placements
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$source_db.".spawn s
+											FROM `".$source_db."`.spawn s
 											WHERE 
-												s.id not in (select spawn_id from ".$source_db.".spawn_location_entry) AND
+												s.id not in (select spawn_id from `".$source_db."`.spawn_location_entry) AND
 												s.id LIKE '%d____'
 											ORDER BY s.id", $_GET['zone']);
 		//echo $query;
@@ -398,9 +398,9 @@ function PreviewZoneData()
 
 		// spawns without spawn placements
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".$destination_db.".spawn s
+											FROM `".$destination_db."`.spawn s
 											WHERE 
-												s.id not in (select spawn_id from ".$destination_db.".spawn_location_entry) AND
+												s.id not in (select spawn_id from `".$destination_db."`.spawn_location_entry) AND
 												s.id LIKE '%d____'
 											ORDER BY s.id", $_GET['zone']);
 		//echo $query;
@@ -435,11 +435,11 @@ function PreviewZoneData()
 			<tr>
 				<!-- source -->
 				<td width="50%" valign="top">
-					<? DisplayComparisonData($dev_data, $source_db); ?>
+					<?= DisplayComparisonData($dev_data, $source_db); ?>
 				</td>
 				<!-- destination -->
 				<td width="50%" valign="top">
-					<? DisplayComparisonData($live_data, $destination_db); ?>
+					<?= DisplayComparisonData($live_data, $destination_db); ?>
 				</td>
 			</tr>
 			<tr>
@@ -448,11 +448,11 @@ function PreviewZoneData()
 			<tr>
 				<!-- source -->
 				<td width="50%" valign="top">
-					<? DisplayComparisonData($dev_data2, $source_db); ?>
+					<?= DisplayComparisonData($dev_data2, $source_db); ?>
 				</td>
 				<!-- destination -->
 				<td width="50%" valign="top">
-					<? DisplayComparisonData($live_data2, $destination_db); ?>
+					<?= DisplayComparisonData($live_data2, $destination_db); ?>
 				</td>
 			</tr>
 			<tr>
@@ -875,12 +875,12 @@ function CleanupNPCs()
 	
 		// first, get list of spawn_id's that belong to a specific zone
 		/*$query = sprintf("SELECT DISTINCT spawn_id
-											FROM ".DEV_DB.".spawn_location_entry sle
-											JOIN ".DEV_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
+											FROM `".DEV_DB."`.spawn_location_entry sle
+											JOIN `".DEV_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
 											WHERE zone_id = %d", $_GET['zone']);*/
 		
 		// 2011.08.07 - let's try a cleaner lookup...
-		$query = sprintf("SELECT id FROM ".DEV_DB.".spawn WHERE id LIKE '%d____';", $_GET['zone']);
+		$query = sprintf("SELECT id FROM `".DEV_DB."`.spawn WHERE id LIKE '%d____';", $_GET['zone']);
 		//printf("%s<br />", $query);
 		if( !$result = $eq2->db->sql_query($query) ) 
 		{
@@ -898,8 +898,8 @@ function CleanupNPCs()
 		// now we group by all the common features to see which are duplicated, building a dupes list
 		$query = sprintf("SELECT 
 												name
-											FROM ".DEV_DB.".spawn 
-											RIGHT JOIN ".DEV_DB.".spawn_npcs ON spawn.id = spawn_npcs.spawn_id 
+											FROM `".DEV_DB."`.spawn 
+											RIGHT JOIN `".DEV_DB."`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id 
 											WHERE 
 												spawn.id IN (%s)
 											GROUP BY 
@@ -936,8 +936,8 @@ function CleanupNPCs()
 												spawn_npcs.gender, 
 												spawn_npcs.heroic_flag
 												
-											FROM ".DEV_DB.".spawn 
-											LEFT JOIN ".DEV_DB.".spawn_npcs ON spawn.id = spawn_npcs.spawn_id
+											FROM `".DEV_DB."`.spawn 
+											LEFT JOIN `".DEV_DB."`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id
 											WHERE 
 												spawn.name IN (%s)
 												AND spawn.id in (%s)
@@ -1189,7 +1189,7 @@ function GetModelIDs($var) {
 function GetNextNodeIDX($table,$id) {
 	global $eq2, $db_name;
 
-	$query=sprintf("select max(id)+1 as nextID from %s.%s where id like \"%d__\";", $db_name, $table, $id);
+	$query=sprintf("select max(id)+1 as nextID from `%s`.%s where id like \"%d__\";", $db_name, $table, $id);
 	$result=$eq2->db->sql_query($query);
 	$data=$eq2->db->sql_fetchrow($result);
 	return isset($data['nextID']) ? $data['nextID'] : $id.'00';

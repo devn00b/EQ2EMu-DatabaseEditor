@@ -249,236 +249,270 @@ function DisplayQuestSelectionGrid($data)
 function RegisterQuest()
 {
 	global $eq2, $q;
+	$strOffset = str_repeat("\x20",22);
+	$strHTML = "\n";
 	
-	?>
-	<div id="Editor">
-	<table class="SubPanel" cellspacing="0" border="0">
-		<tr>
-			<td id="EditorStatus" colspan="2"><?php if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
-		</tr>
-		<?php
+	$strHTML .= $strOffset . "<div id='Editor'>\n";
+	$strHTML .= $strOffset . "<table class='SubPanel' cellspacing='0' border='0'>\n";
+	$strHTML .= $strOffset . "		<tr>\n";
+	$strHTML .= $strOffset . "			<td id='EditorStatus' colspan='2'>\n";
+	if(!empty($eq2->Status))
+	{
+		$strHTML .= $eq2->DisplayStatus();
+	}
+	$strHTML .= $strOffset . "</td>\n";
+	$strHTML .= $strOffset . "		</tr>\n";
+
 		if( $q->quest_id != 'add' )
 		{
 			$data = $q->GetQuestData();
 			$script_full_name = $data['lua_script'];
-			$tmp = explode("/", $script_full_name);
+			$tmp = explode('/', $script_full_name);
 			if( count($tmp) == 3 )
 			{
-				$script_path = sprintf("/%s/%s/", $tmp[0], $tmp[1]);
+				$script_path = sprintf('/%s/%s/', $tmp[0], $tmp[1]);
 				$script_name = $tmp[2];
 			}
-		?>
-		<tr>
-			<td class="Title" colspan="2">Editing: <?= $q->quest_name ?> (<?= $q->quest_id ?>) (<?= $script_full_name ?>)<?php $q->PrintOffsiteLinks(); ?></td>
-		</tr>
-		<tr>
-			<td>
-				<form method="post" name="QuestForm" />
-				<table class="SectionMain" cellspacing="0" border="0">
-					<tr>
-						<td class="SectionTitle">Register Quest</td>
-					</tr>
-					<tr>
-						<td class="SectionBody">
-							<table cellspacing="0">
-								<tr>
-									<td width="100" class="Label">quest_id:</td>
-									<td>
-										<?= $data['quest_id'] ?>
-										<input type="hidden" name="orig_id" value="<?= $data['quest_id'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label">name:</td>
-									<td>
-										<input type="text" name="quests|name" value="<?= $data['name'] ?>" style="width:400px;" />
-										<input type="hidden" name="orig_name" value="<?= $data['name'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label">type:</td>
-									<td>
-										<input type="text" name="quests|type" value="<?= $data['type'] ?>" style="width:400px;" />
-										<input type="hidden" name="orig_type" value="<?= $data['type'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label">zone:</td>
-									<td>
-										<input type="text" name="quests|zone" value="<?= $data['zone'] ?>" style="width:400px;" />
-										<input type="hidden" name="orig_zone" value="<?= $data['zone'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label">level:</td>
-									<td>
-										<input type="text" name="quests|level" value="<?= $data['level'] ?>" style="width:400px;" />
-										<input type="hidden" name="orig_level" value="<?= $data['level'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label">difficulty:</td>
-									<td>
-										<input type="text" name="quests|enc_level" value="<?= $data['enc_level'] ?>" style="width:400px;" />
-										<input type="hidden" name="orig_enc_level" value="<?= $data['enc_level'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label" valign="top">description:</td>
-									<td>
-										<textarea name="quests|description" style="width:400px; height:150px;"><?= $data['description'] ?></textarea>
-										<input type="hidden" name="orig_description" value="<?= $data['description'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label" valign="top">completed_text:</td>
-									<td>
-										<textarea name="quests|completed_text" style="width:400px; height:150px;"><?= $data['completed_text'] ?></textarea>
-										<input type="hidden" name="orig_completed_text" value="<?= $data['completed_text'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td class="Label">spawn_id:</td>
-									<td>
-										<input type="text" name="quests|spawn_id" value="<?= $data['spawn_id'] ?>" style="width:400px;" />
-										<input type="hidden" name="orig_spawn_id" value="<?= $data['spawn_id'] ?>" />
-									</td>
-								</tr>
+
+			$strHTML .= $strOffset . "<tr>\n";
+			$strHTML .= $strOffset . "  <td class='Title' colspan='2'>Editing: " . $q->quest_name . " (" . $q->quest_id . ") (" . $script_full_name  . ") " . $q->PrintOffsiteLinks() . "</td>\n";
+			$strHTML .= $strOffset . "</tr>\n";
+			$strHTML .= $strOffset . "<tr>\n";
+			$strHTML .= $strOffset . "  <td>\n";
+			$strHTML .= $strOffset . "    <form method='post' name='QuestForm' />\n";
+			$strHTML .= $strOffset . "      <table class='SectionMain' cellspacing='0' border='0'>\n";
+			$strHTML .= $strOffset . "        <tr>\n";
+			$strHTML .= $strOffset . "          <td class='SectionTitle'>Register Quest</td>\n";
+			$strHTML .= $strOffset . "        </tr>\n";
+			$strHTML .= $strOffset . "        <tr>\n";
+			$strHTML .= $strOffset . "          <td class='SectionBody'>\n";
+			$strHTML .= $strOffset . "            <table cellspacing='0'>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' class='Label'>quest_id:</td>\n";
+			$strHTML .= $strOffset . "                <td>" . $data['quest_id'] . "<input type='hidden' name='orig_id' value='" . $data['quest_id'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>name:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|name' value=\"" . $data['name'] . "\" style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_name' value=\"" . $data['name'] . "\" />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>type:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|type' value='" . $data['type'] . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_type' value='" . $data['type'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>zone:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|zone' value='" . $data['zone']  . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_zone' value='" . $data['zone']  . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>level:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|level' value='" . $data['level'] . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_level' value='" . $data['level'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>difficulty:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|enc_level' value='" . $data['enc_level'] . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_enc_level' value='" . $data['enc_level'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label' valign='top'>description:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <textarea name='quests|description' style='width:400px; height:150px;'>" . $data['description'] . "</textarea>\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_description' value=\"" . $data['description'] . "\" />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label' valign='top'>completed_text:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <textarea name='quests|completed_text' style='width:400px; height:150px;'>" . $data['completed_text'] . "</textarea>\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_completed_text' value=\"" . $data['completed_text'] . "\" />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>spawn_id:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|spawn_id' value='" . $data['spawn_id'] . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_spawn_id' value='" . $data['spawn_id'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
 			
-								<tr>
-									<td class="Label">lua_script:</td>
-									<td>
-										<input type="text" name="quests|lua_script" value="<?= $data['lua_script'] ?>" style="width:400px;" />
-										<input type="hidden" name="orig_lua_script" value="<?= $data['lua_script'] ?>" />
-									</td>
-								</tr>
-								<?php if($eq2->CheckAccess(G_DEVELOPER)) { ?>
-								<tr>
-									<td colspan="2" align="center">
-										<input type="submit" name="cmd" value="Update" class="submit" />
-										<input type="submit" name="cmd" value="Delete" class="submit" />
-										<input type="hidden" name="object_id" value="<?= $q->quest_name ?>|<?= $q->quest_id ?>" />
-										<input type="hidden" name="table_name" value="quests" />
-										<input type="hidden" name="idx_name" value="quest_id" />
-										<input type="hidden" name="script_path" value="<?= $data['lua_script'] ?>" />
-										<input type="hidden" name="redir" value="quests.php?zone=<?= $_GET['zone'] ?>" />
-									</td>
-								</tr>
-								<tr>
-									<td colspan="2" align="center" valign="bottom" height="30">Note: <strong>Delete</strong> on this tab will delete Quest, Details and Script!</td>
-								</tr>
-								<?php } ?>
-							</table>
-						</td>
-					</tr>
-				</table>
-				</form>
-			</td>
-		</tr>
-		<?php
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td class='Label'>lua_script:</td>\n";
+			$strHTML .= $strOffset . "                <td colspan='2'>\n";
+			$strHTML .= $strOffset . "                  <input type='text' name='quests|lua_script' value='" . $data['lua_script'] . "' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='orig_lua_script' value='" . $data['lua_script'] . "' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+
+			$strHTML .= $strOffset . "                <script>\n";
+			$strHTML .= $strOffset . "                  function updateChkBox(){\n";
+			$strHTML .= $strOffset . "                    if(document.getElementById('isDeleteable').checked == true){\n";
+			$strHTML .= $strOffset . "                      document.getElementById('isDeleteable_holder').value = 1;\n";
+			$strHTML .= $strOffset . "                    }else{\n";
+			$strHTML .= $strOffset . "                      document.getElementById('isDeleteable_holder').value = 0;\n";
+			$strHTML .= $strOffset . "                    }\n";
+			$strHTML .= $strOffset . "                    if(document.getElementById('isShareable').checked == true){\n";
+			$strHTML .= $strOffset . "                      document.getElementById('isShareable_holder').value = 1;\n";
+			$strHTML .= $strOffset . "                    }else{\n";
+			$strHTML .= $strOffset . "                      document.getElementById('isShareable_holder').value = 0;\n";
+			$strHTML .= $strOffset . "                    }\n";
+			$strHTML .= $strOffset . "                  }\n";
+			$strHTML .= $strOffset . "                </script>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td></td>\n";
+			$strHTML .= $strOffset . "                <td width='100' class='Label' >Deleteable:<input id='isDeleteable' name='isDeleteable' type='checkbox' " . ($data['deleteable'] == 1?'checked':'') ." onclick=\"updateChkBox();\">\n";
+			$strHTML .= $strOffset . "                <input type='hidden' id='isDeleteable_holder'  name='quests|deleteable' value=\"" . $data['deleteable'] . "\" />\n";
+			$strHTML .= $strOffset . "                <input type='hidden' id='orig_deleteable' name='orig_deleteable' value=\"" . $data['deleteable'] . "\" />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "                <td width='100' class='Label' >Sharable:<input id='isShareable' name='isShareable' type='checkbox' " . ($data['shareable_flag'] == 1?'checked':'') ." onclick=\"updateChkBox();\">\n";
+			$strHTML .= $strOffset . "                <input type='hidden' id='isShareable_holder'  name='quests|shareable_flag' value=\"" . $data['shareable_flag'] . "\" />\n";
+			$strHTML .= $strOffset . "                <input type='hidden' id='orig_Shareable' name='orig_shareable_flag' value=\"" . $data['shareable_flag'] . "\" />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+
+			$strHTML .= $strOffset . "              </tr>\n";
+
+
+			
+			if($eq2->CheckAccess(G_DEVELOPER)) 
+			{
+				$strHTML .= $strOffset . "              <tr>\n";
+				$strHTML .= $strOffset . "                <td colspan='3' align='center'>\n";
+				$strHTML .= $strOffset . "                  <input type='submit' name='cmd' value='Update' class='submit' />\n";
+				$strHTML .= $strOffset . "                  <input type='submit' name='cmd' value='Delete' class='submit' />\n";
+				$strHTML .= $strOffset . "                  <input type='hidden' name='object_id' value='" . $q->quest_name . "|" . $q->quest_id . "' />\n";
+				$strHTML .= $strOffset . "                  <input type='hidden' name='table_name' value='quests' />\n";
+				$strHTML .= $strOffset . "                  <input type='hidden' name='idx_name' value='quest_id' />\n";
+				$strHTML .= $strOffset . "                  <input type='hidden' name='script_path' value='" . $data['lua_script'] . "' />\n";
+				$strHTML .= $strOffset . "                  <input type='hidden' name='redir' value='quests.php?zone=" . $_GET['zone'] . "' />\n";
+				$strHTML .= $strOffset . "                </td>\n";
+				$strHTML .= $strOffset . "              </tr>\n";
+				$strHTML .= $strOffset . "              <tr>\n";
+				$strHTML .= $strOffset . "                <td colspan='3' align='center' valign='bottom' height='30'>Note: <strong>Delete</strong> on this tab will delete Quest, Details and Script!</td>\n";
+				$strHTML .= $strOffset . "              </tr>\n";
+			}
+			$strHTML .= $strOffset . "              </table>\n";
+			$strHTML .= $strOffset . "            </td>\n";
+			$strHTML .= $strOffset . "          </tr>\n";
+			$strHTML .= $strOffset . "        </table>\n";
+			$strHTML .= $strOffset . "      </form>\n";
+			$strHTML .= $strOffset . "    </td>\n";
+			$strHTML .= $strOffset . "  </tr>\n";
 		}
 		else if( $q->quest_id == 'add' )
 		{
-			$next_quest_id = $eq2->GetNextIDX("quests", "quest_id")
-		?>
-		<tr>
-			<td class="Title" colspan="2">Editing: *NEW*</td>
-		</tr>
-		<tr>
-			<td>
-				<form method="post" name="QuestFormNew" />
-				<table class="SectionMain" cellspacing="0" border="0">
-					<tr>
-						<td class="SectionTitle">Register *NEW* Quest</td>
-					</tr>
-					<tr>
-						<td class="SectionBody">
-							<table cellspacing="0">
-								<tr>
-									<td colspan="6">
-										<span class="heading">Adding: new quest</span><br />&nbsp;
-									</td>
-								</tr>
-								<tr>
-									<td width="100" align="right">id:</td>
-									<td width="100"><strong>new</strong></td>
-								</tr>
-								<tr>
-									<td width="100" align="right">name:</td>
-									<td><input type="text" id="questNameText" name="quests|name|new" value="" onkeyup="UpdateQuestScriptPath()" style="width:400px;" /></td>
-									<script>
-										function UpdateQuestScriptPath() {
-											let sp = document.getElementById("questScriptPath");
-											let qn = document.getElementById("questNameText").value;
-											let zone = document.getElementById("zoneNameText").value;
-											qn = qn.replaceAll(/\s+/g, "_");
-											qn = qn.toLowerCase();
-											let path = "Quests/" + zone + "/" + qn;
-											sp.value = path.replaceAll(/[^\w\/]+/g, "") + ".lua";
-										}
-									</script>
-								</tr>
-								<tr>
-									<td width="100" align="right">type:</td>
-									<td><input type="text" name="quests|type|new" value="" style="width:400px;" /></td>
-								</tr>
-								<tr>
-									<td width="100" align="right">zone:</td>
-									<td><input type="text" id="zoneNameText" name="quests|zone|new" value="<?php echo $_GET['zone']; ?>" onkeyup="UpdateQuestScriptPath()" style="width:400px;" /></td>
-								</tr>
-								<tr>
-									<td width="100" align="right">level:</td>
-									<td><input type="text" name="quests|level|new" value="1" style="width:400px;" /></td>
-								</tr>
-								<tr>
-									<td width="100" align="right">difficulty:</td>
-									<td><input type="text" name="quests|enc_level|new" value="1" style="width:400px;" /></td>
-								</tr>
-								<tr>
-									<td width="100" align="right" valign="top">description:</td>
-									<td>
-										<textarea name="quests|description|new" style="width:400px; height:150px;"></textarea>
-									</td>
-								</tr>
-								<tr>
-									<td width="100" align="right" valign="top">completed_text:</td>
-									<td><textarea name="quests|completed_text|new" style="width:400px; height:150px;"></textarea></td>
-								</tr>
-								<tr>
-									<td width="100" align="right">spawn_id:</td>
-									<td><input type="text" name="quests|spawn_id|new" value="0" style="width:400px;" /></td>
-								</tr>
-								<tr>
-									<td align="right" valign="bottom">lua_script:</td>
-									<td>
-										 <strong>* RELATIVE PATH!</strong> ie. Quests/ZoneName/script_name.lua<br />
-										<input type="text" id="questScriptPath" name="quests|lua_script|new" value="" style="width:400px;" />
-									</td>
-								</tr>
-								<tr>
-									<td colspan="2" align="center">
-										<input type="submit" name="cmd" value="Insert" class="submit" />
-										<input type="hidden" name="object_id" value="new quest" />
-										<input type="hidden" name="table_name" value="quests" />
-										<input type="hidden" name="idx_name" value="quest_id" />
-										<input type="hidden" name="redir" value="quests.php?zone=<?= $_GET['zone'] ?>&id=<?= $next_quest_id ?>&tab=register" />
-									</td>
-								</tr>
-							</table>
-						</td>
-					</tr>
-				</table>
-				</form>
-			</td>
-		</tr>
-	<?php
+			$next_quest_id = $eq2->GetNextIDX('quests', 'quest_id');
+
+			$strHTML .= $strOffset . "  <tr>\n";
+			$strHTML .= $strOffset . "    <td class='Title' colspan='2'>Editing: *NEW*</td>\n";
+			$strHTML .= $strOffset . "  </tr>\n";
+			$strHTML .= $strOffset . "  <tr>\n";
+			$strHTML .= $strOffset . "    <td>\n";
+			$strHTML .= $strOffset . "      <form method='post' name='QuestFormNew' />\n";
+			$strHTML .= $strOffset . "      <table class='SectionMain' cellspacing='0' border='0'>\n";
+			$strHTML .= $strOffset . "        <tr>\n";
+			$strHTML .= $strOffset . "        	<td class='SectionTitle'>Register *NEW* Quest</td>\n";
+			$strHTML .= $strOffset . "        </tr>\n";
+			$strHTML .= $strOffset . "        <tr>\n";
+			$strHTML .= $strOffset . "          <td class='SectionBody'>\n";
+			$strHTML .= $strOffset . "            <table cellspacing='0'>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td colspan='6'>\n";
+			$strHTML .= $strOffset . "                  <span class='heading'>Adding: new quest</span><br />&nbsp;\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>id:</td>\n";
+			$strHTML .= $strOffset . "                <td width='100'><strong>new</strong></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>name:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' id='questNameText' name='quests|name|new' value='' onkeyup='UpdateQuestScriptPath()' style='width:400px;' /></td>\n";
+			$strHTML .= $strOffset . "                <script>\n";
+			$strHTML .= $strOffset . "                  function UpdateQuestScriptPath() {\n";
+			$strHTML .= $strOffset . "                    let sp = document.getElementById('questScriptPath');\n";
+			$strHTML .= $strOffset . "                    let qn = document.getElementById('questNameText').value;\n";
+			$strHTML .= $strOffset . "                    let zone = document.getElementById('zoneNameText').value;\n";
+			$strHTML .= $strOffset . "                    qn = qn.replaceAll(/\s+/g, '_');\n";
+			$strHTML .= $strOffset . "                    qn = qn.toLowerCase();\n";
+			$strHTML .= $strOffset . "                    let path = 'Quests/' + zone + '/' + qn;\n";
+			$strHTML .= $strOffset . "                    sp.value = path.replaceAll(/[^\w\/]+/g, '') + '.lua';\n";
+			$strHTML .= $strOffset . "                  }\n";
+			$strHTML .= $strOffset . "                </script>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>type:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' name='quests|type|new' value='' style='width:400px;' /></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>zone:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' id='zoneNameText' name='quests|zone|new' value='" . $_GET['zone'] . "' onkeyup='UpdateQuestScriptPath()' style='width:400px;' /></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>level:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' name='quests|level|new' value='1' style='width:400px;' /></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>difficulty:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' name='quests|enc_level|new' value='1' style='width:400px;' /></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right' valign='top'>description:</td>\n";
+			$strHTML .= $strOffset . "                <td>\n";
+			$strHTML .= $strOffset . "                  <textarea name='quests|description|new' style='width:400px; height:150px;'></textarea>\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right' valign='top'>completed_text:</td>\n";
+			$strHTML .= $strOffset . "                <td><textarea name='quests|completed_text|new' style='width:400px; height:150px;'></textarea></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td width='100' align='right'>spawn_id:</td>\n";
+			$strHTML .= $strOffset . "                <td><input type='text' name='quests|spawn_id|new' value='0' style='width:400px;' /></td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td align='right' valign='bottom'>lua_script:</td>\n";
+			$strHTML .= $strOffset . "                <td>\n";
+			$strHTML .= $strOffset . "                  <strong>* RELATIVE PATH!</strong> ie. Quests/ZoneName/script_name.lua<br />\n";
+			$strHTML .= $strOffset . "                  <input type='text' id='questScriptPath' name='quests|lua_script|new' value='' style='width:400px;' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "              <tr>\n";
+			$strHTML .= $strOffset . "                <td colspan='2' align='center'>\n";
+			$strHTML .= $strOffset . "                  <input type='submit' name='cmd' value='Insert' class='submit' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='object_id' value='new quest' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='table_name' value='quests' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='idx_name' value='quest_id' />\n";
+			$strHTML .= $strOffset . "                  <input type='hidden' name='redir' value='quests.php?zone=" . $_GET['zone'] . "&id=" . $next_quest_id . "&tab=register' />\n";
+			$strHTML .= $strOffset . "                </td>\n";
+			$strHTML .= $strOffset . "              </tr>\n";
+			$strHTML .= $strOffset . "          	</table>\n";
+			$strHTML .= $strOffset . "          </td>\n";
+			$strHTML .= $strOffset . "        </tr>\n";
+			$strHTML .= $strOffset . "      </table>\n";
+			$strHTML .= $strOffset . "      </form>\n";
+			$strHTML .= $strOffset . "    </td>\n";
+			$strHTML .= $strOffset . "  </tr>\n";
 	}
-	?>
-	</table>
-	</div>
-	<?php
+	$strHTML .= $strOffset . "  </table>\n";
+	$strHTML .= $strOffset . "</div>\n";
+	
+	print($strHTML);
 }
 
+/////////////////////////////////////////////////////END OF FUNCTION//////////////////////////////////////////////////
 
 function Details() 
 {
@@ -553,11 +587,18 @@ function Details()
 									//$htmlAttribute .= "        <td rowspan='2'><img src='eq2Icon.php?type=item&id=".$questItemName['icon']."&tier=".$questItemName['tier']."'>\n<br>";
 									//$htmlAttribute .= $questItemName['bPvpDesc'] == 1 ? 'PVP' : 'NON-PVP';
 
-									$questItemName = $q->GetQuestRewardItemDescription($data['value']);
+									//$questItemName = $q->GetQuestRewardItemDescription($data['value']);
 
-									$htmlAttribute = "\n<div class='tooltip'>\n";
-									$htmlAttribute .= "  <img src='../images/nav_plain_green.png'>\n";
-									$htmlAttribute .= "  <span class='tooltiptext'>\n";
+									//$htmlAttribute = "\n<div class='tooltip'>\n";
+									//$htmlAttribute .= "  <img src='../images/nav_plain_green.png'>\n";
+									//$htmlAttribute .= "  <span class='tooltiptext'>\n";
+
+									//NEW STATS
+									print($eq2->GenerateItemHover($data['value']));
+
+
+									//THIS SECTION CAN GO AWAY ONCE TESTING OF THE NEW ITEM STAT BLOCK IS COMPLETE
+									/*
 									$htmlAttribute .= "    <div id='tooltipTitle'><a href='./items.php?id=".$data['value']."' target='_blank'>".ucwords($questItemName['name'])."(" . $questItemName['item_type'] . ")</a><img src='eq2Icon.php?type=item&id=".$questItemName['icon']."&tier=".$questItemName['tier']."'></div>";
 									if($q->GetQuestRewardItemTierName($data['value']) > 0){
 										$htmlAttribute .= "    <div id='tooltipTier'>".$q->GetQuestRewardItemTierName($data['value'])."</div>\n";
@@ -572,6 +613,7 @@ function Details()
 									$htmlAttribute .= "    <div id='tooltipLevel'>".$q->GetQuestRewardItemLevel($data['value'])."</dev>\n";
 									$htmlAttribute .= "    <div id='tooltipAdvClass'>".$q->GetQuestRewardItemAdventureClass($questItemName['adventure_classes'])."</dev>\n";
 									$htmlAttribute .= "</div>\n";
+									*/
 									
 									print($htmlAttribute);
 								}
@@ -615,9 +657,9 @@ function Details()
 							<?= $subtypeOptions ?>
 							</select>
 						</td>
-						<td><input type="text" name="quest_details|value|new" value="0" style="width:55px;" /></td>
-						<td><input type="text" name="quest_details|faction_id|new" value="0" style="width:55px;" /></td>
-						<td><input type="text" name="quest_details|quantity|new" value="0" style="width:55px;" /></td>
+						<td><input type="text" name="quest_details|value|new" value="" style="width:55px;" /></td>
+						<td><input type="text" name="quest_details|faction_id|new" value="" style="width:55px;" /></td>
+						<td><input type="text" name="quest_details|quantity|new" value="" style="width:55px;" /></td>
 						<td colspan="2"><input type="submit" name="cmd" value="Insert" class="submit" /></td>
 					</tr>
 					<input type="hidden" name="object_id" value="<?= $q->quest_name ?>|<?= $q->quest_id ?>|New Detail" />
@@ -651,7 +693,7 @@ function script_editor()
 	else
 		die("Invalid LUA Script name!");
 	$objectID = sprintf("%s|%s", $q->quest_name, $q->quest_id);
-	$eq2->DisplayScriptEditor($script_full_name, $q->quest_name, $objectID, "quests");
+	print($eq2->DisplayScriptEditor($script_full_name, $q->quest_name, $objectID, "quests"));
 }
 
 include("footer.php")

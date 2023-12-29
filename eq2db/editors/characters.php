@@ -102,7 +102,9 @@ function CharLookupAJAX() {
 	<tr>
 		<td>
 			<strong>Lookup:</strong>
-			<? $charName = $eq2->GetCharacterNameByID($_GET['c'] ?? 0) ?>
+			<?php 
+			$charName = $eq2->GetCharacterNameByID($_GET['c'] ?? 0);
+			?>
 			<input type="text" id="txtSearch" name="txtSearch" onkeyup="CharLookupAJAX();" autocomplete="off" class="medium"<?php if (isset($_GET['c'])) echo ' value="'.$charName.'" ';?>/>
 			<a href="characters.php?<?php echo $_SERVER['QUERY_STRING'] ?>">Reload Page</a>
 			<div id="search_suggest"></div>
@@ -194,7 +196,7 @@ function drawCharacterEditor($id) {
 			break;
 			
 		case "template":
-			$query=sprintf("select * from ".DEV_DB.".character_details where character_id = %d",$id);
+			$query=sprintf("select * from `".DEV_DB."`.character_details where character_id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data=$eq2->db->sql_fetchrow($result);
 			?>
@@ -228,7 +230,7 @@ function drawCharacterEditor($id) {
 			break;
 
 		case "character_macros":
-			$query=sprintf("select * from ".DEV_DB.".character_macros where character_id = %d",$id);
+			$query=sprintf("select * from `".DEV_DB."`.character_macros where character_id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data=$eq2->db->sql_fetchrow($result);
 			?>
@@ -253,7 +255,7 @@ function drawCharacterEditor($id) {
 							</tr>
 
 							<?php
-							$query=sprintf("select * from ".DEV_DB.".character_macros where char_id = %d",$id);
+							$query=sprintf("select * from `".DEV_DB."`.character_macros where char_id = %d",$id);
 							$result=$eq2->db->sql_query($query);
 							while($data=$eq2->db->sql_fetchrow($result)) {
 							?>
@@ -300,7 +302,7 @@ function drawCharacterEditor($id) {
 			break;
 
 		case "character_spells":
-			$query=sprintf("select c.id as cid,c.class,c.name as cname,cs.* from ".DEV_DB.".characters c left join ".DEV_DB.".character_spells cs on c.id = cs.char_id where c.id = %d",$id);
+			$query=sprintf("select c.id as cid,c.class,c.name as cname,cs.* from `".DEV_DB."`.characters c left join `".DEV_DB."`.character_spells cs on c.id = cs.char_id where c.id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data1=$eq2->db->sql_fetchrow($result);
 			$class_id = $data1['class'];
@@ -421,7 +423,7 @@ function drawCharacterEditor($id) {
 							</tr>
 
 							<?php
-							$query=sprintf("select * from ".DEV_DB.".character_skills where char_id = %d",$id);
+							$query=sprintf("select * from `".DEV_DB."`.character_skills where char_id = %d",$id);
 							$result=$eq2->db->sql_query($query);
 							while($data=$eq2->db->sql_fetchrow($result)) {
 							?>
@@ -473,7 +475,7 @@ function drawCharacterEditor($id) {
 			break;
 
 		case "character_skillbar":
-			$query=sprintf("select * from ".DEV_DB.".character_skillbar where character_id = %d",$id);
+			$query=sprintf("select * from `".DEV_DB."`.character_skillbar where character_id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data=$eq2->db->sql_fetchrow($result);
 			?>
@@ -499,7 +501,7 @@ function drawCharacterEditor($id) {
 							</tr>
 
 							<?php
-							$query=sprintf("select * from ".DEV_DB.".character_skillbar where char_id = %d",$id);
+							$query=sprintf("select * from `".DEV_DB."`.character_skillbar where char_id = %d",$id);
 							$result=$eq2->db->sql_query($query);
 							while($data=$eq2->db->sql_fetchrow($result)) {
 							?>
@@ -573,7 +575,7 @@ function drawCharacterEditor($id) {
 							</tr>
 
 							<?php
-							$query=sprintf("select * from %s.%s where char_id = %d",DEV_DB,$table,$id);
+							$query=sprintf("select * from `%s`.`%s` where char_id = %d",DEV_DB,$table,$id);
 							$result = $eq2->RunQueryMulti($query);
 							foreach ($result as $data) :
 							?>
@@ -643,7 +645,7 @@ function drawCharacterEditor($id) {
 							</tr>
 
 							<?php
-							$query=sprintf("select * from %s.%s where char_id = %d",DEV_DB,$table,$id);
+							$query=sprintf("select * from `%s`.%s where char_id = %d",DEV_DB,$table,$id);
 							$result = $eq2->RunQueryMulti($query);
 							foreach ($result as $data) {
 							?>
@@ -683,7 +685,7 @@ function drawCharacterEditor($id) {
 			break;
 
 		case "character_items":
-			$query=sprintf("select * from ".DEV_DB.".character_bank where character_id = %d",$id);
+			$query=sprintf("select * from `".DEV_DB."`.character_bank where character_id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data=$eq2->db->sql_fetchrow($result);
 			?>
@@ -713,7 +715,7 @@ function drawCharacterEditor($id) {
 							</tr>
 
 							<?php
-							$query=sprintf("select * from ".DEV_DB.".character_items where char_id = %d",$id);
+							$query=sprintf("select * from `".DEV_DB."`.character_items where char_id = %d",$id);
 							$result=$eq2->db->sql_query($query);
 							while($data=$eq2->db->sql_fetchrow($result)) {
 							?>
@@ -785,7 +787,7 @@ function drawCharacterEditor($id) {
 			break;
 
 		case "char_colors":
-			$query=sprintf("select * from char_colors where character_id = %d",$id);
+			$query=sprintf("select * from ". DEV_DB . ".char_colors where character_id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data=$eq2->db->sql_fetchrow($result);
 			?>
@@ -862,7 +864,7 @@ function drawCharacterEditor($id) {
 			break;
 
 		case "character_details":
-			$query=sprintf("select * from ".DEV_DB.".character_details where char_id = %d",$id);
+			$query=sprintf("select * from `".DEV_DB."`.character_details where char_id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data=$eq2->db->sql_fetchrow($result);
 			?>
@@ -1211,7 +1213,7 @@ function drawCharacterEditor($id) {
 			
 		case "characters":
 		default:
-			$query=sprintf("select * from ".DEV_DB.".characters where id = %d",$id);
+			$query=sprintf("select * from `".DEV_DB."`.characters where id = %d",$id);
 			$result=$eq2->db->sql_query($query);
 			$data=$eq2->db->sql_fetchrow($result);
 			?>

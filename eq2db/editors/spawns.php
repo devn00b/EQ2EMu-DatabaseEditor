@@ -128,9 +128,9 @@ switch(strtolower($_POST['cmd'] ?? ""))
 		<?php
 		$populated = 1; // cheating!
 		if( $populated )
-			$eq2->SQLQuery = sprintf("SELECT id, name, description FROM ".DEV_DB.".zones WHERE id IN (SELECT DISTINCT zone_id FROM ".DEV_DB.".spawn_location_placement) ORDER BY description");
+			$eq2->SQLQuery = sprintf("SELECT id, name, description FROM `".DEV_DB."`.zones WHERE id IN (SELECT DISTINCT zone_id FROM `".DEV_DB."`.spawn_location_placement) ORDER BY description");
 		else
-			$eq2->SQLQuery = sprintf("SELECT id,name,description FROM ".DEV_DB.".zones ORDER BY description");
+			$eq2->SQLQuery = sprintf("SELECT id,name,description FROM `".DEV_DB."`.zones ORDER BY description");
 		
 		$zoneOptions = "";
 		foreach($eq2->RunQueryMulti() as $data) 
@@ -271,10 +271,10 @@ else if( strlen($spawns->spawn_type) > 0 && $spawns->spawn_id == 0 )
 		
 	}
 	
-	$eq2->SQLQuery = sprintf("%s FROM ".DEV_DB.".spawn s1 " . 
-													 "JOIN ".DEV_DB.".spawn_%s s2 ON s1.id = s2.spawn_id " . 
-													 "LEFT JOIN ".DEV_DB.".spawn_location_entry sle ON s1.id = sle.spawn_id " . 
-													 "LEFT JOIN ".DEV_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id " .
+	$eq2->SQLQuery = sprintf("%s FROM `".DEV_DB."`.spawn s1 " . 
+													 "JOIN `".DEV_DB."`.spawn_%s s2 ON s1.id = s2.spawn_id " . 
+													 "LEFT JOIN `".DEV_DB."`.spawn_location_entry sle ON s1.id = sle.spawn_id " . 
+													 "LEFT JOIN `".DEV_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id " .
 													 "WHERE slp.zone_id = %s or s1.`id` BETWEEN %s0000 and %s9999 ", 
 													 $sql, 
 													 /*implode(",", $spawns->GridColumnArray),*/ 
@@ -558,7 +558,7 @@ function DisplaySpawnSelectionGrid($spawn_data)
 function spawn() {
 	global $eq2, $spawns;
 
-	$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn WHERE id = %s", $spawns->spawn_id);
+	$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn WHERE id = %s", $spawns->spawn_id);
 	$data = $eq2->RunQuerySingle();
 	?>
 	<br />
@@ -967,9 +967,9 @@ function spawn_npcs()
 						<td align="right" width="100">ai_strategy:</td>
 						<td>
 							<select name="spawn_npcs|ai_strategy" class="combo">
-								<option<? if( $data['ai_strategy']=="BALANCED" ) echo " selected" ?>>BALANCED</option>
-								<option<? if( $data['ai_strategy']=="OFFENSIVE" ) echo " selected" ?>>OFFENSIVE</option>
-								<option<? if( $data['ai_strategy']=="DEFENSIVE" ) echo " selected" ?>>DEFENSIVE</option>
+								<option<?php if( $data['ai_strategy']=="BALANCED" ) echo " selected" ?>>BALANCED</option>
+								<option<?php if( $data['ai_strategy']=="OFFENSIVE" ) echo " selected" ?>>OFFENSIVE</option>
+								<option<?php if( $data['ai_strategy']=="DEFENSIVE" ) echo " selected" ?>>DEFENSIVE</option>
 							</select>
 							<input type="hidden" name="orig_ai_strategy" value="<?php print($data['ai_strategy']); ?>" />
 						</td>
@@ -1643,7 +1643,7 @@ function appearance()
 						<td colspan="2">&nbsp;</th>
 					</tr>
 				<?php
-				$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".npc_appearance WHERE spawn_id = %s", $spawns->spawn_id);
+				$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.npc_appearance WHERE spawn_id = %s", $spawns->spawn_id);
 				$results = $eq2->RunQueryMulti();
 					
 				if( is_array($results) )
@@ -1751,7 +1751,7 @@ function appearance()
 						<td colspan="2">&nbsp;</th>
 					</tr>
 				<?php
-				$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".npc_appearance_equip WHERE spawn_id = %s", $spawns->spawn_id);
+				$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.npc_appearance_equip WHERE spawn_id = %s", $spawns->spawn_id);
 				$results = $eq2->RunQueryMulti();
 				
 				if( is_array($results) )
@@ -2576,7 +2576,7 @@ function spawn_loot()
 						</form>
 					</tr>
 					<?php
-					$query = sprintf("SELECT sl.*, lt.name FROM %s.spawn_loot sl INNER JOIN %s.loottable lt ON sl.loottable_id = lt.id WHERE spawn_id = %s", DEV_DB, DEV_DB, $spawns->spawn_id);
+					$query = sprintf("SELECT sl.*, lt.name FROM `%s`.spawn_loot sl INNER JOIN `%s`.loottable lt ON sl.loottable_id = lt.id WHERE spawn_id = %s", DEV_DB, DEV_DB, $spawns->spawn_id);
 					$rows = $eq2->RunQueryMulti($query);
 					foreach ($rows as $data) : ?>
 					<tr>
@@ -2585,11 +2585,11 @@ function spawn_loot()
 							<input type="hidden" name="table_name" value="spawn_loot"/>
 							<input type="hidden" name="orig_id" value="<?=$data['id']?>"/>
 							<input type="hidden" name="spawn_loot|spawn_id" value="<?=$spawns->spawn_id?>"/>
-							<input type="text" style="width:60px" name="spawn_loot|loottable_id" value="<?=$data['loottable_id']?>"/>
+							<input type="text" style="width:60px" name="spawn_loot|loottable_id" value="<?= $data['loottable_id']?>"/>
 							<input type="hidden" name="orig_loottable_id" value="<?=$data['loottable_id']?>"/>
 						</td>
 						<td>
-							<a href="server.php?page=loot_table&id=<?=$data['loottable_id']?>"><?=$data['name']?> </a>
+							<a href="<?= printf("server.php?page=loot_table&id=%s", $data['loottable_id'])?>"><?= $data['name']?></a>
 						</td>
 						<td>
 							<input type="submit" name="cmd" value="Update"/>
@@ -2745,8 +2745,7 @@ function script_editor()
 	
 	<?php 
 	
-		$eq2->DisplayScriptEditor($script_full_name, $spawns->spawn_name, 
-		sprintf("%s|%s", $spawns->spawn_name, $spawns->spawn_id), "spawn_scripts"); 
+		print($eq2->DisplayScriptEditor($script_full_name, $spawns->spawn_name, sprintf("%s|%s", $spawns->spawn_name, $spawns->spawn_id), "spawn_scripts")); 
 }
 
 function edit_merchant_list($id) {

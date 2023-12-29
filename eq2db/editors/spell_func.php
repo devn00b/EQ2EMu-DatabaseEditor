@@ -13,20 +13,20 @@ $showResults = ( isset($_GET['c']) || isset($_POST['cmdSearch']) ) ? true : fals
 				<option>Pick a Category</option>
 				<option value="spell_func.php?c=All">All</option>
 			<?php
-			$eq2->SQLQuery = "SELECT DISTINCT category FROM ".DEV_DB.".reference_spell_effects ORDER BY category";
+			$eq2->SQLQuery = "SELECT DISTINCT category FROM `".DEV_DB."`.reference_spell_effects ORDER BY category";
 			$categories = $eq2->RunQueryMulti();
 			foreach($categories as $data) 
 			{
 			?>
-				<option value="spell_func.php?c=<?= $data['category'] ?>"<?php if( $data['category']==$_GET['c'] ) echo " selected" ?>><?= $data['category'] ?></option>
-			<? 
+				<option value='spell_func.php?c=<?= $data['category'] ?>'<?php if( $data['category']==$_GET['c'] ) echo " selected" ?>><?= $data['category'] ?></option>
+			<?
 			} 
 			?>	
 			</select>&nbsp;
 			<?php 
 			if( !empty($_GET['c']) && $_GET['c'] != "All" )
 			{
-				$eq2->SQLQuery = "SELECT DISTINCT type FROM ".DEV_DB.".reference_spell_effects WHERE category = '" . $_GET['c']. "' ORDER BY type;";
+				$eq2->SQLQuery = "SELECT DISTINCT type FROM `".DEV_DB."`.reference_spell_effects WHERE category = '" . $_GET['c']. "' ORDER BY type;";
 				$types = $eq2->RunQueryMulti();
 				foreach($types as $data) 
 				{
@@ -46,7 +46,7 @@ $showResults = ( isset($_GET['c']) || isset($_POST['cmdSearch']) ) ? true : fals
 				{
 					$rows = array();
 					
-					$eq2->SQLQuery = "SELECT DISTINCT name FROM ".DEV_DB.".reference_spell_effects WHERE category = '" . $_GET['c']. "' AND type = '" . $_GET['t']. "' ORDER BY name;";
+					$eq2->SQLQuery = "SELECT DISTINCT name FROM `".DEV_DB."`.reference_spell_effects WHERE category = '" . $_GET['c']. "' AND type = '" . $_GET['t']. "' ORDER BY name;";
 					$names = $eq2->RunQueryMulti();
 					foreach($names as $data) 
 					{
@@ -97,7 +97,7 @@ if( $showResults )
 	<?php
 	$search_text = $eq2->SQLEscape($_POST['txtSearch']);
 	
-	$query = "SELECT * FROM ".DEV_DB.".reference_spell_effects";
+	$query = "SELECT * FROM `".DEV_DB."`.reference_spell_effects";
 	
 	if( $_POST['cmdSearch'] == 'Search' )
 	{

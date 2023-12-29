@@ -344,7 +344,7 @@ function ShowBugList() {
 						<td colspan="7" style="text-align:center; background-color:#acc; font-weight:bold;"><strong>Notes</strong></td>
 					</tr>
 					<tr>
-						<td colspan="7" style="padding:10px;"><? DisplayBugNotes($data['id']) ?><br />&nbsp;</td>
+						<td colspan="7" style="padding:10px;"><?= DisplayBugNotes($data['id']) ?><br />&nbsp;</td>
 					</tr>
 					<tr>
 						<td colspan="7">
@@ -609,7 +609,7 @@ function ShowProjectStats() {
 					<?php
 			
 					// build server stats array
-					$query = "SELECT DISTINCT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = '".DEV_DB."' AND TABLE_ROWS > 0;";
+					$query = "SELECT DISTINCT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA = `".DEV_DB."` AND TABLE_ROWS > 0;";
 					$result = $eq2->db->sql_query($query);
 					while($data = $eq2->db->sql_fetchrow($result))
 					{

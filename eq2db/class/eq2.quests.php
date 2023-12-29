@@ -226,10 +226,10 @@ class eq2Quests
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".quest_details WHERE quest_id = %s", $this->quest_id);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.quest_details WHERE quest_id = %s", $this->quest_id);
 		$eq2->RunQuery();
 		
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".quests WHERE quest_id = %s", $this->quest_id);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.quests WHERE quest_id = %s", $this->quest_id);
 		$eq2->RunQuery();
 		
 		$eq2->DeleteLUAScript($_POST['script_path']);
@@ -264,7 +264,7 @@ class eq2Quests
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".quests WHERE quest_id = %s", $this->quest_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.quests WHERE quest_id = %s", $this->quest_id);
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -272,7 +272,7 @@ class eq2Quests
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".quest_details WHERE quest_id = %s", $this->quest_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.quest_details WHERE quest_id = %s", $this->quest_id);
 		return $eq2->RunQueryMulti();
 	}
 	
@@ -280,7 +280,7 @@ class eq2Quests
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT name FROM ".DEV_DB.".quests WHERE quest_id = %s", $this->quest_id);
+		$eq2->SQLQuery = sprintf("SELECT name FROM `".DEV_DB."`.quests WHERE quest_id = %s", $this->quest_id);
 		$data = $eq2->RunQuerySingle();
 		return $data['name'];
 	}
@@ -289,7 +289,7 @@ class eq2Quests
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT DISTINCT zone FROM ".DEV_DB.".quests ORDER BY zone");
+		$eq2->SQLQuery = sprintf("SELECT DISTINCT zone FROM `".DEV_DB."`.quests ORDER BY zone");
 		$results = $eq2->RunQueryMulti();
 		
 		if( is_array($results) )
@@ -308,7 +308,7 @@ class eq2Quests
 
 		$quest_zone = $_GET['zone'];
 		
-		$eq2->SQLQuery = sprintf("SELECT quest_id, name FROM ".DEV_DB.".quests WHERE zone = '%s' ORDER BY lua_script", $eq2->db->sql_escape($quest_zone));
+		$eq2->SQLQuery = sprintf("SELECT quest_id, name FROM `".DEV_DB."`.quests WHERE zone = '%s' ORDER BY lua_script", $eq2->db->sql_escape($quest_zone));
 		$results = $eq2->RunQueryMulti();
 		
 		$ret = "";
@@ -325,7 +325,7 @@ class eq2Quests
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT lua_script FROM ".DEV_DB.".quests WHERE quest_id = %s", $id);	
+		$eq2->SQLQuery = sprintf("SELECT lua_script FROM `".DEV_DB."`.quests WHERE quest_id = %s", $id);	
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -336,7 +336,7 @@ class eq2Quests
 		if( strlen($_POST['txtSearch']) > 0 )
 		{
 			$search = $eq2->SQLEscape($_POST['txtSearch']);
-			$eq2->SQLQuery = "SELECT * FROM ".DEV_DB.".quests WHERE quest_id = '".$search."' OR (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (type RLIKE '".$search."') OR (zone RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name";
+			$eq2->SQLQuery = "SELECT * FROM `".DEV_DB."`.quests WHERE quest_id = '".$search."' OR (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (type RLIKE '".$search."') OR (zone RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name";
 			return $eq2->RunQueryMulti();
 		}
 	}
@@ -349,14 +349,14 @@ class eq2Quests
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = "SELECT name, icon, tier, bPvpDesc, skill_id_req, item_type, adventure_classes FROM ".DEV_DB.".items WHERE id = '".$id."' ";
+		$eq2->SQLQuery = "SELECT name, icon, tier, bPvpDesc, skill_id_req, item_type, adventure_classes FROM `".DEV_DB."`.items WHERE id = '".$id."' ";
 		return $eq2->RunQuerySingle();
 	}
 
 	public function GetQuestRewardItemTierName($itemID)
 	{
 		global $eq2;
-		$eq2->SQLQuery = "SELECT tier FROM ".DEV_DB.".items WHERE id = '".$itemID."' ";
+		$eq2->SQLQuery = "SELECT tier FROM `".DEV_DB."`.items WHERE id = '".$itemID."' ";
 		$data = $eq2->RunQuerySingle();
 		$return_string = "";
 
@@ -371,7 +371,7 @@ class eq2Quests
 	public function GetQuestRewardItemToggleList($itemID)
 	{
 		global $eq2;
-		$eq2->SQLQuery = "SELECT * FROM ".DEV_DB.".items WHERE id = '".$itemID."' ";
+		$eq2->SQLQuery = "SELECT * FROM `".DEV_DB."`.items WHERE id = '".$itemID."' ";
 		$data = $eq2->RunQuerySingle();
 		$return_string = "";
 		foreach ($this->eq2ItemToggles as $ItemToggles)
@@ -385,7 +385,7 @@ class eq2Quests
 	public function GetQuestRewardItemStats($itemID)
 	{
 		global $eq2;
-		$eq2->SQLQuery = "SELECT i.name AS name, s.type AS type, s.subtype AS subtype, s.ivalue AS value FROM ".DEV_DB.".items AS i INNER JOIN ".DEV_DB.".item_mod_stats AS s ON i.id = s.item_id WHERE i.id = ".$itemID;
+		$eq2->SQLQuery = "SELECT i.name AS name, s.type AS type, s.subtype AS subtype, s.ivalue AS value FROM `".DEV_DB."`.items AS i INNER JOIN `".DEV_DB."`.item_mod_stats AS s ON i.id = s.item_id WHERE i.id = ".$itemID;
 		$data = $eq2->RunQueryMulti();
 		$return_string = "";
 		foreach($data as $row)
@@ -458,6 +458,7 @@ class eq2Quests
 		);
 		$return_string = "";
 
+		//LLAMA NOTE
 		//I'm sure i'll thing of a better way to do this later,
 		//but this is what i got for now
 
@@ -755,7 +756,7 @@ class eq2Quests
 	public function GetQuestRewardItemSlots($itemID)
 	{
 		global $eq2;
-		$eq2->SQLQuery = "SELECT slots FROM ".DEV_DB.".items WHERE id = '".$itemID."' ";
+		$eq2->SQLQuery = "SELECT slots FROM `".DEV_DB."`.items WHERE id = '".$itemID."' ";
 		$data = $eq2->RunQuerySingle();
 		$return_string = $this->eq2ItemSlots[($data['slots'])];
 		Return($return_string);
@@ -764,7 +765,7 @@ class eq2Quests
 	public function GetQuestRewardItemSkills($skillID)
 	{
 		global $eq2;
-		$eq2->SQLQuery = "SELECT name FROM ".DEV_DB.".skills WHERE id = '".$skillID."' ";
+		$eq2->SQLQuery = "SELECT name FROM `".DEV_DB."`.skills WHERE id = '".$skillID."' ";
 		$data = $eq2->RunQuerySingle();
 		$return_string = $data['name'];
 		Return($return_string);
@@ -773,7 +774,7 @@ class eq2Quests
 	public function GetQuestRewardItemLevel($itemID)
 	{
 		global $eq2;
-		$eq2->SQLQuery = "SELECT required_level FROM ".DEV_DB.".items WHERE id = '".$itemID."' ";
+		$eq2->SQLQuery = "SELECT required_level FROM `".DEV_DB."`.items WHERE id = '".$itemID."' ";
 		$data = $eq2->RunQuerySingle();
 		$return_string = "Level: " . $data['required_level'];
 		Return($return_string);
@@ -784,7 +785,7 @@ class eq2Quests
 		global $eq2;
 		$return_string="<ul>";
 
-		$eq2->SQLQuery = "SELECT effect FROM ".DEV_DB.".item_effects WHERE item_id = '".$itemID."' ";
+		$eq2->SQLQuery = "SELECT effect FROM `".DEV_DB."`.item_effects WHERE item_id = '".$itemID."' ";
 		$data = $eq2->RunQueryMulti();
 		foreach($data as $row)
 		{
@@ -801,27 +802,27 @@ class eq2Quests
 		switch($itemType)
 		{
 			case "Armor":
-				$eq2->SQLQuery = "SELECT mitigation_low AS low, mitigation_high AS high FROM ".DEV_DB.".item_details_armor WHERE item_id = '".$itemID."' ";
+				$eq2->SQLQuery = "SELECT mitigation_low AS low, mitigation_high AS high FROM `".DEV_DB."`.item_details_armor WHERE item_id = '".$itemID."' ";
 				$data = $eq2->RunQuerySingle();
 				$return_string = "Mitigation: (Low)".$data['low']." - (High)". $data['high'];
 				break;
 			case "Book":
-				$eq2->SQLQuery = "SELECT language FROM ".DEV_DB.".item_details_book WHERE item_id = '".$itemID."' ";
+				$eq2->SQLQuery = "SELECT language FROM `".DEV_DB."`.item_details_book WHERE item_id = '".$itemID."' ";
 				$data = $eq2->RunQuerySingle();
 				$return_string = "Language: " . $data['language'];
 				break;
 			case "Bag":
-				$eq2->SQLQuery = "SELECT num_slots, weight_reduction, backpack FROM ".DEV_DB.".item_details_bag WHERE item_id = '".$itemID."' ";
+				$eq2->SQLQuery = "SELECT num_slots, weight_reduction, backpack FROM `".DEV_DB."`.item_details_bag WHERE item_id = '".$itemID."' ";
 				$data = $eq2->RunQuerySingle();
 				$return_string = "Slots:" . $data['num_slots'] . " Weight Reduction:" . $data['weight_reduction'] . " Backpack:" . $data['backpak'];
 				break;
 			case "House":
-				$eq2->SQLQuery = "SELECT rent_reduction, status_rent_reduction, coin_rent_reduction, house_only FROM ".DEV_DB.".item_details_house WHERE item_id = '".$itemID."' ";
+				$eq2->SQLQuery = "SELECT rent_reduction, status_rent_reduction, coin_rent_reduction, house_only FROM `".DEV_DB."`.item_details_house WHERE item_id = '".$itemID."' ";
 				$data = $eq2->RunQuerySingle();
 				$return_string = "Rent Redu:" . $data['rent_reduction'] . " Status Rent Redu:" . $data['status_rent_reduction'] . " Coin Rent Redu:" . $data['coin_rent_reduction'] . " House Only:" . $data['house_only'];
 				break;
 			case "Food":
-					$eq2->SQLQuery = "SELECT type, level, duration, satiation FROM ".DEV_DB.".item_details_food WHERE item_id = '".$itemID."' ";
+					$eq2->SQLQuery = "SELECT type, level, duration, satiation FROM `".DEV_DB."`.item_details_food WHERE item_id = '".$itemID."' ";
 					$data = $eq2->RunQuerySingle();
 					$return_string = "Type:" . $data['type'] . " Level:" . $data['level'] . " Duration:" . $data['duration'] . " Satiation:" . $data['satiation'];
 					break;

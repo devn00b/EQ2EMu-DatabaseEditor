@@ -22,7 +22,7 @@ switch($_GET['m']) {
 		print("								<span class=\"heading\">Editing: <?= \$objectName ?></span><br />&nbsp;\n");
 		print("							</td>\n");
 		print("						</tr>\n");		
-		$result=$eq2->db->sql_query("select COLUMN_NAME from information_schema.columns where table_schema='".DEV_DB."' and table_name='$table';");
+		$result=$eq2->db->sql_query("select COLUMN_NAME from information_schema.columns where table_schema=`".DEV_DB."` and table_name='$table';");
 		$count=$eq2->db->sql_numrows($result);
 		while($data=$eq2->db->sql_fetchrow($result)) {
 			$field[].=$data['COLUMN_NAME'];
@@ -120,7 +120,7 @@ switch($_GET['m']) {
 		print("							<span class=\"heading\">Editing: <?= \$objectName ?></span><br />&nbsp;\n");
 		print("						</td>\n");
 		print("					</tr>\n");		
-		$result=$eq2->db->sql_query("select COLUMN_NAME from information_schema.columns where table_schema='".DEV_DB."' and table_name='$table';");
+		$result=$eq2->db->sql_query("select COLUMN_NAME from information_schema.columns where table_schema=`".DEV_DB."` and table_name='$table';");
 		$count=$eq2->db->sql_numrows($result);
 		while($data=$eq2->db->sql_fetchrow($result)) {
 			$field[].=$data['COLUMN_NAME'];

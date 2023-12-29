@@ -25,11 +25,19 @@ class EQ2Server
 			"Recipes"=>"recipes",
 			"Recipe Components"=>"recipe_comp",
 			"Loot Tables"=>"loot_table",
-			"Loot Global"=>"loot_global"
+			"Loot Global"=>"loot_global",
+			"Heroic Opportunity"=>"heroic_ops",
+			"Misc. Lua Scripts"=>"misc_scripts"
 		),
 		"World Settings"=>array(
 			"Variables"=>"variables"
-		)//,
+		),
+        "Editor Settings"=>array(
+			"Editor Lists"=>"editor_lists",
+			"Static Values"=>"static_values",
+			"Icons"=>"icons",
+			"Lua Blocks"=>"lua_blocks"
+		)
 		//"Player Defaults"=>array(
 		//	"Starting Locations"=>"locations"
 		//)
@@ -47,7 +55,7 @@ class EQ2Server
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = "SELECT * FROM ".DEV_DB.".starting_locations";
+		$eq2->SQLQuery = "SELECT * FROM `".DEV_DB."`.starting_locations";
 		return $eq2->RunQueryMulti();
 	}
 
@@ -55,7 +63,7 @@ class EQ2Server
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = "SELECT * FROM ".DEV_DB.".variables ORDER BY variable_name";
+		$eq2->SQLQuery = "SELECT * FROM `".DEV_DB."`.variables ORDER BY variable_name";
 		return $eq2->RunQueryMulti();
 	}
 
@@ -65,7 +73,7 @@ class EQ2Server
 		global $eq2;
 		
 		if( strlen($val) == 0 ) {
-			$eq2->SQLQuery = "SELECT DISTINCT name FROM ". DEV_DB .".opcodes ORDER BY name;";
+			$eq2->SQLQuery = "SELECT DISTINCT name FROM `". DEV_DB ."`.opcodes ORDER BY name;";
 			return $eq2->RunQueryMulti();
 		}
 		else {
@@ -678,6 +686,17 @@ class EQ2Server
 		}
 	}
 
+	public function PostDeletes(){
+		global $eq2;
+		$page = $_GET['page'] ?? "";
+		
+		if ($page == "lua_blocks")
+		{
+			header("Location: server.php?page=lua_blocks");
+			exit;
+		}
+	}
+
 	public function PostInsert($insert_res) {
 		global $eq2;
 
@@ -705,6 +724,11 @@ class EQ2Server
 				$eq2->RunQuery(true, $query);
 			}
 		}
+		else if ($page == "lua_blocks") {
+			$id = $eq2->db->sql_last_insert_id();
+			header("Location: server.php?page=lua_blocks");
+			exit;
+		}
 		else if ($page == "loot_table" && ($_POST['table_name'] ?? "") == "loottable") {
 			$id = $eq2->db->sql_last_insert_id();
 			header("Location: server.php?page=loot_table&id=".$id);
@@ -713,6 +737,11 @@ class EQ2Server
 		else if ($page == "recipes" && ($_POST['table_name'] ?? "") == "recipe") {
 			$id = $eq2->db->sql_last_insert_id();
 			header("Location: server.php?page=recipes&id=".$id);
+			exit;
+		}
+		else if ($page == "editor_lists" && ($_POST['table_name'] ?? "") == "list_values") {
+			$id = $eq2->db->sql_last_insert_id();
+			header("Location: server.php?page=editor_lists");
 			exit;
 		}
 	}
@@ -730,6 +759,9 @@ class EQ2Server
 					exit;
 				}
 			}
+		}else if ($page == "lua_blocks") {
+			header("Location: server.php?page=lua_blocks");
+			exit;
 		}
 	}
 
@@ -1180,122 +1212,183 @@ class EQ2Server
 		</form>
 		<?php
     }
-	function PrintLootTableRow($data) {
+	function PrintLootTableRow($data, $options, $rowcnt) {
 		$id = $data['id'] ?? null;
-		?>
-		<form method="post" name="LootTableForm">
-		<tr>
-			<td>
-				<input type="hidden" name="orig_id" value="<?=$id?>"/>
-				<input type="hidden" name="table_name" value="loottable"/>
-				<input type="text" name="loottable|name" style="width:200px" value="<?=$data['name']?>"/>
-				<input type="hidden" name="orig_name" value="<?=$data['name']?>"/>
-			</td>
-			<td>
-				<input type="text" name="loottable|maxlootitems" style="width:35px" value="<?=$data['maxlootitems']?>"/>
-				<input type="hidden" name="orig_maxlootitems" value="<?=$data['maxlootitems']?>"/>
-			</td>
-			<td>
-				<input type="text" name="loottable|lootdrop_probability" style="width:35px" value="<?=$data['lootdrop_probability']?>"/>
-				<input type="hidden" name="orig_lootdrop_probability" value="<?=$data['lootdrop_probability']?>"/>
-			</td>
-			<td>
-				<input type="text" name="loottable|coin_probability" style="width:35px" value="<?=$data['coin_probability']?>"/>
-				<input type="hidden" name="orig_coin_probability" value="<?=$data['coin_probability']?>"/>
-				<input type="hidden" name="orig_mincoin" value="<?=$data['mincoin']?>"/>
-				<input type="hidden" name="orig_maxcoin" value="<?=$data['maxcoin']?>"/>
-			</td>
-			<?php
-				$mcoin = $this->SplitCoinValue($data['mincoin']);
-				$this->PrintLootTableCoinCell("min", "Plat", $mcoin['Plat']);
-				$this->PrintLootTableCoinCell("min", "Gold", $mcoin['Gold']);
-				$this->PrintLootTableCoinCell("min", "Silver", $mcoin['Silver']);
-				$this->PrintLootTableCoinCell("min", "Bronze", $mcoin['Bronze']);
-				$mcoin = $this->SplitCoinValue($data['maxcoin']);
-				$this->PrintLootTableCoinCell("max", "Plat", $mcoin['Plat']);
-				$this->PrintLootTableCoinCell("max", "Gold", $mcoin['Gold']);
-				$this->PrintLootTableCoinCell("max", "Silver", $mcoin['Silver']);
-				$this->PrintLootTableCoinCell("max", "Bronze", $mcoin['Bronze']);
-			?>
-			<td align="center" style="white-space:nowrap">	
-			<?php if (isset($data['new'])) : ?>			
-				<input type="submit" name="cmd" value="Insert"/>
-			<?php else : ?>
-				<input type="submit" name="cmd" value="Update"/>
-				<input type="submit" name="cmd" value="Delete" onclick="return confirm('Are you sure you want to delete this?');"/>
-			<?php endif; ?>
-			</td>
-		</tr>
-		</form>
-		<?php
+
+		$return_string = "";
+        $strOffset = str_repeat("\x20",22);
+
+        if($options == "simple"){
+            $return_string .= $strOffset . "  <tr>\n";
+            $return_string .= $strOffset . "    <td align='center'>" .  $rowcnt . "\n";
+            $return_string .= $strOffset . "      <input type='checkbox' name='chkVal!" . $data['id'] . "' id='loottable' value='" . $data['id'] . "'>\n";
+            $return_string .= $strOffset . "    </td>\n";
+            $return_string .= $strOffset . "    <td align='center'><input type='radio' name='viewTrigger' value='server.php?page=" . $_GET['page'] . "&searchtype=" . $_GET['searchtype'] . "&z_id=" . (!empty($_GET['z_id'])?$_GET['z_id']: '') . "&e_list=" . (!empty($_GET['e_list'])?$_GET['e_list']:'') . "&id=" . $id . "' onchange='dosub(this.value)'/>\n";
+            $return_string .= $strOffset . "    <td>" . $id . "</td>\n";
+            $return_string .= $strOffset . "    <td>" . $data['name'] . "</td>\n";
+            $return_string .= $strOffset . "    <td>" . $data['maxlootitems'] . "</td>\n";
+            $return_string .= $strOffset . "    <td>" . $data['lootdrop_probability'] . "</td>\n";
+            $return_string .= $strOffset . "    <td>" . $data['coin_probability'] . "</td>\n";
+            $mcoin = $this->SplitCoinValue($data['mincoin']);
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Plat', $mcoin['Plat'], 'simple');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Gold', $mcoin['Gold'], 'simple');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Silver', $mcoin['Silver'], 'simple');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Bronze', $mcoin['Bronze'], 'simple');
+            
+            $mcoin = $this->SplitCoinValue($data['maxcoin']);
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Plat', $mcoin['Plat'], 'simple');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Gold', $mcoin['Gold'], 'simple');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Silver', $mcoin['Silver'], 'simple');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Bronze', $mcoin['Bronze'], 'simple');
+        }else{
+            $return_string .= $strOffset . "<form method='post' name='LootTableForm'>\n";
+            $return_string .= $strOffset . "  <tr>\n";
+            $return_string .= $strOffset . "    <td align='center'><input type='radio' name='viewTrigger' value='server.php?page=" . (!empty($_GET['page'])?$_GET['page']:'') . "&searchtype=" . (!empty($_GET['searchtype'])?$_GET['searchtype']:'') . "&z_id=" . (!empty($_GET['z_id'])?$_GET['z_id']: '') . "&e_list=" . $_GET['e_list'] . "&id=" . $id . "' onchange='dosub(this.value)'/>\n";
+            $return_string .= $strOffset . "    <td>\n";
+            $return_string .= $strOffset . "      " . $id . "\n";
+            $return_string .= $strOffset . "    </td>\n";
+            $return_string .= $strOffset . "    <td>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='orig_id' value='" . $id . "'/>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='table_name' value='loottable'/>\n";
+            $return_string .= $strOffset . "      <input type='text' name='loottable|name' style='width:200px' value='" . $data['name'] . "'/>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='orig_name' value='" . $data['name'] . "'/>\n";
+            $return_string .= $strOffset . "    </td>\n";
+            $return_string .= $strOffset . "    <td>\n";
+            $return_string .= $strOffset . "      <input type='text' name='loottable|maxlootitems' style='width:35px' value='" . $data['maxlootitems'] . "'/>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='orig_maxlootitems' value='" . $data['maxlootitems'] . "'/>\n";
+            $return_string .= $strOffset . "    </td>\n";
+            $return_string .= $strOffset . "    <td>\n";
+            $return_string .= $strOffset . "      <input type='text' name='loottable|lootdrop_probability' style='width:35px' value='" . $data['lootdrop_probability'] . "'/>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='orig_lootdrop_probability' value='" . $data['lootdrop_probability'] . "'/>\n";
+            $return_string .= $strOffset . "    </td>\n";
+            $return_string .= $strOffset . "    <td>\n";
+            $return_string .= $strOffset . "      <input type='text' name='loottable|coin_probability' style='width:35px' value='" . $data['coin_probability'] . "'/>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='orig_coin_probability' value='" . $data['coin_probability'] . "'/>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='orig_mincoin' value='" . $data['mincoin'] . "'/>\n";
+            $return_string .= $strOffset . "      <input type='hidden' name='orig_maxcoin' value='" . $data['maxcoin'] . "'/>\n";
+            $return_string .= $strOffset . "    </td>\n";
+
+            $mcoin = $this->SplitCoinValue($data['mincoin']);
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Plat', $mcoin['Plat'], '');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Gold', $mcoin['Gold'], '');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Silver', $mcoin['Silver'], '');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('min', 'Bronze', $mcoin['Bronze'], '');
+            
+            $mcoin = $this->SplitCoinValue($data['maxcoin']);
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Plat', $mcoin['Plat'], '');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Gold', $mcoin['Gold'], '');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Silver', $mcoin['Silver'], '');
+            $return_string .= $strOffset . $this->PrintLootTableCoinCell('max', 'Bronze', $mcoin['Bronze'], '');
+                
+            $return_string .= $strOffset . "    <td align='center' style='white-space:nowrap'>\n";
+            
+            if (isset($data['new'])){
+                $return_string .= $strOffset . "      <input type='submit' name='cmd' value='Insert'/>\n";
+            }else{
+                $return_string .= $strOffset . "      <input type='submit' name='cmd' value='Update'/>\n";
+                $return_string .= $strOffset . "      <input type='submit' name='cmd' value='Delete' onclick='return confirm('Are you sure you want to delete this?');'/>\n";
+            }
+            $return_string .= $strOffset . "    </td>\n";
+            $return_string .= $strOffset . "</form>\n";
+            $return_string .= $strOffset . "<form>\n";
+            $return_string .= $strOffset . "    <td>\n";
+            $return_string .= $strOffset . $this->PrintAvailableLists('select', $_GET['page'], 'assign', $id);
+            $return_string .= $strOffset . "    </td>\n";
+            $return_string .= $strOffset . "  </tr>\n";
+            $return_string .= $strOffset . "</form>\n";
+        }
+        return($return_string);
 	}
 
-	function PrintLootDropRow($data) {
+    	function PrintLootDropRow($data) {
 		global $eq2Items;
 		$id = $data['id'] ?? null;
-		?>
-		<tr>
-		<form method="post" name="LootDropForm|<?=$id?>">
-			<td>
-				<input type="hidden" name="orig_id" value="<?=$id?>"/>
-				<input type="hidden" name="table_name" value="lootdrop"/>
-				<input type="text" name="lootdrop|item_id" style="width:80px" value="<?=$data['item_id']?>"/>
-				<input type="hidden" name="orig_item_id" value="<?=$data['item_id']?>"/>
-			</td>
-			<td>
-				<?php if (!isset($data['new'])) : ?>
-				<table>
-					<tr>
-						<td>
-							<img src="<?=$eq2Items->GetItemIconLink($data)?>"/>
-						</td>
-						<td>
-							<a href="<? printf("items.php?id=%s", $data['item_id']) ?>"><?=$data['item_name']?></a>
-						</td>
-					</tr>
-				</table>
-				<?php else : ?>
-					<strong>New Row</strong>
-				<?php endif; ?>
-			</td>
-			<td>
-				<input type="text" name="lootdrop|probability" style="width:60px" value="<?=$data['probability']?>"/>
-				<input type="hidden" name="orig_probability" value="<?=$data['probability']?>"/>
-			</td>
-			<td>
-				<input type="text" name="lootdrop|item_charges" style="width:35px" value="<?=$data['item_charges']?>"/>
-				<input type="hidden" name="orig_item_charges" value="<?=$data['item_charges']?>"/>
-			</td>
-			<td align="center">
-				<input type="text" name="lootdrop|equip_item" style="width:35px" value="<?=$data['equip_item']?>"/>
-				<input type="hidden" name="orig_equip_item" value="<?=$data['equip_item']?>"/>
-			</td>
-			<td align="center">
-				<input type="text" name="lootdrop|no_drop_quest_completed" style="width:35px" value="<?=$data['no_drop_quest_completed']?>"/>
-				<input type="hidden" name="orig_no_drop_quest_completed" value="<?=$data['no_drop_quest_completed']?>"/>
-			</td>
-			<td align="center" style="white-space:nowrap">	
-			<?php if (isset($data['new'])) : ?>			
-				<input type="submit" name="cmd" value="Insert"/>
-			<?php else : ?>
-				<input type="submit" name="cmd" value="Update"/>
-				<input type="submit" name="cmd" value="Delete"/>
-			<?php endif; ?>
-			</td>
-		</form>
-		</tr>
-		<?php
+		
+        $return_string = "";
+        $strOffset = str_repeat("\x20",22);
+
+		$return_string .= $strOffset . "<tr>\n";
+		$return_string .= $strOffset . "<form method='post' name='LootDropForm|" . $id . "'>\n";
+        $return_string .= $strOffset . "<td>\n";
+        $return_string .= $strOffset . "<input type='hidden' name='orig_id' value='" . $id . "'/>\n";
+        $return_string .= $strOffset . "<input type='hidden' name='table_name' value='lootdrop'/>\n";
+        $return_string .= $strOffset . "<input type='text' name='lootdrop|item_id' style='width:80px' value='" . $data['item_id'] . "'/>\n";
+        $return_string .= $strOffset . "<input type='hidden' name='orig_item_id' value='" . $data['item_id'] . "'/>\n";
+        $return_string .= $strOffset . "</td>\n";
+        $return_string .= $strOffset . "<td>\n";
+		
+        if(!isset($data['new'])){
+            $return_string .= $strOffset . "<table>\n";
+            $return_string .= $strOffset . "<tr>\n";
+            $return_string .= $strOffset . "<td>\n";
+            $return_string .= $strOffset . "<img src='" . $eq2Items->GetItemIconLink($data) . "'/>\n";
+            $return_string .= $strOffset . "</td>\n";
+            $return_string .= $strOffset . "<td>\n";
+            $return_string .= $strOffset . "<a href='items.php?id=" . $data['item_id'] . "'>" . $data['item_name'] . "</a>\n";
+            $return_string .= $strOffset . "</td>\n";
+            $return_string .= $strOffset . "</tr>\n";
+            $return_string .= $strOffset . "</table>\n";
+		}else{
+            $return_string .= $strOffset . "<strong>New Row</strong>\n";
+		}
+            $return_string .= $strOffset . "</td>\n";
+			$return_string .= $strOffset . "<td>\n";
+            $return_string .= $strOffset . "<input type='text' name='lootdrop|probability' style='width:60px' value='" . $data['probability'] . "'/>\n";
+            $return_string .= $strOffset . "<input type='hidden' name='orig_probability' value='" . $data['probability'] . "'/>\n";
+			$return_string .= $strOffset . "<input type='hidden' name='lootdrop|loot_table_id' value='" . $_GET['id'] . "'/>\n";
+			$return_string .= $strOffset . "</td>\n";
+			$return_string .= $strOffset . "<td>\n";
+            $return_string .= $strOffset . "<input type='text' name='lootdrop|item_charges' style='width:35px' value='" . $data['item_charges'] . "'/>\n";
+            $return_string .= $strOffset . "<input type='hidden' name='orig_item_charges' value='" . $data['item_charges'] . "'/>\n";
+			$return_string .= $strOffset . "</td>\n";
+			$return_string .= $strOffset . "<td align='center'>\n";
+            $return_string .= $strOffset . "<input type='text' name='lootdrop|equip_item' style='width:35px' value='" . $data['equip_item'] . "'/>\n";
+            $return_string .= $strOffset . "<input type='hidden' name='orig_equip_item' value='" . $data['equip_item'] . "'/>\n";
+			$return_string .= $strOffset . "</td>\n";
+			$return_string .= $strOffset . "<td align='center'>\n";
+            $return_string .= $strOffset . "<input type='text' name='lootdrop|no_drop_quest_completed' style='width:35px' value='" . $data['no_drop_quest_completed'] . "'/>\n";
+            $return_string .= $strOffset . "<input type='hidden' name='orig_no_drop_quest_completed' value='" . $data['no_drop_quest_completed'] . "'/>\n";
+			$return_string .= $strOffset . "</td>\n";
+			$return_string .= $strOffset . "<td align='center' style='white-space:nowrap'>\n";
+		if(isset($data['new'])){
+            $return_string .= $strOffset . "<input type='submit' name='cmd' value='Insert'/>\n";
+        }else{
+            $return_string .= $strOffset . "<input type='submit' name='cmd' value='Update'/>\n";
+            $return_string .= $strOffset . "<input type='submit' name='cmd' value='Delete'/>\n";
+        }
+        $return_string .= $strOffset . "</td>\n";
+		$return_string .= $strOffset . "</form>\n";
+		$return_string .= $strOffset . "</tr>\n";
+
+        Return($return_string);
 	}
 
-	function PrintLootTableCoinCell($prefix, $coin, $val) {
-		?>
-		<td style="padding:0px">
-			<table><tr>
-				<td style="padding:0px"><img src="../images/coin<?=$coin?>.png" height="16px" width="16px"/></td>
-				<td style="padding:0px"><input type="text" name="<?=$prefix.$coin?>" style="width:25px" value="<?=$val?>"/></td>
-			</tr></table>
-		</td>
-		<?php
+	function PrintLootTableCoinCell($prefix, $coin, $val, $disp) {
+        
+        $return_string = "";
+        $strOffset = str_repeat("\x20",22);
+		
+        if($disp == "simple"){
+            $return_string .= $strOffset . "<td style='padding:0px'>\n";
+            $return_string .= $strOffset . "  <table class='ContrastTable' width='100%'>\n";
+            $return_string .= $strOffset . "    <tr>\n";
+            $return_string .= $strOffset . "      <td style='padding:0px'><img src='../images/coin" . $coin . ".png' height='16px' width='16px'/></td>\n";
+            $return_string .= $strOffset . "      <td style='padding:0px'>" . $val ."</td>\n";
+            $return_string .= $strOffset . "    </tr>\n";
+            $return_string .= $strOffset . "  </table>\n";
+            $return_string .= $strOffset . "</td>\n";
+        }else{
+            $return_string .= $strOffset . "<td style='padding:0px'>\n";
+            $return_string .= $strOffset . "  <table class='ContrastTable' width='100%'>\n";
+            $return_string .= $strOffset . "    <tr>\n";
+            $return_string .= $strOffset . "      <td style='padding:0px'><img src='../images/coin" . $coin . ".png' height='16px' width='16px'/></td>\n";
+            $return_string .= $strOffset . "      <td style='padding:0px'><input type='text' name='" . $prefix.$coin ."' style='width:25px' value='" . $val ."'/></td>\n";
+            $return_string .= $strOffset . "    </tr>\n";
+            $return_string .= $strOffset . "  </table>\n";
+            $return_string .= $strOffset . "</td>\n";
+        }
+
+        Return($return_string);
 	}
 
 	function SplitCoinValue($val) {
@@ -1425,6 +1518,302 @@ class EQ2Server
 		</form>
 		</fieldset>
 	<?php
+	}
+
+    function PrintAvailableLists($disp, $list_type, $action, $list_id){
+		global $eq2;
+		$strOffset = str_repeat("\x20",28);
+		$return_string = "";
+
+		if($disp == "table")
+		{
+			if($list_id == 'owner_only')
+			{
+				$query = "SELECT id, name, user_id, shared, list_type FROM lists WHERE user_id='" . $eq2->userdata['id'] . "';";
+				$data = $eq2->RunQueryMulti($query);
+				
+                $return_string  .= $strOffset . "<table cellpadding='5' id='EditorTable'>\n";
+				$return_string  .= $strOffset . "  <tr style='font-weight:bold'>\n";
+				$return_string  .= $strOffset . "    <th width='20'>ID</th>\n";
+				$return_string  .= $strOffset . "    <th width='200'>List Name</th>\n";
+				$return_string  .= $strOffset . "    <th width='40'>Shared</th>\n";
+				$return_string  .= $strOffset . "    <th width='60'>Type</th>\n";
+				$return_string  .= $strOffset . "    <th width='100'>Owner</th>\n";
+				$return_string  .= $strOffset . "    <th width='100'>Actions</th>\n";
+				$return_string  .= $strOffset . "  </tr>\n";
+			}elseif($list_id == 'shared_only'){
+				$query = "SELECT id, name, user_id, shared, list_type FROM lists WHERE user_id<>'" . $eq2->userdata['id'] . "' AND shared = 1;";
+				$data = $eq2->RunQueryMulti($query);
+				
+                $return_string .= $strOffset . "<table cellpadding='5' id='EditorTable'>\n";
+				$return_string .= $strOffset . "  <tr style='font-weight:bold'>\n";
+				$return_string .= $strOffset . "    <th width='20'>ID</th>\n";
+				$return_string .= $strOffset . "    <th width='200'>List Name</th>\n";
+				$return_string .= $strOffset . "    <th width='40'>Shared</th>\n";
+				$return_string .= $strOffset . "    <th width='60'>Type</th>\n";
+				$return_string .= $strOffset . "    <th width='100'>Owner</th>\n";
+				$return_string .= $strOffset . "    <th width='100'>Actions</th>\n";
+				$return_string .= $strOffset . "  </tr>\n";
+			}
+	
+			foreach($data as $row) 
+			{
+				$return_string  .= $strOffset . "<form>\n";
+				$query_listtype = "SELECT type_name FROM list_types WHERE id = " . $row['list_type'];
+				$data_listype = $eq2->RunQuerySingle($query_listtype);
+				
+				$return_string .= $strOffset . "  <tr>\n";
+				$return_string .= $strOffset . "    <td>\n";
+                $return_string .= $strOffset .        $row['id'] . "\n";
+                $return_string .= $strOffset . "    </td>\n";
+				$return_string .= $strOffset . "    <td>\n";
+                $return_string .= $strOffset .        $row['name'] . "\n";
+                $return_string .= $strOffset . "</td>\n";
+				
+				$YesNo = ($row['shared'] == 1 )? "Yes" : "No";
+				$return_string .= $strOffset . "    <td>" . $YesNo . "</td>\n";
+				$return_string .= $strOffset . "    <td>" . $data_listype['type_name'] . "</td>\n";
+				
+				$query_username = "SELECT username FROM users WHERE id = " . $row['user_id'];
+				$data_username = $eq2->RunQuerySingle($query_username);
+				
+				$return_string .= $strOffset . "    <td>" . $data_username['username'] . "</td>\n";
+				
+				$return_string .= $strOffset . "    <td>\n";
+				
+				if ($eq2->userdata['id'] == $row['user_id']){
+					$return_string .= $strOffset . "      <a href='server.php?page=editor_lists&e_list=" . $row['id'] . "&action=view'>EDIT</a>\n";
+
+				}else{
+					$return_string .= $strOffset . "      <a href='server.php?page=editor_lists&e_list=" . $row['id'] . "&action=view'>View</a>\n";
+				}
+				
+				$return_string .= $strOffset . "    </td>\n";
+				$return_string .= $strOffset . "  </tr>\n";
+				$return_string .= $strOffset . "</form>\n";
+				
+			}
+			$return_string .= $strOffset . "</table>\n";
+		}elseif($disp == "editform"){
+
+			//TOP FORM HEADER
+			$return_string .= $strOffset . "  <form method='post' name='multiForm|EditList'>\n";
+			$return_string .= $strOffset . "    <tr style='font-weight:bold'>\n";
+			$return_string .= $strOffset . "      <th width='50'>ID</th>\n";
+			$return_string .= $strOffset . "      <th width='200'>List Name</th>\n";
+			$return_string .= $strOffset . "      <th width='40'>Shared</th>\n";
+			$return_string .= $strOffset . "      <th width='60'>Type</th>\n";
+			$return_string .= $strOffset . "      <th width='100'>Owner</th>\n";
+			$return_string .= $strOffset . "      <th width='150'>Actions</th>\n";
+			$return_string .= $strOffset . "    </tr>\n";
+;
+		
+			//QUERY FOR SINGLE LIST
+			$query = "SELECT id, name, user_id, shared, list_type FROM lists WHERE id=" . $_GET['e_list'];
+			$data = $eq2->RunQuerySingle($query);
+            if($data)
+            {
+			
+                //QUERY FOR NAME OF LIST TYPE
+                $query_listtype = "SELECT type_name FROM list_types WHERE id = " . $data['list_type'];
+                $data_listype = $eq2->RunQuerySingle($query_listtype);
+                $return_string .= $strOffset . "    <tr>\n";
+                $return_string .= $strOffset . "      <td>" . $data['id'] . "\n";
+                $return_string .= $strOffset . "        <input type='hidden' name='lists|id' value='" . $data['id'] . "'/></td>\n";
+                $return_string .= $strOffset . "        <input type='hidden' name='orig_id' value='" . $data['id'] . "'/></td>\n";
+                $return_string .= $strOffset . "      <td>\n";
+                $return_string .= $strOffset . "        <input type='text' name='lists|name' value='" . $data['name'] . "'/>\n";
+                $return_string .= $strOffset . "        <input type='hidden' name='orig_name' value='" . $data['name'] . "'/>\n";
+                $return_string .= $strOffset . "      </td>\n";
+                
+                $YesNo = ($data['shared'] == 1 )? "Yes" : "No";
+                if($data['shared'] == 1)
+                {
+                    $selYes = " selected ";
+                    $selNo = "";
+                }else{
+                    $selYes = "";
+                    $selNo = " selected ";
+                }
+
+                $return_string .= $strOffset . "      <td>\n";
+                $return_string .= $strOffset . "        <select name='lists|shared'>\n";
+                $return_string .= $strOffset . "          <option value='1'"  . $selYes . ">Yes</option>\n";
+                $return_string .= $strOffset . "          <option value='0'"  . $selNo . ">No</option>\n";
+                $return_string .= $strOffset . "        </select>\n";
+                $return_string .= $strOffset . "        <input type='hidden' name='orig_shared' value='" . $data['shared'] . "'/>\n";
+                $return_string .= $strOffset . "      </td>\n";
+                $return_string .= $strOffset . "      <td>" . $data_listype['type_name'] . "</td>\n";
+                
+                //QUERY TO GET USERNAME ASSIGNED TO LIST
+                $query_username = "SELECT username FROM users WHERE id = " . $data['user_id'];
+                $data_username = $eq2->RunQuerySingle($query_username);
+
+                $return_string .= $strOffset . "      <td>" . $data_username['username'] . "</td>\n";
+                
+                $return_string .= $strOffset . "      <td>\n";
+                if ($eq2->userdata['id'] == $data['user_id']){
+                    $return_string .= $strOffset . "        <input type='hidden' name='table_name' value='lists' />\n";
+                    $return_string .= $strOffset . "        <input type='hidden' name='idx_name' value='id' />\n";
+                    $return_string .= $strOffset . "        <input type='submit' name='cmd' value='Update'>\n";
+                    $return_string .= $strOffset . "        <input type='submit' name='cmd' value='Delete'>\n";
+                }
+                $return_string .= $strOffset . "      </td>\n";
+                $return_string .= $strOffset . "    </tr>\n";
+                $return_string .= $strOffset . "  </table>\n";
+                $return_string .= $strOffset . "</form>\n";
+
+                $query2 = "SELECT id, list_id, value";
+                $query2 .= " FROM list_values ";
+                $query2 .= " WHERE list_id=" . $_GET['e_list'];
+                $data2 = $eq2->RunQueryMulti($query2);
+
+                $return_string .= $strOffset . "<table cellpadding='5' id='EditorTable'>\n";
+                $return_string .= $strOffset . "<tr>\n";
+                $return_string .= $strOffset . "  <th>List ID</th>\n";
+                $return_string .= $strOffset . "  <th>LootTable ID</th>\n";
+                $return_string .= $strOffset . "  <th>Loot Table Name</th>\n";
+                $return_string .= $strOffset . "  <th colspan='4'>Action</th>\n";
+                $return_string .= $strOffset . "</tr>\n";
+
+                foreach($data2 as $row) 
+                {
+                    $return_string .= $strOffset . "<form method='post' name='multiForm|RemoveLootTableFromList'>\n";
+                    $return_string .= $strOffset . "  <tr>\n";
+                    $return_string .= $strOffset . "    <td>" . $row['id'] . "<input type='hidden' name='orig_id' value='" . $row['id'] . "'></td>\n";
+
+                    $query_loottable_name = "SELECT id, name FROM `" . DEV_DB . "`.`loottable` WHERE id = " . $row['value'];
+                    $data_loottable_name = $eq2->RunQuerySingle($query_loottable_name);
+                    $return_string .= $strOffset . "    <td>" . $data_loottable_name['id'] . "</td>\n";
+                    $return_string .= $strOffset . "    <td>" . $data_loottable_name['name'] . "</td>\n";
+                    
+                    $return_string .= $strOffset . "    <td colspan='3'>\n";
+                    if ($eq2->userdata['id'] == $data['user_id'])
+                    {
+                        $return_string .= $strOffset . "        <input type='hidden' name='table_name' value='list_values' />\n";
+                        $return_string .= $strOffset . "        <input type='hidden' name='idx_name' value='id' />\n";
+                        $return_string .= $strOffset . "        <input type='submit' name='cmd' value='Delete'>\n";
+                    }
+                    $return_string .= $strOffset . "    </td>\n";
+                    $return_string .= $strOffset . "  </tr>\n";
+                    $return_string .= $strOffset . "</form>\n";
+                    
+                }
+			    $return_string .= $strOffset . "</table>\n";
+            }
+		//DISP = SELECT MEANS WERE RETURNING A FORM INPUT OF SELECT TYPE
+		}elseif($disp == "select"){
+			//ACTION IS ASSIGNMULTI WHICH IS A SPECIAL CASE WHERE WE PUT ALL ROWS IN A SINGLE FORM ELEMENT
+            if($action == 'assignMulti'){
+			    $return_string .= $strOffset . "<select name='e_list_id'>\n";
+			//ALL OTHER ACIONS UNDER DISP=SELECT PRINT A SELECT WITH A ONCHANGE ACTION
+            }else{
+                $return_string .= $strOffset . "<select name='loottable_list' onchange='dosub(this.options[this.selectedIndex].value)'>\n";
+            }
+			$return_string .= $strOffset . "  <option value=''>Select a List</option>\n";
+
+			$query = "SELECT id, name, user_id, shared, list_type FROM lists WHERE user_id='" . $eq2->userdata['id'] . "' AND list_type=(SELECT id FROM list_types WHERE type_value='" . $list_type . "') OR shared=1;";
+			$data = $eq2->RunQueryMulti($query);
+	
+			//HERE WE START TO BUILD THE OPTION ELEMENTS
+			////IF WE ALLOW ASSIGN THEN WE NEED A TOP ROW TO ASSIGN THE ENTRY TO A NEW LIST
+			if($action == 'assign')
+			{
+				$return_string .= $strOffset .  "  <option value='server.php?page=editor_lists&action=new&type=loot_table&id=" . $list_id . "'>Add to(New List)</option>\n";
+			}
+			////HERE WE START TO BUILD THE ROWS BASED ON THE ARRAY SENT TO THIS FUNCTION
+			foreach($data as $row) 
+			{
+				//DROPDOWN FOR INSIDE THE LOOTTABLE LIST
+				if($action == 'assign')
+				{
+					if($row['user_id'] == $eq2->userdata['id']){
+						if($_GET['e_list'] == $row['id'])
+						{
+							//$return_string .= $strOffset .  "  <option value='server.php?page=editor_lists&searchtype=list&action=remove&e_list=" . $_GET['z_id'] . "&id=" . $row['id'] . "'>" . $row['name'] . "(Remove)</option>\n";
+						}else{
+							$return_string .= $strOffset .  "  <option value='server.php?page=editor_lists&searchtype=list&action=add&e_list=" . $row['id'] . "&id=" . $list_id . "'>" . $row['name'] . "(Add to)</option>\n";
+						}
+					}
+				//DROPDOWN FOR THE SPECIAL "ALL LOOTABLES" CASE
+                }elseif($action == 'assignMulti'){
+                    $isSelected = "";
+                    if(isset($_GET['e_list']))
+                    {
+                        
+					    if($_GET['e_list'] == $row['id'])
+					    {
+    						$isSelected = "selected";
+                        }
+					}
+						$return_string .= $strOffset .  "  <option value='" . $row['id'] . "' " . $isSelected . ">" . $row['name'] . "</option>\n";
+
+                //DROPDOWN FOR TOP LEVEL SEARCH
+				}else{
+                    $isSelected = "";
+                    if(isset($_GET['e_list']))
+                    {
+                        
+					    if($_GET['e_list'] == $row['id'])
+					    {
+	    					$isSelected = "selected";
+                        }
+					}
+						$return_string .= $strOffset .  "  <option value='server.php?page=loot_table&searchtype=list&e_list=" . $row['id'] . "' " . $isSelected . ">" . $row['name'] . "</option>\n";
+				}
+			}
+			$return_string .= $strOffset .  "</select>\n";
+		}
+		
+
+		return($return_string);
+	}
+
+    function PrintListLootTable($data){
+		global $eq2;
+		$return_string = "";
+
+		foreach($data as $row) 
+		{
+			$loottablelistitems = "SELECT * FROM `".DEV_DB."`.loottable WHERE id=". $row['listitem'];
+			print("DEBUG(eq2.server.php line 1756): [" .$loottablelistitems . "<br>\n");
+			$data2 = $eq2->RunQueryMulti($loottablelistitems);
+			foreach($data2 as $row2)
+			{
+				$return_string .= $this->PrintLootTableRow($row2, '', '');
+			}
+		}
+
+		Return($return_string);
+	}
+
+	function GenerateFileList($dir1,$filetypes=null,$recurse=1){
+		global $eq2;
+		$return_string = "";
+		$fileset = array();
+		$t1Dir = SCRIPT_PATH . "/" . $dir1;
+		$t2DirList = scandir($t1Dir);
+		$indexDir = 0;
+		foreach($t2DirList as $t2Dir) 
+		{
+			$indexFile = 0;
+			if($t2Dir != "." AND $t2Dir != "..")
+			{
+				$fileset[$indexDir]['Directory'] = $t2Dir;
+				$fileset[$indexDir]['Files'] = array();
+				$fileList = scandir($t1Dir . "/" . $t2Dir);
+				foreach($fileList as $file)
+				{
+					if($file != "." AND $file != "..")
+					{
+						$fileset[$indexDir]['Files'][$indexFile] = $file;
+						$indexFile++;
+					}
+				}
+			}
+			$indexDir++;
+		}
+		return($fileset);
 	}
 }
 ?>

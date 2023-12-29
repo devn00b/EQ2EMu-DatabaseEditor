@@ -163,7 +163,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT COUNT(id) as CNT FROM ".PARSER_DB.".raw_spells WHERE spell_id = %s", $this->spell_crc);
+		$eq2->SQLQuery = sprintf("SELECT COUNT(id) as CNT FROM `".PARSER_DB."`.raw_spells WHERE spell_id = %s", $this->spell_crc);
 		$ret = $eq2->RunQuerySingle();
 		return $ret['CNT'] > 0 ? true : false;
 	}
@@ -187,8 +187,8 @@ class eq2Spells
 		global $eq2;
 		
 		$eq2->SQLQuery = "SELECT DISTINCT s.id, name, adventure_class_id, level, type, lua_script " . 
-										 "FROM ".DEV_DB.".spells s " .
-										 "JOIN ".DEV_DB.".spell_classes s2 ON s.id = s2.spell_id " .
+										 "FROM `".DEV_DB."`.spells s " .
+										 "JOIN `".DEV_DB."`.spell_classes s2 ON s.id = s2.spell_id " .
 										 "WHERE is_active = 1 AND adventure_class_id BETWEEN 1 AND 50 " .
 										 "ORDER BY adventure_class_id, level, name";
 		return $eq2->RunQueryMulti();
@@ -212,7 +212,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT MAX(%s)+1 AS next_idx FROM ".DEV_DB.".spell_data WHERE spell_id = %s AND tier = %s", $field, $spellid, $tierid);
+		$eq2->SQLQuery = sprintf("SELECT MAX(%s)+1 AS next_idx FROM `".DEV_DB."`.spell_data WHERE spell_id = %s AND tier = %s", $field, $spellid, $tierid);
 		$ret = $eq2->RunQuerySingle();
 		return $ret['next_idx'] > 0 ? $ret['next_idx'] : 0;
 	}
@@ -412,7 +412,7 @@ class eq2Spells
 		
 		$ret = NULL;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spell_data WHERE id = %s", $spell_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spell_data WHERE id = %s", $spell_id);
 		$ret = $eq2->RunQuerySingle();
 		
 		return $ret;
@@ -422,7 +422,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT soe_spell_crc AS ret FROM ".DEV_DB.".spells WHERE id = %s", $this->spell_id);
+		$eq2->SQLQuery = sprintf("SELECT soe_spell_crc AS ret FROM `".DEV_DB."`.spells WHERE id = %s", $this->spell_id);
 		$ret = $eq2->RunQuerySingle();
 		return ( $ret['ret'] > 0 ) ? $ret['ret'] : 0;
 	}
@@ -431,7 +431,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT name AS ret FROM ".DEV_DB.".spells WHERE id = %s", $this->spell_id);
+		$eq2->SQLQuery = sprintf("SELECT name AS ret FROM `".DEV_DB."`.spells WHERE id = %s", $this->spell_id);
 		$ret = $eq2->RunQuerySingle();
 		return ( strlen($ret['ret']) > 0 ) ? $ret['ret'] : "Unknown";
 	}
@@ -497,7 +497,7 @@ class eq2Spells
 		
 		if( strlen($_POST['txtSearch']) > 0 )
 		{
-			$sql = sprintf("SELECT DISTINCT s.id, soe_spell_crc, name, description, level, type, given_by, is_active, is_aa, last_auto_update, icon, icon_backdrop FROM ".DEV_DB.".spells s LEFT JOIN ".DEV_DB.".spell_classes sc ON s.id = sc.spell_id LEFT JOIN ".DEV_DB.".spell_tiers st ON s.id = st.spell_id WHERE name RLIKE '%s' GROUP BY soe_spell_crc ORDER BY level", $eq2->SQLEscape($_POST['txtSearch']));
+			$sql = sprintf("SELECT DISTINCT s.id, soe_spell_crc, name, description, level, type, given_by, is_active, is_aa, last_auto_update, icon, icon_backdrop FROM `".DEV_DB."`.spells s LEFT JOIN `".DEV_DB."`.spell_classes sc ON s.id = sc.spell_id LEFT JOIN `".DEV_DB."`.spell_tiers st ON s.id = st.spell_id WHERE name RLIKE '%s' GROUP BY soe_spell_crc ORDER BY level", $eq2->SQLEscape($_POST['txtSearch']));
 			//printf("%s<br />", $sql); exit;
 			$rows = $eq2->RunQueryMulti($sql);
 			
@@ -519,14 +519,14 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("INSERT IGNORE INTO ".DEV_DB.".starting_spells (class_id, spell_id, tier) VALUES ('%s', '%s', 1)", $_POST['spell_classes|adventure_class_id'], $_GET['id']);
+		$eq2->SQLQuery = sprintf("INSERT IGNORE INTO `".DEV_DB."`.starting_spells (class_id, spell_id, tier) VALUES ('%s', '%s', 1)", $_POST['spell_classes|adventure_class_id'], $_GET['id']);
 		$eq2->RunQuery();
 
-		$eq2->SQLQuery = sprintf("SELECT MAX(slot)+1 as slot FROM ".DEV_DB.".starting_skillbar WHERE class_id = %s AND hotbar = 0", $_POST['spell_classes|adventure_class_id']);
+		$eq2->SQLQuery = sprintf("SELECT MAX(slot)+1 as slot FROM `".DEV_DB."`.starting_skillbar WHERE class_id = %s AND hotbar = 0", $_POST['spell_classes|adventure_class_id']);
 		$data = $eq2->RunQuerySingle();
 		$next_slot = $data['slot'] > 0 ? $data['slot'] : 0;
 		
-		$eq2->SQLQuery = sprintf("INSERT IGNORE INTO ".DEV_DB.".starting_skillbar (class_id, spell_id, slot, text_val) VALUES ('%s', '%s', '%s', '%s')", $_POST['spell_classes|adventure_class_id'], $_GET['id'], $next_slot, $eq2->db->sql_escape($_POST['objectName']));
+		$eq2->SQLQuery = sprintf("INSERT IGNORE INTO `".DEV_DB."`.starting_skillbar (class_id, spell_id, slot, text_val) VALUES ('%s', '%s', '%s', '%s')", $_POST['spell_classes|adventure_class_id'], $_GET['id'], $next_slot, $eq2->db->sql_escape($_POST['objectName']));
 		$eq2->RunQuery();
 	}
 	
@@ -534,13 +534,13 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_tiers WHERE spell_id = %s and tier = %s;", $_POST['orig_spell_id'], $_POST['tier']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_tiers WHERE spell_id = %s and tier = %s;", $_POST['orig_spell_id'], $_POST['tier']);
 		$eq2->RunQuery();
 
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_data WHERE spell_id = %s and tier = %s;", $_POST['orig_spell_id'], $_POST['tier']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_data WHERE spell_id = %s and tier = %s;", $_POST['orig_spell_id'], $_POST['tier']);
 		$eq2->RunQuery();
 
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_display_effects WHERE spell_id = %s and tier = %s;", $_POST['orig_spell_id'], $_POST['tier']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_display_effects WHERE spell_id = %s and tier = %s;", $_POST['orig_spell_id'], $_POST['tier']);
 		$eq2->RunQuery();
 	}
 
@@ -551,14 +551,14 @@ class eq2Spells
 		// if no tiers exist, insert 1 and bail out
 		if( $_POST['tier_id'] == 0 )
 		{
-			$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_tiers (`spell_id`, `tier`) VALUES (%s, %s)", $_POST['spell_id'], $_POST['new_tier']);
+			$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_tiers (`spell_id`, `tier`) VALUES (%s, %s)", $_POST['spell_id'], $_POST['new_tier']);
 			$eq2->RunQuery();
 		}
 		else // copy existing tier
 		{
-			$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_tiers (`spell_id`, `tier`, `hp_req`, `hp_req_percent`, `hp_upkeep`, `power_req`, `power_req_percent`, `power_upkeep`, `savagery_req`, `savagery_req_percent`, `savagery_upkeep`, `dissonance_req`, `dissonance_req_percent`, `dissonance_upkeep`, `req_concentration`, `cast_time`, `recovery`, `recast`, `radius`, `max_aoe_targets`, `min_range`, `range`, `duration1`, `duration2`, `resistibility`, `hit_bonus`, `call_frequency`, `unknown9`, `given_by`) " . 
+			$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_tiers (`spell_id`, `tier`, `hp_req`, `hp_req_percent`, `hp_upkeep`, `power_req`, `power_req_percent`, `power_upkeep`, `savagery_req`, `savagery_req_percent`, `savagery_upkeep`, `dissonance_req`, `dissonance_req_percent`, `dissonance_upkeep`, `req_concentration`, `cast_time`, `recovery`, `recast`, `radius`, `max_aoe_targets`, `min_range`, `range`, `duration1`, `duration2`, `resistibility`, `hit_bonus`, `call_frequency`, `unknown9`, `given_by`) " . 
 																															"SELECT `spell_id`, '%s', `hp_req`, `hp_req_percent`, `hp_upkeep`, `power_req`, `power_req_percent`, `power_upkeep`, `savagery_req`, `savagery_req_percent`, `savagery_upkeep`, `dissonance_req`, `dissonance_req_percent`, `dissonance_upkeep`, `req_concentration`, `cast_time`, `recovery`, `recast`, `radius`, `max_aoe_targets`, `min_range`, `range`, `duration1`, `duration2`, `resistibility`, `hit_bonus`, `call_frequency`, `unknown9`, `given_by` " .
-																															"FROM ".DEV_DB.".spell_tiers " .
+																															"FROM `".DEV_DB."`.spell_tiers " .
 																															"WHERE spell_id = %s " .
 																															"ORDER BY tier " .
 																															"LIMIT 0,1",
@@ -566,9 +566,9 @@ class eq2Spells
 																															$_POST['spell_id']);
 			$eq2->RunQuery();
 	
-			$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_data (`spell_id`, `tier`, `index_field`, `value_type`, `value`) " .
+			$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_data (`spell_id`, `tier`, `index_field`, `value_type`, `value`) " .
 																														 "SELECT `spell_id`, '%s', `index_field`, `value_type`, `value` " .
-																														 "FROM ".DEV_DB.".spell_data " .
+																														 "FROM `".DEV_DB."`.spell_data " .
 																														 "WHERE spell_id = %s " . 
 																														 "GROUP BY spell_id, index_field " .
 																														 "ORDER BY tier, index_field ",
@@ -576,9 +576,9 @@ class eq2Spells
 																														 $_POST['spell_id']);
 			$eq2->RunQuery();
 	
-			$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_display_effects (`spell_id`, `tier`, `percentage`, `description`, `bullet`, `index`) " .
+			$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_display_effects (`spell_id`, `tier`, `percentage`, `description`, `bullet`, `index`) " .
 																																				"SELECT `spell_id`, '%s', `percentage`, `description`, `bullet`, `index` " . 
-																																				"FROM ".DEV_DB.".spell_display_effects " . 
+																																				"FROM `".DEV_DB."`.spell_display_effects " . 
 																																				"WHERE spell_id = %s " .
 																																				"GROUP BY spell_id, `index` " .
 																																				"ORDER BY tier, `index` ",
@@ -592,7 +592,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT COUNT(*) as is_aa FROM ".DEV_DB.".spell_aa_nodelist aa, ".DEV_DB.".spells s WHERE s.soe_spell_crc = aa.spellcrc AND s.id = %s", $id);
+		$eq2->SQLQuery = sprintf("SELECT COUNT(*) as is_aa FROM `".DEV_DB."`.spell_aa_nodelist aa, `".DEV_DB."`.spells s WHERE s.soe_spell_crc = aa.spellcrc AND s.id = %s", $id);
 		$ret = $eq2->RunQuerySingle();
 		
 		return $ret['is_aa'] > 0 ? $ret['is_aa'] : 0;
@@ -602,7 +602,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT COUNT(*) as is_trait FROM ".DEV_DB.".spell_tiers WHERE given_by in ('charactertrait', 'racialinnate') AND spell_id = %s", $id);
+		$eq2->SQLQuery = sprintf("SELECT COUNT(*) as is_trait FROM `".DEV_DB."`.spell_tiers WHERE given_by in ('charactertrait', 'racialinnate') AND spell_id = %s", $id);
 		$ret = $eq2->RunQuerySingle();
 		
 		return $ret['is_trait'] > 0 ? $ret['is_trait'] : 0;
@@ -656,7 +656,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT id FROM ".DEV_DB.".skills WHERE short_name = '%s' LIMIT 0,1", $skill);
+		$eq2->SQLQuery = sprintf("SELECT id FROM `".DEV_DB."`.skills WHERE short_name = '%s' LIMIT 0,1", $skill);
 		$row = $eq2->RunQuerySingle();
 		
 		if( $row['id'] > 0 )
@@ -795,7 +795,7 @@ class eq2Spells
 			case "Data":
 				$ret = "\r\nfunction cast(Caster, Target";
 							 
-				$sql = sprintf("SELECT description, bullet FROM ".DEV_DB.".spell_display_effects WHERE spell_id = %s and tier = 1 GROUP BY `index`;", $_GET['id']);
+				$sql = sprintf("SELECT description, bullet FROM `".DEV_DB."`.spell_display_effects WHERE spell_id = %s and tier = 1 GROUP BY `index`;", $_GET['id']);
 				if( !$result = $eq2->db->sql_query($sql) )
 					die("Error while fetching spell_display_effects in %s" . __FUNCTION__);
 					
@@ -855,7 +855,7 @@ class eq2Spells
 		global $eq2;
 		$this->silent = true;
 		
-		$sql = "SELECT DISTINCT id, name, soe_spell_crc FROM " . DEV_DB . ".spells";
+		$sql = "SELECT DISTINCT id, name, soe_spell_crc FROM `" . DEV_DB . "`.`spells`";
 		
 		$rows = $eq2->RunQueryMulti($sql);
 		
@@ -874,7 +874,7 @@ class eq2Spells
 		
 		if( $this->spell_crc > 0 )
 		{
-			$eq2->SQLQuery = sprintf("SELECT spell_id, `name`, `type`, class_skill, mastery_skill, min_class_skill_req, target, can_effect_raid, affect_only_group_members, display_spell_tier, group_spell, success_message, effect_message FROM ".PARSER_DB.".raw_spells WHERE spell_id = %s ORDER BY tier LIMIT 0,1;", $this->spell_crc);
+			$eq2->SQLQuery = sprintf("SELECT spell_id, `name`, `type`, class_skill, mastery_skill, min_class_skill_req, target, can_effect_raid, affect_only_group_members, display_spell_tier, group_spell, success_message, effect_message FROM `".PARSER_DB."`.raw_spells WHERE spell_id = %s ORDER BY tier LIMIT 0,1;", $this->spell_crc);
 			$data = $eq2->RunQuerySingle();
 			
 			if( !is_array($data) && !$this->silent )
@@ -909,7 +909,7 @@ class eq2Spells
 			
 			$query_array = array();
 			
-			$query_array[] = sprintf("UPDATE ".DEV_DB.".spells SET type = '%s', class_skill = '%s', mastery_skill = '%s', min_class_skill_req = '%s', target_type = '%s', can_effect_raid = '%s', affect_only_group_members = '%s', display_spell_tier = '%s', group_spell = '%s', success_message = '%s', effect_message = '%s' WHERE id = %s", 
+			$query_array[] = sprintf("UPDATE `".DEV_DB."`.spells SET type = '%s', class_skill = '%s', mastery_skill = '%s', min_class_skill_req = '%s', target_type = '%s', can_effect_raid = '%s', affect_only_group_members = '%s', display_spell_tier = '%s', group_spell = '%s', success_message = '%s', effect_message = '%s' WHERE id = %s", 
 																 $raw_spell_type,
 																 $raw_class_skill,
 																 $raw_mastery_skill,
@@ -923,7 +923,7 @@ class eq2Spells
 																 $raw_effect_message,
 																 $this->spell_id);
 			
-			$query_array[] = sprintf("UPDATE ".PARSER_DB.".raw_spells SET populated_spell_id  = '%s' WHERE spell_id = %s", 
+			$query_array[] = sprintf("UPDATE `".PARSER_DB."`.raw_spells SET populated_spell_id  = '%s' WHERE spell_id = %s", 
 															 $this->spell_id,
 															 $this->spell_crc);
 		}
@@ -943,41 +943,41 @@ class eq2Spells
 		global $eq2;
 		
 		// Spells clone
-		$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spells (`id`, `type`, `cast_type`, `name`, `description`, `icon`, `icon_heroic_op`, `icon_backdrop`, `class_skill`, `mastery_skill`, `min_class_skill_req`, " . 
+		$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spells (`id`, `type`, `cast_type`, `name`, `description`, `icon`, `icon_heroic_op`, `icon_backdrop`, `class_skill`, `mastery_skill`, `min_class_skill_req`, " . 
 																														 "`duration_until_cancel`, `target_type`, `success_message`, `fade_message`, `interruptable`, `lua_script`, `spell_visual`, `effect_message`, `spell_book_type`, " . 
 																														 "`can_effect_raid`, `affect_only_group_members`, `display_spell_tier`, `friendly_spell`, `group_spell`, `linked_timer_id`, `is_aa`, `is_deity`, `deity`, `last_auto_update`) " . 
 																														 "SELECT %s, `type`, `cast_type`, `name`, `description`, `icon`, `icon_heroic_op`, `icon_backdrop`, `class_skill`, `mastery_skill`, `min_class_skill_req`, " . 
 																														 "`duration_until_cancel`, `target_type`, `success_message`, `fade_message`, `interruptable`, `lua_script`, `spell_visual`, `effect_message`, `spell_book_type`, " . 
 																														 "`can_effect_raid`, `affect_only_group_members`, `display_spell_tier`, `friendly_spell`, `group_spell`, `linked_timer_id`, `is_aa`, `is_deity`, `deity`, '%s' " . 
-																														 "FROM ".DEV_DB.".spells WHERE id = %s", $_POST['next_id'], time(), $this->spell_id);
+																														 "FROM `".DEV_DB."`.spells WHERE id = %s", $_POST['next_id'], time(), $this->spell_id);
 		$eq2->RunQuery();
 
 		// Spell Tiers clone
-		$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_tiers (`spell_id`, `tier`, `hp_req`, `hp_req_percent`, `hp_upkeep`, `power_req`, `power_req_percent`, `power_upkeep`, `savagery_req`, `savagery_req_percent`, `savagery_upkeep`, " . 
+		$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_tiers (`spell_id`, `tier`, `hp_req`, `hp_req_percent`, `hp_upkeep`, `power_req`, `power_req_percent`, `power_upkeep`, `savagery_req`, `savagery_req_percent`, `savagery_upkeep`, " . 
 																																	"`dissonance_req`, `dissonance_req_percent`, `dissonance_upkeep`, `req_concentration`, `cast_time`, `recovery`, `recast`, `radius`, `max_aoe_targets`, `min_range`, `range`, " . 
 																																	"`duration1`, `duration2`, `resistibility`, `hit_bonus`, `call_frequency`, `unknown9`, `given_by`) " . 
 																																	"SELECT %s, `tier`, `hp_req`, `hp_req_percent`, `hp_upkeep`, `power_req`, `power_req_percent`, `power_upkeep`, `savagery_req`, `savagery_req_percent`, `savagery_upkeep`, " . 
 																																	"`dissonance_req`, `dissonance_req_percent`, `dissonance_upkeep`, `req_concentration`, `cast_time`, `recovery`, `recast`, `radius`, `max_aoe_targets`, `min_range`, `range`, " . 
 																																	"`duration1`, `duration2`, `resistibility`, `hit_bonus`, `call_frequency`, `unknown9`, `given_by` " . 
-																																	"FROM ".DEV_DB.".spell_tiers WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
+																																	"FROM `".DEV_DB."`.spell_tiers WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
 		$eq2->RunQuery();
 		
 		// Spell Traits clone
-		$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_traits (`spell_id`, `level`, `class_req`, `race_req`, `isInate`, `isFocusEffect`, `tier`, `group`) " . 
+		$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_traits (`spell_id`, `level`, `class_req`, `race_req`, `isInate`, `isFocusEffect`, `tier`, `group`) " . 
 																																	 "SELECT %s, `level`, `class_req`, `race_req`, `isInate`, `isFocusEffect`, `tier`, `group` " . 
-																																	 "FROM ".DEV_DB.".spell_traits WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
+																																	 "FROM `".DEV_DB."`.spell_traits WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
 		$eq2->RunQuery();
 
 		// Spell Data clone
-		$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_data (`spell_id`, `tier`, `index_field`, `value_type`, `value`) " . 
+		$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_data (`spell_id`, `tier`, `index_field`, `value_type`, `value`) " . 
 																																 "SELECT %s, `tier`, `index_field`, `value_type`, `value` " . 
-																																 "FROM ".DEV_DB.".spell_data WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
+																																 "FROM `".DEV_DB."`.spell_data WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
 		$eq2->RunQuery();
 
 		// Spell Effects clone
-		$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spell_display_effects (`spell_id`, `tier`, `percentage`, `description`, `bullet`, `index`) " . 
+		$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spell_display_effects (`spell_id`, `tier`, `percentage`, `description`, `bullet`, `index`) " . 
 																																						"SELECT %s, `tier`, `percentage`, `description`, `bullet`, `index` " . 
-																																						"FROM ".DEV_DB.".spell_display_effects WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
+																																						"FROM `".DEV_DB."`.spell_display_effects WHERE spell_id = %s ORDER BY tier", $_POST['next_id'],$this->spell_id);
 		$eq2->RunQuery();
 	}
 	
@@ -989,7 +989,7 @@ class eq2Spells
 		$this->SetSpells("id", $_POST['next_id'], $this->spell_id);
 		
 		// character_skillbar has no constraint, due to no spell_id 0
-		$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".character_skillbar SET spell_id = %s WHERE spell_id = %s", $_POST['next_id'], $this->spell_id);
+		$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.character_skillbar SET spell_id = %s WHERE spell_id = %s", $_POST['next_id'], $this->spell_id);
 		$eq2->RunQuery();
 
 		// item_details_skill currently points spell_id to soe_spell_crc, which is wrong... but for the future, we'll change it manually too
@@ -997,7 +997,7 @@ class eq2Spells
 		//$eq2->RunQuery();
 
 		// starting_skillbar has no constraint, due to no spell_id 0
-		$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".starting_skillbar SET spell_id = %s WHERE spell_id = %s", $_POST['next_id'], $this->spell_id);
+		$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.starting_skillbar SET spell_id = %s WHERE spell_id = %s", $_POST['next_id'], $this->spell_id);
 		$eq2->RunQuery();
 	}
 
@@ -1010,7 +1010,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".spells SET last_auto_update = '%s' WHERE id = %s", time(), $this->spell_id);
+		$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.spells SET last_auto_update = '%s' WHERE id = %s", time(), $this->spell_id);
 		$eq2->RunQuery(false); // don't log this update
 	}
 	
@@ -1018,7 +1018,7 @@ class eq2Spells
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".spells SET %s = '%s' WHERE id = %s", $field, $value, ( $id > 0 ) ? $id : $this->spell_id);
+		$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.spells SET %s = '%s' WHERE id = %s", $field, $value, ( $id > 0 ) ? $id : $this->spell_id);
 		$eq2->RunQuery();
 	}
 
@@ -1027,17 +1027,17 @@ class eq2Spells
 		global $eq2;
 		
 		// these should all return 0 rows affected, if the constraints are working... just a safety precaution
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_classes WHERE spell_id = %s", $_POST['orig_id']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_classes WHERE spell_id = %s", $_POST['orig_id']);
 		$eq2->RunQuery();
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_display_effects WHERE spell_id = %s", $_POST['orig_id']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_display_effects WHERE spell_id = %s", $_POST['orig_id']);
 		$eq2->RunQuery();
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_data WHERE spell_id = %s", $_POST['orig_id']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_data WHERE spell_id = %s", $_POST['orig_id']);
 		$eq2->RunQuery();
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_traits WHERE spell_id = %s", $_POST['orig_id']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_traits WHERE spell_id = %s", $_POST['orig_id']);
 		$eq2->RunQuery();
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spell_tiers WHERE spell_id = %s", $_POST['orig_id']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spell_tiers WHERE spell_id = %s", $_POST['orig_id']);
 		$eq2->RunQuery();
-		$eq2->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spells WHERE id = %s", $_POST['orig_id']);
+		$eq2->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spells WHERE id = %s", $_POST['orig_id']);
 		$eq2->RunQuery();
 		
 	}
@@ -1121,7 +1121,7 @@ class eq2Spells
 				
 				if( !empty($sets) ) 
 				{
-					$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".spells SET %s WHERE id = %s;", $sets, $spell_id);
+					$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.spells SET %s WHERE id = %s;", $sets, $spell_id);
 					$eq2->RunQuery();
 					
 					$this->SetLastAutoUpdate();
@@ -1192,9 +1192,9 @@ class eq2Spells
 				if( !empty($sets) ) 
 				{
 					if( $_POST['tier'] >= 1 && $_POST['tier'] <= 3 )
-						$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".spell_tiers SET %s WHERE spell_id = %s AND tier IN (1, 2, 3);", $sets, $_GET['id']); 
+						$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.spell_tiers SET %s WHERE spell_id = %s AND tier IN (1, 2, 3);", $sets, $_GET['id']); 
 					else
-						$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".spell_tiers SET %s WHERE spell_id = %s AND tier = %s;", $sets, $_GET['id'], $_POST['tier']); 
+						$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.spell_tiers SET %s WHERE spell_id = %s AND tier = %s;", $sets, $_GET['id'], $_POST['tier']); 
 	
 					$eq2->RunQuery();
 					

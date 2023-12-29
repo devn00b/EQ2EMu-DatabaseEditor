@@ -141,11 +141,11 @@ class eq2Spawns
 		if( $loottable_id > 0 )
 		{
 			// first, create a loottable entry for this new loot assignment, if it does not already exist
-			$eq2->SQLQuery = sprintf("INSERT IGNORE INTO ".DEV_DB.".loottable (id) VALUES (%s)", $loottable_id);
+			$eq2->SQLQuery = sprintf("INSERT IGNORE INTO `".DEV_DB."`.loottable (id) VALUES (%s)", $loottable_id);
 			$eq2->RunQuery();
 	
 			// now that we have the loottable, the FK Constraint will not fail, insert the spawn_loot record
-			$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spawn_loot (spawn_id, loottable_id) VALUES (%s, %s);", $this->spawn_id, $loottable_id);
+			$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spawn_loot (spawn_id, loottable_id) VALUES (%s, %s);", $this->spawn_id, $loottable_id);
 			$eq2->RunQuery();
 		}
 	}
@@ -175,7 +175,7 @@ class eq2Spawns
 		
 		if($id > 0)
 		{
-			$eq2->SQLQuery = sprintf("SELECT name FROM ".DEV_DB.".appearances WHERE appearance_id = %s", $id);
+			$eq2->SQLQuery = sprintf("SELECT name FROM `".DEV_DB."`.appearances WHERE appearance_id = %s", $id);
 			$data = $eq2->RunQuerySingle();
 			return $data['name'];
 		}
@@ -193,7 +193,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT command_list_id, command_text FROM ".DEV_DB.".entity_commands GROUP BY command_list_id HAVING COUNT(command_list_id) = 1 ORDER BY command_text;");
+		$eq2->SQLQuery = sprintf("SELECT command_list_id, command_text FROM `".DEV_DB."`.entity_commands GROUP BY command_list_id HAVING COUNT(command_list_id) = 1 ORDER BY command_text;");
 		$results = $eq2->RunQueryMulti();
 
 		
@@ -217,7 +217,7 @@ class eq2Spawns
 		global $eq2;
 
 		// First, get the command_list_id of any command with more than 1 entry
-		$eq2->SQLQuery = "SELECT command_list_id, command_text FROM ".DEV_DB.".entity_commands WHERE command_list_id IN (SELECT command_list_id FROM ".DEV_DB.".entity_commands GROUP BY command_list_id HAVING COUNT(command_list_id) > 1);";
+		$eq2->SQLQuery = "SELECT command_list_id, command_text FROM `".DEV_DB."`.entity_commands WHERE command_list_id IN (SELECT command_list_id FROM `".DEV_DB."`.entity_commands GROUP BY command_list_id HAVING COUNT(command_list_id) > 1);";
 		$results = $eq2->RunQueryMulti();
 		
 		$command_options = "";
@@ -253,7 +253,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = "SELECT groundspawn_id, tablename FROM ".DEV_DB.".groundspawns ORDER BY groundspawn_id";
+		$eq2->SQLQuery = "SELECT groundspawn_id, tablename FROM `".DEV_DB."`.groundspawns ORDER BY groundspawn_id";
 		$rows = $eq2->RunQueryMulti();
 		
 		$ret[0] = 'None'; // first entry
@@ -270,7 +270,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT id, name FROM ".DEV_DB.".loottable ORDER BY name");
+		$eq2->SQLQuery = sprintf("SELECT id, name FROM `".DEV_DB."`.loottable ORDER BY name");
 		$rows = $eq2->RunQueryMulti();
 		
 		if( is_array($rows) )
@@ -287,7 +287,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT merchant_id, description FROM ".DEV_DB.".merchants ORDER BY description");
+		$eq2->SQLQuery = sprintf("SELECT merchant_id, description FROM `".DEV_DB."`.merchants ORDER BY description");
 		return $eq2->RunQueryMulti();
 	}
 
@@ -305,9 +305,9 @@ class eq2Spawns
 		global $eq2;
 		
 		$eq2->SQLQuery = sprintf("SELECT slg.* " .
-														 "FROM ".DEV_DB.".spawn_location_group slg " .
-														 "JOIN ".DEV_DB.".spawn_location_placement slp ON slg.placement_id = slp.id " .
-														 "JOIN ".DEV_DB.".spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
+														 "FROM `".DEV_DB."`.spawn_location_group slg " .
+														 "JOIN `".DEV_DB."`.spawn_location_placement slp ON slg.placement_id = slp.id " .
+														 "JOIN `".DEV_DB."`.spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
 														 "WHERE sle.spawn_id = %s " .
 														 "ORDER BY group_id", $this->spawn_id, $this->zone_id);
 		return $eq2->RunQueryMulti();
@@ -318,10 +318,10 @@ class eq2Spawns
 		global $eq2;
 		
 		$eq2->SQLQuery = sprintf("SELECT DISTINCT slga.* " .
-														 "FROM ".DEV_DB.".spawn_location_group slg " .
-														 "JOIN ".DEV_DB.".spawn_location_placement slp ON slg.placement_id = slp.id " .
-														 "JOIN ".DEV_DB.".spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
-														 "JOIN ".DEV_DB.".spawn_location_group_associations slga ON slga.group_id1 = slg.group_id OR slga.group_id2 = slg.group_id " .
+														 "FROM `".DEV_DB."`.spawn_location_group slg " .
+														 "JOIN `".DEV_DB."`.spawn_location_placement slp ON slg.placement_id = slp.id " .
+														 "JOIN `".DEV_DB."`.spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
+														 "JOIN `".DEV_DB."`.spawn_location_group_associations slga ON slga.group_id1 = slg.group_id OR slga.group_id2 = slg.group_id " .
 														 "WHERE sle.spawn_id = %s " .
 														 "ORDER BY group_id", $this->spawn_id, $this->zone_id);
 		return $eq2->RunQueryMulti();
@@ -332,10 +332,10 @@ class eq2Spawns
 		global $eq2;
 		
 		$eq2->SQLQuery = sprintf("SELECT slgc.* " .
-														 "FROM ".DEV_DB.".spawn_location_group slg " .
-														 "JOIN ".DEV_DB.".spawn_location_placement slp ON slg.placement_id = slp.id " .
-														 "JOIN ".DEV_DB.".spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
-														 "JOIN ".DEV_DB.".spawn_location_group_chances slgc ON slgc.group_id = slg.group_id " .
+														 "FROM `".DEV_DB."`.spawn_location_group slg " .
+														 "JOIN `".DEV_DB."`.spawn_location_placement slp ON slg.placement_id = slp.id " .
+														 "JOIN `".DEV_DB."`.spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
+														 "JOIN `".DEV_DB."`.spawn_location_group_chances slgc ON slgc.group_id = slg.group_id " .
 														 "WHERE sle.spawn_id = %s " .
 														 "ORDER BY group_id", $this->spawn_id, $this->zone_id);
 		return $eq2->RunQueryMulti();
@@ -346,8 +346,8 @@ class eq2Spawns
 		global $eq2;
 
 		$eq2->SQLQuery = sprintf("SELECT sln.* " .
-														 "FROM ".DEV_DB.".spawn_location_name sln " .
-														 "JOIN ".DEV_DB.".spawn_location_entry sle ON sln.id = sle.spawn_location_id " .
+														 "FROM `".DEV_DB."`.spawn_location_name sln " .
+														 "JOIN `".DEV_DB."`.spawn_location_entry sle ON sln.id = sle.spawn_location_id " .
 														 "WHERE sle.spawn_id = %s;", $this->spawn_id);
 		return $eq2->RunQueryMulti();
 	}
@@ -357,8 +357,8 @@ class eq2Spawns
 		global $eq2;
 
 		$eq2->SQLQuery = sprintf("SELECT sle.*, sln.`name`" .
-														 "FROM ".DEV_DB.".spawn_location_entry sle " .
-														 "JOIN ".DEV_DB.".spawn_location_name sln ON sle.spawn_location_id = sln.id ".
+														 "FROM `".DEV_DB."`.spawn_location_entry sle " .
+														 "JOIN `".DEV_DB."`.spawn_location_name sln ON sle.spawn_location_id = sln.id ".
 														 "WHERE sle.spawn_id = %s;", $this->spawn_id);
 		return $eq2->RunQueryMulti();
 	}
@@ -368,8 +368,8 @@ class eq2Spawns
 		global $eq2;
 
 		$eq2->SQLQuery = sprintf("SELECT slp.* " .
-														 "FROM ".DEV_DB.".spawn_location_placement slp " .
-														 "JOIN ".DEV_DB.".spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
+														 "FROM `".DEV_DB."`.spawn_location_placement slp " .
+														 "JOIN `".DEV_DB."`.spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
 														 "WHERE sle.spawn_id = %s;", $this->spawn_id);
 		return $eq2->RunQueryMulti();
 	}
@@ -378,7 +378,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn_loot WHERE spawn_id = %s", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn_loot WHERE spawn_id = %s", $this->spawn_id);
 		return $eq2->RunQueryMulti();
 	}
 	
@@ -386,7 +386,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".loottable WHERE id = %s", $id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.loottable WHERE id = %s", $id);
 		return $eq2->RunQueryMulti();
 	}
 	
@@ -394,7 +394,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".lootdrop WHERE loot_table_id = %s", $id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.lootdrop WHERE loot_table_id = %s", $id);
 		return $eq2->RunQueryMulti();
 	}
 	
@@ -406,7 +406,7 @@ class eq2Spawns
 			return "Not Found.";
 		}
 
-		$eq2->SQLQuery = sprintf("SELECT name FROM ".DEV_DB.".spawn where id = %s", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT name FROM `".DEV_DB."`.spawn where id = %s", $this->spawn_id);
 		$data = $eq2->RunQuerySingle();
 		return ( strlen($data['name']) > 0 ) ? $data['name'] : "Not Found.";
 	}
@@ -415,7 +415,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn_npcs WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn_npcs WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -423,7 +423,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn_objects WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn_objects WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -432,9 +432,9 @@ class eq2Spawns
 		global $eq2;
 
 		$eq2->SQLQuery = sprintf("SELECT slp.*, slg.group_id " .
-															"FROM ".RAW_DB.".spawn_location_placement slp " .
-															"JOIN ".RAW_DB.".spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
-															"LEFT JOIN ".RAW_DB.".spawn_location_group slg ON slp.id = slg.placement_id " .
+															"FROM `".DEV_DB."`.spawn_location_placement slp " .
+															"JOIN `".DEV_DB."`.spawn_location_entry sle ON slp.spawn_location_id = sle.spawn_location_id " .
+															"LEFT JOIN `".DEV_DB."`.spawn_location_group slg ON slp.id = slg.placement_id " .
 															"WHERE spawn_id = %lu AND processed = %s ", 
 															$spawn_id, 
 															$showHidden ? 2 : 0); 
@@ -446,7 +446,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn_signs WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn_signs WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -454,7 +454,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn_widgets WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn_widgets WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -462,7 +462,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn_ground WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn_ground WHERE spawn_id = %s LIMIT 0,1", $this->spawn_id);
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -470,10 +470,10 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT * FROM ".DEV_DB.".spawn_scripts " . 
+		$eq2->SQLQuery = sprintf("SELECT * FROM `".DEV_DB."`.spawn_scripts " . 
 														 "WHERE spawn_id = %s " . 
-														 "OR spawn_location_id IN (SELECT spawn_location_id FROM ".DEV_DB.".spawn_location_entry WHERE spawn_id = %s) " . 
-														 "OR spawnentry_id IN (SELECT id FROM ".DEV_DB.".spawn_location_entry WHERE spawn_id = %s) " . 
+														 "OR spawn_location_id IN (SELECT spawn_location_id FROM `".DEV_DB."`.spawn_location_entry WHERE spawn_id = %s) " . 
+														 "OR spawnentry_id IN (SELECT id FROM `".DEV_DB."`.spawn_location_entry WHERE spawn_id = %s) " . 
 														 "ORDER BY spawn_id, spawnentry_id, spawn_location_id", $this->spawn_id, $this->spawn_id, $this->spawn_id);
 
 		return $eq2->RunQueryMulti();
@@ -483,7 +483,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT sle.id, name FROM ".DEV_DB.".spawn_location_entry sle, ".DEV_DB.".spawn_location_name sln WHERE sle.spawn_location_id = sln.id AND spawn_id = %s ORDER BY sle.id", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT sle.id, name FROM `".DEV_DB."`.spawn_location_entry sle, `".DEV_DB."`.spawn_location_name sln WHERE sle.spawn_location_id = sln.id AND spawn_id = %s ORDER BY sle.id", $this->spawn_id);
 		$rows = $eq2->RunQueryMulti();
 		
 		if( is_array($rows) )
@@ -500,7 +500,7 @@ class eq2Spawns
 	{
 		global $eq2;
 
-		$eq2->SQLQuery = sprintf("SELECT sln.id, name FROM ".DEV_DB.".spawn_location_name sln, ".DEV_DB.".spawn_location_entry sle WHERE sln.id = sle.spawn_location_id AND sle.spawn_id = %d ORDER BY sln.id", $this->spawn_id);
+		$eq2->SQLQuery = sprintf("SELECT sln.id, name FROM `".DEV_DB."`.spawn_location_name sln, `".DEV_DB."`.spawn_location_entry sle WHERE sln.id = sle.spawn_location_id AND sle.spawn_id = %d ORDER BY sln.id", $this->spawn_id);
 		$rows = $eq2->RunQueryMulti();
 		
 		if( is_array($rows) )
@@ -517,7 +517,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT equipment_list_id, description FROM ".DEV_DB.".spawn_npc_equipment ORDER BY description");
+		$eq2->SQLQuery = sprintf("SELECT equipment_list_id, description FROM `".DEV_DB."`.spawn_npc_equipment ORDER BY description");
 		$rows = $eq2->RunQueryMulti();
 		
 		if( is_array($rows) )
@@ -534,7 +534,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT skill_list_id, description FROM ".DEV_DB.".spawn_npc_skills ORDER BY description");
+		$eq2->SQLQuery = sprintf("SELECT skill_list_id, description FROM `".DEV_DB."`.spawn_npc_skills ORDER BY description");
 		$rows = $eq2->RunQueryMulti();
 		
 		if( is_array($rows) )
@@ -551,7 +551,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT id as spell_list_id, description FROM ".DEV_DB.".spawn_npc_spell_lists ORDER BY description");
+		$eq2->SQLQuery = sprintf("SELECT id as spell_list_id, description FROM `".DEV_DB."`.spawn_npc_spell_lists ORDER BY description");
 		$rows = $eq2->RunQueryMulti();
 		
 		if( is_array($rows) )
@@ -569,10 +569,10 @@ class eq2Spawns
 		global $eq2;
 		
 		$eq2->SQLQuery = sprintf("SELECT DISTINCT s1.id,s1.name " .
-															"FROM ".DEV_DB.".spawn s1 " .
-															"JOIN ".DEV_DB.".spawn_%s s2 ON s1.id = s2.spawn_id " .
-															"LEFT JOIN ".DEV_DB.".spawn_location_entry sle ON s1.id = sle.spawn_id " .
-															"LEFT JOIN ".DEV_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id " .
+															"FROM `".DEV_DB."`.spawn s1 " .
+															"JOIN `".DEV_DB."`.spawn_%s s2 ON s1.id = s2.spawn_id " .
+															"LEFT JOIN `".DEV_DB."`.spawn_location_entry sle ON s1.id = sle.spawn_id " .
+															"LEFT JOIN `".DEV_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id " .
 															"WHERE slp.zone_id = %s or s1.`id` BETWEEN %s0000 and %s9999 " .
 															"ORDER BY s1.name", $this->spawn_type, $this->zone_id, $this->zone_id, $this->zone_id);
 
@@ -597,14 +597,14 @@ class eq2Spawns
 																			"s5.spawn_id AS is_widget, " . 
 																			"s6.spawn_id AS is_ground, " . 
 																			"FLOOR(s1.id / 10000) AS loc_zone " .
-															 "FROM ".DEV_DB.".spawn s1 " .
-															 "LEFT JOIN ".DEV_DB.".spawn_npcs s2 ON s1.id = s2.spawn_id " .
-															 "LEFT JOIN ".DEV_DB.".spawn_objects s3 ON s1.id = s3.spawn_id " .
-															 "LEFT JOIN ".DEV_DB.".spawn_signs s4 ON s1.id = s4.spawn_id " .
-															 "LEFT JOIN ".DEV_DB.".spawn_widgets s5 ON s1.id = s5.spawn_id " .
-															 "LEFT JOIN ".DEV_DB.".spawn_ground s6 ON s1.id = s6.spawn_id " .
-															 //"LEFT JOIN ".DEV_DB.".spawn_location_entry sle ON s1.id = sle.spawn_id " .
-															 //"JOIN ".DEV_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id " .
+															 "FROM `".DEV_DB."`.spawn s1 " .
+															 "LEFT JOIN `".DEV_DB."`.spawn_npcs s2 ON s1.id = s2.spawn_id " .
+															 "LEFT JOIN `".DEV_DB."`.spawn_objects s3 ON s1.id = s3.spawn_id " .
+															 "LEFT JOIN `".DEV_DB."`.spawn_signs s4 ON s1.id = s4.spawn_id " .
+															 "LEFT JOIN `".DEV_DB."`.spawn_widgets s5 ON s1.id = s5.spawn_id " .
+															 "LEFT JOIN `".DEV_DB."`.spawn_ground s6 ON s1.id = s6.spawn_id " .
+															 //"LEFT JOIN `".DEV_DB."`.spawn_location_entry sle ON s1.id = sle.spawn_id " .
+															 //"JOIN `".DEV_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id " .
 															 "WHERE name RLIKE '%s' " .
 															 "ORDER BY name", $eq2->SQLEscape($_GET['search']));
 			
@@ -638,7 +638,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT lua_script FROM ".DEV_DB.".spawn_scripts WHERE id = %s", $spawnscript_id);	
+		$eq2->SQLQuery = sprintf("SELECT lua_script FROM `".DEV_DB."`.spawn_scripts WHERE id = %s", $spawnscript_id);	
 		return $eq2->RunQuerySingle();
 	}
 	
@@ -646,7 +646,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT merchant_id FROM ".DEV_DB.".spawn WHERE id = %s", $id);
+		$eq2->SQLQuery = sprintf("SELECT merchant_id FROM `".DEV_DB."`.spawn WHERE id = %s", $id);
 		$data = $eq2->RunQuerySingle();
 		return $data['merchant_id'] > 0 ? $data['merchant_id'] : 0;
 	}
@@ -655,7 +655,7 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("SELECT count(*) AS cnt FROM ".PARSER_DB.".raw_quests WHERE description RLIKE '%s';", $eq2->SQLEscape($name));
+		$eq2->SQLQuery = sprintf("SELECT count(*) AS cnt FROM `".PARSER_DB."`.raw_quests WHERE description RLIKE '%s';", $eq2->SQLEscape($name));
 		$data = $eq2->RunQuerySingle();
 		return ( $data['cnt'] > 0 ) ? 1 : 0;
 	}
@@ -664,11 +664,11 @@ class eq2Spawns
 	{
 		global $eq2;
 		
-		$eq2->SQLQuery = sprintf("UPDATE ".DEV_DB.".spawn_location_placement " . 
+		$eq2->SQLQuery = sprintf("UPDATE `".DEV_DB."`.spawn_location_placement " . 
 														 "SET x_offset = %s, z_offset = %s " . 
 														 "WHERE zone_id = %s AND " . 
 														 "spawn_location_id IN (" . 
-														 		"SELECT spawn_location_id FROM ".DEV_DB.".spawn_location_entry " . 
+														 		"SELECT spawn_location_id FROM `".DEV_DB."`.spawn_location_entry " . 
 																"WHERE spawn_id = %s" . 
 															")", $val, $val, $this->zone_id, $this->spawn_id);
 
@@ -758,7 +758,7 @@ class eq2Spawns
 		$maxRangeID = sprintf("%s9999", $zone);
 
 		$eq2->BeginSQLTransaction();
-		$eq2->RunQuery(true, "LOCK TABLE ".DEV_DB."`spawn` WRITE;");
+		$eq2->RunQuery(true, "LOCK TABLE `".DEV_DB."`.`spawn` WRITE;");
 
 		$query = sprintf('SELECT MAX(id) + 1 as newid FROM `%s`.`spawn` s WHERE s.id BETWEEN %s AND %s',
 		DEV_DB, $minRangeID, $maxRangeID);
@@ -1085,7 +1085,7 @@ class eq2Spawns
 		$name = $eq2->SQLEscape($_POST['spawn_location_name|name|new']);
 
 		//Don't log this query because it will mess up our LAST_INSERT_ID()
-		$res = $eq2->RunQuery(false, "INSERT INTO ".DEV_DB.".spawn_location_name (`name`) VALUES ('" .$name . "');");
+		$res = $eq2->RunQuery(false, "INSERT INTO `".DEV_DB."`.spawn_location_name (`name`) VALUES ('" .$name . "');");
 
 		if (($res ?? 0) != 1) {
 			$eq2->AddStatus("Error inserting a new spawn location...please try again");
@@ -1152,7 +1152,7 @@ class eq2Spawns
 			return "---NONE--- (0)";
 		}
 		
-		$query = "SELECT command_text FROM ".DEV_DB.".entity_commands WHERE command_list_id = ".$id;
+		$query = "SELECT command_text FROM `".DEV_DB."`.entity_commands WHERE command_list_id = ".$id;
 		$res = $eq2->RunQueryMulti($query);
 
 		$ret = "";

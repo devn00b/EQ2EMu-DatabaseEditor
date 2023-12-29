@@ -188,7 +188,7 @@ a:hover { color:#000; text-decoration:none; }
 	position:relative;
 	margin:0px 0px 0px 2px;
 	padding-bottom:10px;
-	max-width:1152px;
+	max-width:1352px;
 }
 
 #Editor table.SubPanel {
@@ -480,8 +480,8 @@ border-top: 1px solid #789; /*Remove this to remove border between bar and tabs*
 	border-bottom:1px solid #ccc;
 }
 
-td.tabOn 	{ background-color:#789; }
-td.tabOff { background-color:#abc; }
+td.tabOn 	{ background-color:rgb(27, 51, 75); }
+td.tabOff { background-color:rgb(4, 21, 37); }
 td.tabOn a:link 		{ color:#eee; text-decoration:none; }
 td.tabOn a:hover 		{ color:#eee; text-decoration:underline; }
 td.tabOn a:visited 	{ color:#eee; text-decoration:none; }
@@ -670,12 +670,12 @@ input[type="text"][readonly] {
 
   .ContrastTable tr:nth-child(odd) {
 	background-color: #CCC;
-	height: 32px;
+	height: 24px;
   }
 
   .ContrastTable tr:nth-child(even) {
 	background-color: rgb(176, 178, 185);
-	height: 32px;
+	height: 24px;
   }
 
   .ContrastTable tr:hover {
@@ -687,7 +687,8 @@ input[type="text"][readonly] {
 	border-left:1px solid #000;
 	border-right:1px solid #000;
 	border-top: 1px solid #000;
-	height: 35px;
+	border-bottom: 1px solid #000;
+	height: 25px;
 	padding: 5px;
   }
 
@@ -751,6 +752,19 @@ input[type="text"][readonly] {
 	transition: opacity 0.3s;
   }
 
+  .tooltipBox{
+	background-color: #000000;
+  }
+
+  .tooltipBox .tooltopBoxText{
+	background-color: #000000;
+  }
+
+  .tooltipBox img{
+	float:right;
+	padding: 10px;
+  }
+
   #tooltipTitle a:link,
   #tooltipTitle a:visited,
   #tooltipTitle a:hover,
@@ -762,6 +776,7 @@ input[type="text"][readonly] {
 	font-weight: 400;
 	text-align: left;
 	color: #ffffff;
+	background-color: #000000;
   }
 
   .tooltiptext img{
@@ -777,7 +792,8 @@ input[type="text"][readonly] {
 	font-weight: 400;
 	line-height: 12px;
 	text-align: left;
-	color:#93d9ff
+	color:#93d9ff;
+	background-color: #000000;
   }
 
   #tooltipToggles{
@@ -788,7 +804,8 @@ input[type="text"][readonly] {
 	font-weight: 400;
 	line-height: 18.7px;
 	text-align: left;
-	color:#fee65c
+	color:#fee65c;
+	background-color: #000000;
   }
   #tooltipStats{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
@@ -797,47 +814,55 @@ input[type="text"][readonly] {
 	font-variant: normal;
 	font-weight: 400;
 	text-align: left;
-	color:#22ff22
+	color:#22ff22;
+	background-color: #000000;
   }
 
   #tooltipDetails{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
-	color:#ffffff
+	color:#ffffff;
+	background-color: #000000;
   }
 
   #tooltipEffects{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
 	font-size: 9px;
-	color:#ffffff
+	color:#ffffff;
+	background-color: #000000;
   }
 
   #tooltipClass{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
 	font-size: 14px;
-	color:#ffffff
+	color:#ffffff;
+	background-color: #000000;
   }
 
   #tooltipSlots{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
 	font-size: 14px;
-	color:#ffffff
+	color:#ffffff;
+	background-color: #000000;
   }
 
   #tooltipSkills{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
 	font-size: 14px;
-	color:#ffffff
+	color:#ffffff;
+	background-color: #000000;
   }
   #tooltipLevel{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
 	font-size: 14px;
-	color:#ffffff
+	color:#ffffff;
+	background-color: #000000;
   }
 
   #tooltipAdvClass{
 	font-family:'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
 	font-size: 14px;
-	color:#ceb1b1
+	color:#ceb1b1;
+	background-color: #000000;
   }
  
   .tooltip .tooltiptext::after {
@@ -849,9 +874,20 @@ input[type="text"][readonly] {
 	border-width: 5px;
 	border-style: solid;
 	border-color: #555 transparent transparent transparent;
+	background-color: #000000;
   }
   
   .tooltip:hover .tooltiptext {
 	visibility: visible;
 	opacity: 1;
+  }
+
+  textarea#luablock {
+    width:100%;
+	height: 300px;
+  }
+
+  textarea {
+    width:100%;
+	height: 150px;
   }

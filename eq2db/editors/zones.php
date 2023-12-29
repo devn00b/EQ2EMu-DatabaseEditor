@@ -55,7 +55,7 @@ switch(strtolower($_POST['cmd'] ?? ""))
 		$scriptFile = $eq2->SaveLUAScript();
 		$replaceCount = 1;
 		$scriptFile = str_replace(SCRIPT_PATH, "", $scriptFile, $replaceCount);
-		$query = sprintf("UPDATE %s.zones SET `lua_script` = '%s' WHERE `id` = %s", DEV_DB, $eq2->SQLEscape($scriptFile), $z->zone_id);
+		$query = sprintf("UPDATE `%s`.zones SET `lua_script` = '%s' WHERE `id` = %s", DEV_DB, $eq2->SQLEscape($scriptFile), $z->zone_id);
 		$eq2->RunQuery(true, $query);
 		break;
 	case "save":
@@ -232,10 +232,15 @@ function Zone()
 {
 	global $eq2, $z;
 
-	?>
+	//?>
 	<?php if ($z->zone_id == "add") : ?>
 	<br>
-	<span id="EditorStatus"><? if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></span>
+	<span id="EditorStatus">
+		<?php 
+		if( !empty($eq2->Status) ){
+		 $eq2->DisplayStatus(); 
+		}
+		 ?></span>
 	<?php $z->PrintNewZoneForm(); return; ?>
 	<?php endif; ?>
 
@@ -243,7 +248,7 @@ function Zone()
 	<form method="post" name="ZoneForm">
 	<table class="SubPanel" cellspacing="0" border="0">
 		<tr>
-			<td id="EditorStatus" colspan="2"><? if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
+			<td id="EditorStatus" colspan="2"><?php if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
 		</tr>
 		<?php
 			$data = $z->GetZoneData();
@@ -571,8 +576,7 @@ function zone_script() {
 	}
 
 	echo "<br/>";
-	$eq2->DisplayScriptEditor($script_full_name, $z->zone_name, 
-	sprintf("%s|%s", $z->zone_name, $z->zone_id), "zones"); 
+	print($eq2->DisplayScriptEditor($script_full_name, $z->zone_name, sprintf("%s|%s", $z->zone_name, $z->zone_id), "zones")); 
 }
 
 function locations($id) 
@@ -600,7 +604,7 @@ function locations($id)
 					</tr>
 
 						<?php
-						$query=sprintf("select * from %s.%s where zone_id = %s",DEV_DB, $table, $id);
+						$query=sprintf("select * from `%s`.%s where zone_id = %s",DEV_DB, $table, $id);
 						$rows =$eq2->RunQueryMulti($query);
 						foreach ($rows as $data) {
 						?>
@@ -803,7 +807,7 @@ function revive_points($id)
 						<td>heading</td>
 					</tr>
 			<?php
-			$query = sprintf("select * from %s.revive_points where zone_id = '%s'", DEV_DB, $id);
+			$query = sprintf("select * from `%s`.revive_points where zone_id = '%s'", DEV_DB, $id);
 			$rows = $eq2->RunQueryMulti($query);
 	
 			foreach ($rows as $data)

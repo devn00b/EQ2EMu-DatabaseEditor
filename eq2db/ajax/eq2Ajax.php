@@ -33,12 +33,12 @@ if( strlen(($_GET['search'] ?? "")) && isset($_GET['type']) )
 			if( $search < 1000000 )
 			{
 				$range = intval($search / 1000);
-				$eq2->SQLQuery = "SELECT MAX(id)+1 as search_text FROM ".DEV_DB.".spells WHERE id LIKE '".$range."___';";
+				$eq2->SQLQuery = "SELECT MAX(id)+1 as search_text FROM `".DEV_DB."`.spells WHERE id LIKE '".$range."___';";
 			}
 			else
 			{
 				$range = intval($search / 10000);
-				$eq2->SQLQuery = "SELECT MAX(id)+1 as search_text FROM ".DEV_DB.".spells WHERE id LIKE '".$range."____';";
+				$eq2->SQLQuery = "SELECT MAX(id)+1 as search_text FROM `".DEV_DB."`.spells WHERE id LIKE '".$range."____';";
 			}
 			$dataset = getData();
 			if( empty($dataset[0]) )
@@ -48,7 +48,7 @@ if( strlen(($_GET['search'] ?? "")) && isset($_GET['type']) )
 			break;
 			
 		case "class":
-			$eq2->SQLQuery = "SELECT MAX(id)+1 as search_text FROM ".DEV_DB.".spells WHERE id LIKE '".$search."____';";
+			$eq2->SQLQuery = "SELECT MAX(id)+1 as search_text FROM `".DEV_DB."`.spells WHERE id LIKE '".$search."____';";
 			$dataset = getData();
 			if( empty($dataset[0]) )
 				$dataset[0] = $search * 10000;
@@ -67,37 +67,38 @@ if( strlen(($_GET['search'] ?? "")) && isset($_GET['type']) )
 			break;
 			
 		case "luS":
-			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM ".RAW_DB.".raw_spells WHERE name LIKE '".$search."%' ORDER BY name LIMIT 0, 10";
+			//LLAMA: SEEMS LIKE THIS DEV_DB REFERENCE IS CORRECT
+			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".RAW_DB."`.raw_spells WHERE name LIKE '".$search."%' ORDER BY name LIMIT 0, 10";
 			$dataset = getData();
 			break;
 			
 		case "luSE":
-			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM ".DEV_DB.".spells WHERE name LIKE '".$search."%' ORDER BY name LIMIT 0, 10";
+			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".DEV_DB."`.spells WHERE name LIKE '".$search."%' ORDER BY name LIMIT 0, 10";
 			$dataset = getData();
 			break;
 			
 		case "luVE":
-			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM ".DEV_DB.".reference_spell_effects WHERE (category RLIKE '".$search."') OR (type RLIKE '".$search."') OR (name RLIKE '".$search."') OR (misc RLIKE '".$search."') ORDER BY category, type, name, misc LIMIT 0,10";
+			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".DEV_DB."`.reference_spell_effects WHERE (category RLIKE '".$search."') OR (type RLIKE '".$search."') OR (name RLIKE '".$search."') OR (misc RLIKE '".$search."') ORDER BY category, type, name, misc LIMIT 0,10";
 			$dataset = getData();
 			break;
 		
 		case "luSpawn":
-			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM ".DEV_DB.".spawn WHERE name RLIKE '".$search."' ORDER BY name LIMIT 0,10";
+			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".DEV_DB."`.spawn WHERE name RLIKE '".$search."' ORDER BY name LIMIT 0,10";
 			$dataset = getData();
 			break;
 			
 		case "luO":
-			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM ".DEV_DB.".opcodes WHERE (name RLIKE '".$search."') OR (opcode RLIKE '".$search."') ORDER BY name LIMIT 0,10";
+			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".DEV_DB."`.opcodes WHERE (name RLIKE '".$search."') OR (opcode RLIKE '".$search."') ORDER BY name LIMIT 0,10";
 			$dataset = getData();
 			break;
 			
 		case "luQ":
-			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM ".DEV_DB.".quests WHERE (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (type RLIKE '".$search."') OR (zone RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name LIMIT 0, 10";
+			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".DEV_DB."`.quests WHERE (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (type RLIKE '".$search."') OR (zone RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name LIMIT 0, 10";
 			$dataset = getData();
 			break;
 			
 		case "luZ":
-			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM ".DEV_DB.".zones WHERE (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (file RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name LIMIT 0, 10";
+			$eq2->SQLQuery = "SELECT distinct(name) as search_text FROM `".DEV_DB."`.zones WHERE (name RLIKE '".$search."') OR (description RLIKE '".$search."') OR (file RLIKE '".$search."') OR (lua_script RLIKE '".$search."') ORDER BY name LIMIT 0, 10";
 			$dataset = getData();
 			break;
 			
@@ -109,7 +110,7 @@ if( strlen(($_GET['search'] ?? "")) && isset($_GET['type']) )
 			break;
 
 		case "luCh":
-			$eq2->SQLQuery = "SELECT CONCAT(`name`, ' (', id, ')') as search_text FROM ".DEV_DB.".characters WHERE `name` RLIKE '".$search."' ORDER BY LENGTH(`name`), `name` LIMIT 0,10";
+			$eq2->SQLQuery = "SELECT CONCAT(`name`, ' (', id, ')') as search_text FROM `".DEV_DB."`.characters WHERE `name` RLIKE '".$search."' ORDER BY LENGTH(`name`), `name` LIMIT 0,10";
 			$dataset = getData();
 			break;
 
@@ -120,12 +121,12 @@ if( strlen(($_GET['search'] ?? "")) && isset($_GET['type']) )
 
 		case "luEc":
 			$filter = isset($_GET['single']) ? " HAVING COUNT(command_list_id) = 1" : "";
-			$eq2->SQLQuery = "SELECT DISTINCT command_list_id FROM ".DEV_DB.".entity_commands WHERE command_text RLIKE '".$search."' GROUP BY command_list_id".$filter." LIMIT 0,10";
+			$eq2->SQLQuery = "SELECT DISTINCT command_list_id FROM `".DEV_DB."`.entity_commands WHERE command_text RLIKE '".$search."' GROUP BY command_list_id".$filter." LIMIT 0,10";
 			$dataset = getDataEntityCommand();
 			break;
 			
 		case "luLt":
-			$eq2->SQLQuery = "SELECT CONCAT(`name`, ' (', id, ')') as search_text FROM ".DEV_DB.".loottable WHERE `name` RLIKE '".$search."' ORDER BY LENGTH(`name`), `name` LIMIT 0,10";
+			$eq2->SQLQuery = "SELECT CONCAT(`name`, ' (', id, ')') as search_text FROM `".DEV_DB."`.loottable WHERE `name` RLIKE '".$search."' ORDER BY LENGTH(`name`), `name` LIMIT 0,10";
 			$dataset = getData();
 			break;
 		default:
@@ -181,7 +182,7 @@ function getDataEntityCommand()
 		}
 		$inList .= ")";
 
-		$eq2->SQLQuery = "SELECT command_list_id, command_text FROM ".DEV_DB.".entity_commands WHERE command_list_id IN ".$inList;
+		$eq2->SQLQuery = "SELECT command_list_id, command_text FROM `".DEV_DB."`.entity_commands WHERE command_list_id IN ".$inList;
 		$rows = $eq2->RunQueryMulti();
 		$cmds = array();
 		foreach($rows as $data) 

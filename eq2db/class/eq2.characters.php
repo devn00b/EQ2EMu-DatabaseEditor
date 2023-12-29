@@ -4,7 +4,7 @@ class eq2Characters
 {
     public function CharacterFactions($id) {
         global $eq2, $charName;
-        $query=sprintf("select * from ".DEV_DB.".character_factions where character_id = %d",$id);
+        $query=sprintf("select * from `".DEV_DB."`.character_factions where character_id = %d",$id);
 		$result=$eq2->db->sql_query($query);
 		$data=$eq2->db->sql_fetchrow($result);
 		?>
@@ -27,7 +27,7 @@ class eq2Characters
 						</tr>
 
 						<?php
-						$query=sprintf("select cf.*, f.`name` as faction_name from ".DEV_DB.".character_factions cf INNER JOIN ".DEV_DB.".factions f ON f.id = cf.faction_id WHERE cf.char_id = %d",$id);
+						$query=sprintf("select cf.*, f.`name` as faction_name from `".DEV_DB."`.character_factions cf INNER JOIN `".DEV_DB."`.factions f ON f.id = cf.faction_id WHERE cf.char_id = %d",$id);
 						$result = $eq2->RunQueryMulti($query);
 						foreach ($result as $data) : ?>
 						<form method="post" name="multiForm|<?php print($data['id']); ?>">

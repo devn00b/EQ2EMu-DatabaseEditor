@@ -14,7 +14,7 @@ class eq2Cls
 {
 	public $userdata;
 	/*
-	private $id							= 0;
+	private $id = 0;
 	*/
 	private $min_pwd_length	= 3;
 	private $cookie_timeout = 2592000; // 30 day timeout
@@ -1399,12 +1399,24 @@ class eq2Cls
 	
 	public function ProcessUpdates($schema = DEV_DB) 
 	{
+		
 		$idx_field = $_POST['idx_name'] ?? "id";
 		$idx_value = $_POST['orig_id'];
 		$sets = '';
 			
 		foreach($_POST as $key=>$val) 
 		{
+			if($_POST['table_name']=='lists' 
+			OR $_POST['table_name'] == 'list_types' 
+			OR $_POST['table_name'] == 'list_values' 
+			OR $_POST['table_name'] == 'eq2lua_blocks' 
+			OR $_POST['table_name'] == 'eq2lua_categories' 
+			OR $_POST['table_name'] == 'eq2lua_types' 
+			)
+			{
+				$schema = "";
+			}
+			//printf("<p>%s -> %s</p>\n", $key, $val);
 			if (!isset($val)) continue;
 
 			$chkKey = explode("|",$key);
@@ -1430,7 +1442,7 @@ class eq2Cls
 		
 		if( !empty($sets) ) 
 		{
-			$this->SQLQuery = sprintf("UPDATE ".$schema.".%s SET %s where %s = %s;", $this->TableName, $sets, $idx_field, $idx_value); //printf("<p>%s</p>", $this->SQLQuery); exit;
+			$this->SQLQuery = sprintf("UPDATE ".$schema.".%s SET %s where `%s` = %s;", $this->TableName, $sets, $idx_field, $idx_value); //printf("<p>%s</p>", $this->SQLQuery); exit;
 			$this->RunQuery();
 		}		
 		else
@@ -1440,6 +1452,17 @@ class eq2Cls
 
 	public function ProcessDeletes($schema = DEV_DB) 
 	{
+		if($_POST['table_name']=='lists' 
+			OR $_POST['table_name'] == 'list_types' 
+			OR $_POST['table_name'] == 'list_values' 
+			OR $_POST['table_name'] == 'eq2lua_blocks' 
+			OR $_POST['table_name'] == 'eq2lua_categories' 
+			OR $_POST['table_name'] == 'eq2lua_types' 
+			)
+			{
+				$schema = "";
+			}
+
 		$idx_field = isset($_POST['idx_name']) ? $_POST['idx_name'] : "id";
 		$idx_value	=	$_POST['orig_id'];
 
@@ -1449,6 +1472,18 @@ class eq2Cls
 	
 	public function ProcessInserts($schema = DEV_DB) 
 	{
+		if($_POST['table_name']=='lists' 
+			OR $_POST['table_name'] == 'list_types' 
+			OR $_POST['table_name'] == 'list_values' 
+			OR $_POST['table_name'] == 'eq2lua_blocks' 
+			OR $_POST['table_name'] == 'eq2lua_categories' 
+			OR $_POST['table_name'] == 'eq2lua_types' 
+			)
+		{
+			$schema = "";
+		}
+		//var_dump($_POST);
+		
 		$fields = "";
 		$values = "";
 
@@ -1470,8 +1505,7 @@ class eq2Cls
 					$values.=",'".$this->SQLEscape($val)."'";
 				}
 			}
-		}		
-		
+		}
 		if( !empty($fields) ) 
 		{
 			$this->SQLQuery = sprintf("INSERT INTO ".$schema.".%s (%s) VALUES (%s);", $this->TableName, $fields, $values); 
@@ -1479,7 +1513,35 @@ class eq2Cls
 		}
 		else
 			$this->AddStatus("No data updated!");
+	}		
 
+	public function ProcessMultiInsert() 
+	{
+		if($_POST['table_name']=='lists' OR $_POST['table_name'] == 'list_types' OR $_POST['table_name'] == 'list_values')
+		{
+			$schema = "";
+		}
+
+		$fields = "";
+		$values = "";
+		$rowset = "";
+
+		foreach($_POST as $key=>$val) 
+		{
+
+			//$chkKey = explode("|",$key);
+			
+			$loottableRow = explode("!",$key);
+			
+			if($loottableRow[0] == "chkVal")
+			{
+				$rowset .= "(" . $_POST['e_list_id'] . "," . $loottableRow[1] . "),";
+			}
+		}
+		$query = "INSERT INTO " . $schema . "." . $this->TableName . " (list_id, value) VALUES ". substr($rowset, 0, -1);
+		print($query . "<br>");
+		$this->SQLQuery = $query;
+		$this->RunQuery();		
 	}
 	
 	public function DBInsertSpawnScript() 
@@ -1487,7 +1549,7 @@ class eq2Cls
 		global $eq2;
 	
 		// lookup Live zone name of NPC
-		$eq2->SQLQuery = sprintf("SELECT id FROM ".DEV_DB.".zones WHERE description = '%s'", $eq2->SQLEscape($_POST['zone_name']));
+		$eq2->SQLQuery = sprintf("SELECT id FROM `".DEV_DB."`.zones WHERE description = '%s'", $eq2->SQLEscape($_POST['zone_name']));
 		$data = $eq2->RunQuerySingle();
 	
 		if( $data['id'] > 0 ) 
@@ -1497,7 +1559,7 @@ class eq2Cls
 
 
 		// get spawn_id from live spawn table
-		$eq2->SQLQuery = sprintf("SELECT id FROM ".DEV_DB.".spawn WHERE name = '%s' AND id LIKE '%s____'", $eq2->SQLEscape($_POST['spawn_name']), $zone_id); 
+		$eq2->SQLQuery = sprintf("SELECT id FROM `".DEV_DB."`.spawn WHERE name = '%s' AND id LIKE '%s____'", $eq2->SQLEscape($_POST['spawn_name']), $zone_id); 
 		$data = $eq2->RunQuerySingle();
 
 		if( $data['id']>0 )
@@ -1507,12 +1569,12 @@ class eq2Cls
 			
 		
 		// insert record into live spawn_script if it does not already exist
-		$eq2->SQLQuery = sprintf("SELECT count(*) AS cnt FROM ".DEV_DB.".spawn_scripts WHERE lua_script = '%s'", $_POST['script_name']);
+		$eq2->SQLQuery = sprintf("SELECT count(*) AS cnt FROM `".DEV_DB."`.spawn_scripts WHERE lua_script = '%s'", $_POST['script_name']);
 		$data = $eq2->RunQuerySingle();
 		
 		if( $data['cnt'] == 0 ) 
 		{
-			$eq2->SQLQuery = sprintf("INSERT INTO ".DEV_DB.".spawn_scripts (spawn_id, lua_script) VALUES ('%s','%s')", $spawn_id, $_POST['script_name']);
+			$eq2->SQLQuery = sprintf("INSERT INTO `".DEV_DB."`.spawn_scripts (spawn_id, lua_script) VALUES ('%s','%s')", $spawn_id, $_POST['script_name']);
 			$eq2->RunQuery();
 		}
 	}
@@ -1539,7 +1601,7 @@ class eq2Cls
 		if( $id==0 ) 
 			$ret = "<option value=\"0\">---</option>";
 			
-		$this->SQLQuery = "SELECT id, name, short_name FROM ".DEV_DB.".skills ORDER BY name";
+		$this->SQLQuery = "SELECT id, name, short_name FROM `".DEV_DB."`.skills ORDER BY name";
 
 		$rows = $this->RunQueryMulti();
 		
@@ -1551,7 +1613,7 @@ class eq2Cls
 	
 	public function GetNextIDX($table, $field) 
 	{
-		$this->SQLQuery = sprintf("SELECT MAX(%s)+1 AS nextID FROM ".DEV_DB.".%s", $field, $table);
+		$this->SQLQuery = sprintf("SELECT MAX(%s)+1 AS nextID FROM `".DEV_DB."`.%s", $field, $table);
 		$data = $this->RunQuerySingle();
 		return $data['nextID'];
 	}
@@ -1610,7 +1672,7 @@ class eq2Cls
 		switch($type[0])
 		{
 			case "Spells":
-				$sql = sprintf("SELECT description, bullet FROM ".DEV_DB.".spell_display_effects WHERE spell_id = %s GROUP BY `index`;", $_GET['id']);
+				$sql = sprintf("SELECT description, bullet FROM `".DEV_DB."`.spell_display_effects WHERE spell_id = %s GROUP BY `index`;", $_GET['id']);
 				if( !$result = $this->db->sql_query($sql) )
 					die("Error while fetching spell_display_effects in %s" . __FUNCTION__);
 					
@@ -1633,7 +1695,7 @@ class eq2Cls
 				break;
 
 			case "ItemScripts":
-				$this->SQLQuery = sprintf("SELECT effect, bullet FROM ".DEV_DB.".item_effects WHERE item_id = %s;", $_GET['id']);
+				$this->SQLQuery = sprintf("SELECT effect, bullet FROM `".DEV_DB."`.item_effects WHERE item_id = %s;", $_GET['id']);
 				$rows = $this->RunQueryMulti();
 				if (count($rows)) {
 					$template_body .= "--[[ Begin Item Effects\r\n";
@@ -1741,6 +1803,7 @@ class eq2Cls
 			$path = SCRIPT_PATH;
 	
 		$file = $path . $script;
+		//print("llama debug:" . $file);
 
 		$line = "";
 
@@ -1866,6 +1929,117 @@ class eq2Cls
 		return $file;
 	}
 
+	public function GetLuaBlocks($action)
+	{
+		global $eq2;
+		$return_string = "";
+		
+		switch($action)
+		{
+			
+			case "showList":
+				//GET A LIST OF ALL CATEGORIES
+				$lua_block_categories = "SELECT id,name FROM `eq2lua_categories`";
+				$lua_categories = $eq2->RunQueryMulti($lua_block_categories);
+				$return_string .= "<tbody>\n";
+				foreach($lua_categories as $category)
+				{
+					//PREP CAT HEADER FOR USE INSIDE THE NEXT LOOP
+					$categoryHeader =  "<tr>\n";					
+					$categoryHeader .= "  <th></td>\n";
+					$categoryHeader .= "  <th align='center'><strong>" . $category['name'] . "</strong></td>\n";
+					if($_GET['page']=='lua_blocks' AND $category['id'] !=0)
+					{
+						$categoryHeader .= "  <th>\n";
+						$categoryHeader .= "    <a href='./server.php?page=lua_blocks&action=edit_category&id=" . $category['id'] . "'><i class='fa fa-pencil' aria-hidden='true' title='Edit Category'></i></a>\n";
+						$categoryHeader .= "  </th>\n";
+					}
+					$categoryHeader .= "</tr>\n";
+					$showHeader = true;
+				
+					//TRYING TO MAKE THIS GENERIC AS POSSIBLE SO WE CAN USE IT
+					//IN ANY OF THE PAGES
+					//NOTE: WE NEED TO ADD "SHARED LISTS" TOO, SOONISH
+					$lua_block_query = "SELECT id, name, description, type, category, text ";
+					$lua_block_query .= "FROM `eq2lua_blocks` ";
+					if(!$_GET['page']=='lua_blocks')
+					{
+						if(isset($_GET['tab']))
+						{
+							switch($_GET['tab'])
+							{
+								case "item_script":
+									$scriptType='items';
+									break;
+								case "spell_script":
+									$scriptType='spells';
+									break;
+								case "edit":
+									$scriptType='spawns';
+									break;
+								case "zone_script":
+									$scriptType='zones';
+									break;
+								case "quest_script":
+									$scriptType='quests';
+									break;
+							}
+							$lua_block_query .= " WHERE type=(SELECT id FROM `eq2lua_types` WHERE value='" . $scriptType . "')";
+						}
+					}else{
+						$lua_block_query .= " WHERE id > 0";
+					}
+					$lua_block_query .= "   AND category=" . $category['id'];
+					//$lua_block_query .= " WHERE user_id=" . $eq2->userdata['id'];
+					$lua_block_query .= " ORDER BY shared, id";
+					//print($lua_block_query . "\n");
+					$lua_blocks = $eq2->RunQueryMulti($lua_block_query);
+
+					//ALLOWS CATEGORIES THAT DON'T HAVE BLOCKS ON SERVER PAGE
+					if($_GET['page']=='lua_blocks')
+					{
+						$return_string .= $categoryHeader;
+					}
+					foreach($lua_blocks as $block)
+					{
+						//SHOWING CATEGORY ONLY ONCE
+						if(!$_GET['page']=='lua_blocks' AND $showHeader)
+						{
+							$return_string .= $categoryHeader;
+							$showHeader=false;
+						}
+						$return_string .= "<tr id=>\n";
+						$return_string .= "  <td align='center'>" . $block['id'] . "</td>\n";
+						$return_string .= "  <td align='center'>\n";
+						$return_string .= "    <input type='button' name='block_" . $block['id'] . "' value='" . $block['name'] . "' class='submit-template' onclick=\"AddTextToEditor(this)\" myFuncText=\"" . $block['text'] . "\"/>\n";
+						if($_GET['page']=='lua_blocks')
+						{
+							$return_string .= "  <td>\n";
+							$return_string .= "    <a href='./server.php?page=lua_blocks&action=edit_block&id=" . $block['id'] . "'><i class='fa fa-pencil' aria-hidden='true' title='Edit Block'></i></a>\n";
+							$return_string .= "  </td>\n";
+						}
+						$return_string .= "</tr>\n";
+					}
+					$return_string .= "</tbody>\n";
+				}
+				return($return_string);
+				break;
+		}
+		/*
+		$lua_type_query = "SELECT * FROM eq2lua_types;";
+		$lua_types = $eq2->RunQueryMulti($lua_type_query);
+		$lua_cat_query = "SELECT * FROM eq2lua_categories;";
+		$lua_categories = $eq2->RunQueryMulti($lua_type_query);
+		$return_string .= " \n";
+		*/
+
+	}
+
+	public function EditLuaBlocks($action, $item)
+	{
+
+	}
+
 	public function GenerateBlueCheckbox($inputName, $bChecked, $id = NULL) {
 		?>
 		<label class="blue_checkbox">
@@ -1879,6 +2053,157 @@ class eq2Cls
 		foreach ($data as $k=>$v) : ?>
 			<input type="hidden" name="orig_<?php echo $k ?>" value="<?php echo $v ?>" />
 		<?php endforeach;
+	}
+
+	public function GetQuestRewardItemDetails($itemID, $itemType)
+	{
+		global $eq2;
+		switch($itemType)
+		{
+			case "Armor":
+				$eq2->SQLQuery = "SELECT mitigation_low AS low, mitigation_high AS high FROM `".DEV_DB."`.item_details_armor WHERE item_id = '".$itemID."' ";
+				$data = $eq2->RunQuerySingle();
+				$return_string = "Mitigation: (Low)".$data['low']." - (High)". $data['high'];
+				break;
+			case "Book":
+				$eq2->SQLQuery = "SELECT language FROM `".DEV_DB."`.item_details_book WHERE item_id = '".$itemID."' ";
+				$data = $eq2->RunQuerySingle();
+				$return_string = "Language: " . $data['language'];
+				break;
+			case "Bag":
+				$eq2->SQLQuery = "SELECT num_slots, weight_reduction, backpack FROM `".DEV_DB."`.item_details_bag WHERE item_id = '".$itemID."' ";
+				$data = $eq2->RunQuerySingle();
+				$return_string = "Slots:" . $data['num_slots'] . " Weight Reduction:" . $data['weight_reduction'] . " Backpack:" . $data['backpak'];
+				break;
+			case "House":
+				$eq2->SQLQuery = "SELECT rent_reduction, status_rent_reduction, coin_rent_reduction, house_only FROM `".DEV_DB."`.item_details_house WHERE item_id = '".$itemID."' ";
+				$data = $eq2->RunQuerySingle();
+				$return_string = "Rent Redu:" . $data['rent_reduction'] . " Status Rent Redu:" . $data['status_rent_reduction'] . " Coin Rent Redu:" . $data['coin_rent_reduction'] . " House Only:" . $data['house_only'];
+				break;
+			case "Food":
+					$eq2->SQLQuery = "SELECT type, level, duration, satiation FROM `".DEV_DB."`.item_details_food WHERE item_id = '".$itemID."' ";
+					$data = $eq2->RunQuerySingle();
+					$return_string = "Type:" . $data['type'] . " Level:" . $data['level'] . " Duration:" . $data['duration'] . " Satiation:" . $data['satiation'];
+					break;
+			default:
+			$return_string = "Item Type: " . $itemType . " (Note: Tell LLama to add this Type)";
+		}
+		Return($return_string);
+	}
+
+	public function GenerateItemHover($id)
+	{
+		global $eq2;
+		$return_string = "";
+		if($_GET['tab']=='item_stats' OR $_GET['tab']=='item_effects')
+		{
+			$cssDivClass = 'tooltipBox';
+			$cssSpanClass = 'tooltipBoxText';
+			$imgCode = "";
+		}else{
+			$cssDivClass = 'tooltip';
+			$cssSpanClass = 'tooltiptext';
+			$imgCode = "  <img src='../images/nav_plain_green.png'>\n";
+		}
+		$return_string .= "<div class='" . $cssDivClass . "'>\n";
+		$return_string .= $imgCode;
+		$return_string .= "  <span class='" . $cssSpanClass . "'>\n";
+		
+		//TOP LEVEL ITEM
+		$itemQuery = "SELECT * FROM `" . DEV_DB . "`.`items` WHERE id = " . $id;
+		$itemData = $eq2->RunQuerySingle($itemQuery);
+		$return_string .= "    <div id='tooltipTitle'>\n";
+		$return_string .= "      <a href=''>" . $itemData['name'] . "</a>\n";
+		$return_string .= "      <img src='eq2Icon.php?type=item&id=" . $itemData['icon'] . "&tier=" . $itemData['tier'] . "'>\n";
+		$return_string .= "    </div>\n";
+
+		//ITEM NAME & ICON
+		$tagQuery = "SELECT name FROM `eq2meta` WHERE value=" . $itemData['tier'] . " AND type=(SELECT id FROM `eq2meta_types` WHERE name='item_tag');";
+		$itemTag = $eq2->RunQuerySingle($tagQuery);
+		$return_string .= "    <div id='tooltipTier'>" . $itemTag['name'] . "</div>\n";
+
+		//ITEM TAGS/FLAGS
+		$itemToggleListQuery = "SELECT tag, name FROM `eq2meta` WHERE type=(SELECT id FROM `eq2meta_types` WHERE name='items_flag');";
+		$itemToggleListData = $eq2->RunQueryMulti($itemToggleListQuery);
+		$return_string .= "    <div id='tooltipToggles'>";
+		foreach($itemToggleListData as $toggleListItem)
+		{
+			if($toggleListItem['tag'] != NULL)
+			{
+				if($itemData[$toggleListItem['tag']]==1)
+				{
+					$return_string .= $toggleListItem['tag'] . "&nbsp;&nbsp;";
+				}
+			}
+		}
+		$return_string .= "</div>\n";
+
+		//ITEM STATS
+		$itemStatsQuery = "SELECT type, subtype, iValue, fValue, sValue FROM `".DEV_DB."`.`item_mod_stats` WHERE item_id = " . $id . " ORDER BY type, subtype ASC";
+		$itemStatsData = $eq2->RunQueryMulti($itemStatsQuery);
+		$return_string .= "    <div id='tooltipStats'>";
+		foreach($itemStatsData as $stat)
+		{
+			$value = '';
+			$combinedStat = ($stat['type']*100)+$stat['subtype'];
+			$statNameQuery = "SELECT name FROM `eq2meta` WHERE type=6 AND subtype='stat_subtype' AND value=" . $combinedStat;
+
+			$statName = $eq2->RunQuerySingle($statNameQuery);
+			$sign = "+";
+			if($stat['iValue'] != 'NULL' AND $stat['fValue'] > 0)
+			{
+				$value = $sign . $stat['fValue'];
+			}elseif($stat['iValue'] >= 1)
+			{
+				$value = $sign . $stat['iValue'];
+			}
+			if(strlen($stat['sValue']) > 0)
+			{
+				$postfix = "(" . $stat['sValue'] . ")";
+			}else{
+				$postfix = "";
+			}
+			$return_string .= $value . " " . $statName['name'] . $postfix . "&nbsp;&nbsp;";
+		}
+		$return_string .= "</div>\n";
+
+		//ITEM EFFECTS
+		$return_string .= "    <div id='tooltipEffects'>";
+		$itemEffectsQuery = "SELECT effect FROM `".DEV_DB."`.`item_effects` WHERE item_id = '" .$id . "' ";
+		$itemEffectsData = $eq2->RunQueryMulti($itemEffectsQuery);
+		foreach($itemEffectsData as $effect)
+		{
+			$return_string .= $effect['effect']."&nbsp;&nbsp;";
+		}
+		$return_string .= "</div>\n";
+
+		//ITEM SKILLS
+		$itemSkillsQuery = "SELECT name FROM `".DEV_DB."`.skills WHERE id = '". $itemData['skill_id_req'] ."' ";
+		$itemSkillsData = $eq2->RunQuerySingle($itemSkillsQuery);
+		$return_string .= "<div id='tooltipSkills'>";
+		$return_string .= "  Req Skill:" . $itemSkillsData['name'];
+		$return_string .= "</div>\n";
+
+		//ITEM DETAILS
+		$return_string .= "    <div id='tooltipDetails'>";
+		$return_string .= $eq2->GetQuestRewardItemDetails($id, $itemData['item_type']);
+		$return_string .= "</div>\n";
+
+		//ITEM LEVEL
+		$return_string .= "    <div id='tooltipLevel'>";
+		$return_string .= "Req Lvl: " .$itemData['required_level'];
+		$return_string .= "</div>\n";
+
+		//ITEM ADVENTURE CLASS
+		$return_string .= "    <div id='tooltipAdvClass'>";
+		
+		$return_string .= "</div>\n";
+
+
+		$return_string .= "</span>\n";
+		$return_string .= "</div>\n";
+
+		return($return_string);
 	}
 
 
@@ -2321,7 +2646,7 @@ class eq2Cls
 
 		$myArray = explode("|",$_POST['spawn_names']);
 		foreach($myArray as $key=>$val) {
-			$spawn_data			= $this->runQuery("select id, name, guild from ".PARSER_DB.".raw_spawn_info where id = ".$val);
+			$spawn_data			= $this->runQuery("select id, name, guild from `".PARSER_DB."`.raw_spawn_info where id = ".$val);
 			$scriptName			= preg_replace($pattern,"",$spawn_data['name']).".lua";
 			$scriptPath			= sprintf("SpawnScripts/%s/", $_POST['zone_name']);
 			$fullScriptPath	= $scriptPath."$scriptName";
@@ -2348,7 +2673,7 @@ class eq2Cls
 				$scriptHeader .= sprintf("\tScript Notes\t: Auto-Generated Conversation from PacketParser Data\n");
 				$scriptHeader .= sprintf("--]]\n\n");
 			
-				$sql=sprintf("select * from ".PARSER_DB.".raw_dialogs where spawn_id = %d order by conversation_id,sequence;", $spawn_data['id']); //echo $sql; exit;
+				$sql=sprintf("select * from `".PARSER_DB."`.raw_dialogs where spawn_id = %d order by conversation_id,sequence;", $spawn_data['id']); //echo $sql; exit;
 				$result=$this->db->sql_query($sql);
 				while($data=$this->db->sql_fetchrow($result)) {
 				
@@ -2453,7 +2778,7 @@ class eq2Cls
 
 				// stuffInDB()
 					// lookup Live zone name of NPC
-					$sql=sprintf("select id from " . DEV_DB . ".zones where name = '%s';", $post_array['zone_name']);
+					$sql=sprintf("select id from `" . DEV_DB . "`.`zones` where name = '%s';", $post_array['zone_name']);
 					$result=$this->db->sql_query($sql);
 					$data=$this->db->sql_fetchrow($result);
 					if( $data['id']>0 ) {
@@ -2463,7 +2788,7 @@ class eq2Cls
 					}
 					
 					// get spawn_id from live spawn table
-					$sql=sprintf("select id from " . DEV_DB . ".spawn where name = '%s' and id like '%d____';", addslashes($post_array['spawn_name']), $zone_id); 
+					$sql=sprintf("select id from `" . DEV_DB . "`.`spawn` where name = '%s' and id like '%d____';", addslashes($post_array['spawn_name']), $zone_id); 
 					// echo $sql;
 					$result=$this->db->sql_query($sql);
 					$data=$this->db->sql_fetchrow($result);
@@ -2474,11 +2799,11 @@ class eq2Cls
 					}
 					
 					// insert record into live spawn_script if it does not already exist
-					$sql=sprintf("select count(*) as cnt from " . DEV_DB . ".spawn_scripts where lua_script = '%s';", $post_array['orig_object']);
+					$sql=sprintf("select count(*) as cnt from `" . DEV_DB . "`.`spawn_scripts` where lua_script = '%s';", $post_array['orig_object']);
 					$result=$this->db->sql_query($sql);
 					$data=$this->db->sql_fetchrow($result);
 					if( $data['cnt'] == 0 ) {
-						$sql=sprintf("insert into " . DEV_DB . ".spawn_scripts (spawn_id,lua_script) values ('%s','%s');", $spawn_id, $post_array['orig_object']);
+						$sql=sprintf("insert into `" . DEV_DB . "`.`spawn_scripts` (spawn_id,lua_script) values ('%s','%s');", $spawn_id, $post_array['orig_object']);
 						if( !$result2=$this->db->sql_query($sql) ) {
 							die("Error inserting " . $post_array['orig_object'] . " into spawn_scripts table.");
 						}
@@ -2752,7 +3077,7 @@ class eq2Cls
 		global $link;
 		
 		// fetch merchant data
-		$sql = "select id,name,guild from ".PARSER_DB.".raw_spawn_info where default_command rlike 'merchant' and id in (select spawn_id from ".PARSER_DB.".raw_merchant_items) order by name;";
+		$sql = "select id,name,guild from `".PARSER_DB."`.raw_spawn_info where default_command rlike 'merchant' and id in (select spawn_id from `".PARSER_DB."`.raw_merchant_items) order by name;";
 		if( !$result = $this->db->sql_query($sql) ) {
 		} else {
 			while($data = $this->db->sql_fetchrow($result)) {
@@ -2867,10 +3192,10 @@ class eq2Cls
 											rsi.max_level,
 											difficulty 
 										FROM
-											".PARSER_DB.".raw_spawn_info rsi 
-											JOIN ".RAW_DB.".spawn s 
+											`".PARSER_DB."`.raw_spawn_info rsi 
+											JOIN `".RAW_DB."`.spawn s 
 												ON rsi.populate_spawn_id = s.id 
-											JOIN ".RAW_DB.".appearances a 
+											JOIN `".RAW_DB."`.appearances a 
 												ON rsi.model_type = a.appearance_id 
 										WHERE guild NOT RLIKE 'Personae' 
 											AND a.name NOT RLIKE '/pc/'
@@ -2940,7 +3265,7 @@ class eq2Cls
 																 );
 			
 			// Step 1: Gather up all spawn location data pertaining to this zones spawns
-			$query = sprintf("SELECT sln.id FROM ".LIVE_DB.".spawn_location_name sln LEFT JOIN ".LIVE_DB.".spawn_location_placement slp ON sln.id = slp.spawn_location_id WHERE zone_id = %s;", $zone_id);
+			$query = sprintf("SELECT sln.id FROM `".LIVE_DB."`.spawn_location_name sln LEFT JOIN `".LIVE_DB."`.spawn_location_placement slp ON sln.id = slp.spawn_location_id WHERE zone_id = %s;", $zone_id);
 			//printf("<p>%s</p>", $query);
 			if( !$results = $this->db->sql_query($query) ) 
 				$this->DBError($query);
@@ -3071,13 +3396,13 @@ class eq2Cls
 			$exclude_array = array("processed");
 			$field_array = $this->GetFieldNames("spawn", $exclude_array);
 			
-			$query_array[] = sprintf("INSERT INTO ".LIVE_DB.".spawn (%s) SELECT %s FROM ".DEV_DB.".spawn WHERE id LIKE '%s____'", implode(", ", $field_array), implode(", ", $field_array), $_GET['from']);
+			$query_array[] = sprintf("INSERT INTO `".LIVE_DB."`.spawn (%s) SELECT %s FROM `".DEV_DB."`.spawn WHERE id LIKE '%s____'", implode(", ", $field_array), implode(", ", $field_array), $_GET['from']);
 			
 			foreach($spawn_table_array as $table)
 			{
 				$exclude_array = array("id", "processed");
 				$field_array = $this->GetFieldNames($table, $exclude_array);
-				$query_array[] = sprintf("INSERT INTO ".LIVE_DB.".%s (%s) SELECT %s FROM ".DEV_DB.".%s WHERE spawn_id LIKE '%s____'", $table, implode(", ", $field_array), implode(", ", $field_array), $table, $_GET['from']);
+				$query_array[] = sprintf("INSERT INTO `".LIVE_DB."`.%s (%s) SELECT %s FROM `".DEV_DB."`.%s WHERE spawn_id LIKE '%s____'", $table, implode(", ", $field_array), implode(", ", $field_array), $table, $_GET['from']);
 			}
 			
 			// commit SQL
@@ -3221,14 +3546,14 @@ class eq2Cls
 			{
 				// First show the list of Spawn (types) in a zone with a count of how many of that spawn_id there are
 				$this->SQLQuery = sprintf("SELECT count(sle.spawn_id) as num_spawns, s.id, s.name
-												FROM ".DEV_DB.".spawn s 
-												JOIN ".DEV_DB.".spawn_%s st ON s.id = st.spawn_id
-												JOIN ".DEV_DB.".spawn_location_entry sle ON s.id = sle.spawn_id 
-												JOIN ".DEV_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
+												FROM `".DEV_DB."`.spawn s 
+												JOIN `".DEV_DB."`.spawn_%s st ON s.id = st.spawn_id
+												JOIN `".DEV_DB."`.spawn_location_entry sle ON s.id = sle.spawn_id 
+												JOIN `".DEV_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
 												WHERE 
 													slp.zone_id = %d AND
 													spawnpercentage > 0 AND
-													slp.id NOT IN (SELECT DISTINCT placement_id FROM ".DEV_DB.".spawn_location_group)
+													slp.id NOT IN (SELECT DISTINCT placement_id FROM `".DEV_DB."`.spawn_location_group)
 												GROUP BY sle.spawn_id HAVING count(sle.spawn_id) > 1
 												ORDER BY s.name, s.id", $_GET['type'], $_GET['zone']);
 														
@@ -3275,15 +3600,15 @@ class eq2Cls
 								$spawn_location_ids .= ", " . $val;
 						}
 					}
-					$this->SQLQuery = sprintf("DELETE FROM ".DEV_DB.".spawn_location_name WHERE id IN (%s);", $spawn_location_ids);
+					$this->SQLQuery = sprintf("DELETE FROM `".DEV_DB."`.spawn_location_name WHERE id IN (%s);", $spawn_location_ids);
 					$this->RunQuery();
 					return; // done
 				}
 				
 				$this->SQLQuery = sprintf("SELECT slp.*, s.name 
-																		FROM ".DEV_DB.".spawn_location_entry sle
-																		LEFT JOIN ".DEV_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
-																		JOIN ".DEV_DB.".spawn s ON sle.spawn_id = s.id
+																		FROM `".DEV_DB."`.spawn_location_entry sle
+																		LEFT JOIN `".DEV_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
+																		JOIN `".DEV_DB."`.spawn s ON sle.spawn_id = s.id
 																		WHERE
 																			spawn_id = %lu
 																		ORDER BY x, y, z, spawn_id", $_GET['spawn']);
@@ -3324,7 +3649,7 @@ class eq2Cls
 						$z_high = round($placements['z']) + $distance_offset;
 		
 						$this->SQLQuery = sprintf("SELECT * 
-																				FROM ".DEV_DB.".spawn_location_placement slp, ".DEV_DB.".spawn_location_entry sle
+																				FROM `".DEV_DB."`.spawn_location_placement slp, `".DEV_DB."`.spawn_location_entry sle
 																				WHERE
 																					slp.spawn_location_id = sle.spawn_location_id AND
 																					sle.spawn_id = %lu AND
@@ -3587,17 +3912,17 @@ class eq2Cls
 		if( $id=="all" ) {
 			if( isset($_GET['s']) ) {
 				$sql=sprintf("select i.id as item_id,s.id as spawn_id,rmi.price
-												from ".PARSER_DB.".raw_merchant_items rmi
-												join ".PARSER_DB.".raw_spawn_info rsi on rmi.spawn_id = rsi.id
-												join " . DEV_DB . ".spawn s on rsi.name = s.name
-												join " . DEV_DB . ".items i on rmi.item_name = i.name
+												from `".PARSER_DB."`.`raw_merchant_items` rmi
+												join `".PARSER_DB."`.`raw_spawn_info` rsi on rmi.spawn_id = rsi.id
+												join `" . DEV_DB . "`.`spawn` s on rsi.name = s.name
+												join `" . DEV_DB . "`.`items` i on rmi.item_name = i.name
 												where rmi.spawn_id = %s
 												group by i.name;",$_GET['s']); //echo $sql;
 				if( !$result = $this->db->sql_query($sql) )
 					$this->DBError($sql, array(__FILE__, __FUNCTION__, __LINE__));
 
 				$merchant_id = 1;
-				$sql="select max(merchant_id) as nextId from " . DEV_DB . ".merchants;";
+				$sql="select max(merchant_id) as nextId from `" . DEV_DB . "`.`merchants`;";
 				$data2=$this->db->sql_fetchrow($this->db->sql_query($sql));
 				$merchant_id = $data2['nextId']+1;
 	
@@ -3605,19 +3930,19 @@ class eq2Cls
 	
 					$spawn_id = $data['spawn_id']; // for use outside this loop
 					
-					$sql2 = sprintf("insert into " . DEV_DB . ".merchants (merchant_id, item_id) values ('%s','%s');",$merchant_id,$data['item_id']);
+					$sql2 = sprintf("insert into `" . DEV_DB . "`.`merchants` (merchant_id, item_id) values ('%s','%s');",$merchant_id,$data['item_id']);
 					// printf("%s<br />",$insert);
 					if( !$result1 = $this->db->sql_query($sql2) )
 						$this->DBError($sql2);
 						
 					// update sell_price in items table
-					$sql=sprintf("update " . DEV_DB . ".items set sell_price = '%s' where id = '%s';",$data['price'],$data['item_id']);
+					$sql=sprintf("update `" . DEV_DB . "`.`items` set sell_price = '%s' where id = '%s';",$data['price'],$data['item_id']);
 					//printf("%s<br />",$sql);
 					if( !$result1 = $this->db->sql_query($sql2) )
 						$this->DBError($sql2);
 				}
 				// after merchant list is built, update spawn.merchant_id
-				$sql=sprintf("update " . DEV_DB . ".spawn set merchant_id = '%s' where id = '%s';",$merchant_id,$spawn_id);
+				$sql=sprintf("update `" . DEV_DB . "`.`spawn` set merchant_id = '%s' where id = '%s';",$merchant_id,$spawn_id);
 				//printf("%s<br />",$sql);
 				if( !$result1 = $this->db->sql_query($sql) )
 					$this->DBError($sql, array(__FILE__, __FUNCTION__, __LINE__));
@@ -3635,7 +3960,7 @@ class eq2Cls
 
 	function deletePlayerSpellSet($id) 
 	{
-		$this->db->sql_query("delete from ".DEV_DB.".character_spells where char_id = ".$id);
+		$this->db->sql_query("delete from `".DEV_DB."`.character_spells where char_id = ".$id);
 	}
 	
 	function swapPlayerSpellSet() 
@@ -3693,12 +4018,12 @@ class eq2Cls
 			case 40: $classList = "31,38,40"; break;			
 		}
 		$setLive = ( isset($_POST['is-live']) ) ? " and is_live = 1" : "";
-		$sql=sprintf("SELECT max(tier) as tier,s.id,s.name,spell_book_type,sc.level FROM %s.spells s JOIN %s.spell_tiers st on s.id = st.spell_id LEFT JOIN %s.spell_classes sc ON s.id = sc.spell_id WHERE sc.adventure_class_id in (0,%s) %s group by `name` order by s.spell_book_type,sc.level,s.id;",
+		$sql=sprintf("SELECT max(tier) as tier,s.id,s.name,spell_book_type,sc.level FROM `%s`.spells s JOIN `%s`.spell_tiers st on s.id = st.spell_id LEFT JOIN `%s`.spell_classes sc ON s.id = sc.spell_id WHERE sc.adventure_class_id in (0,%s) %s group by `name` order by s.spell_book_type,sc.level,s.id;",
 			DEV_DB, DEV_DB, DEV_DB, $classList,$setLive); // echo $sql;
 		if( !$result = $this->db->sql_query($sql) )
 			$this->DBError($sql, array(__FILE__, __FUNCTION__, __LINE__));
 		$i=0;
-		$bulkLoad="insert into ".DEV_DB.".character_spells (char_id,spell_id,tier,knowledge_slot) values ";
+		$bulkLoad="insert into `".DEV_DB."`.character_spells (char_id,spell_id,tier,knowledge_slot) values ";
 		$currType = "";
 		while($data=$this->db->sql_fetchrow($result)) {
 			if( $currType != $data['spell_book_type'] ) {
@@ -4135,14 +4460,14 @@ class eq2Cls
 	// Refactored: 2015.12.15
 	public function getItemName($id) 
 	{
-		$this->SQLQuery=sprintf("select name from ".DEV_DB.".items where id = %lu", $id);
+		$this->SQLQuery=sprintf("select name from `".DEV_DB."`.items where id = %lu", $id);
 		$data = $this->RunQuerySingle();
 		return ( !empty($data['name']) ) ? $data['name'] : $id;
 	}
 	
 	function getItemTiers($tier = 0) 
 	{
-		$this->SQLQuery="select distinct tier from ".DEV_DB.".items order by tier";
+		$this->SQLQuery="select distinct tier from `".DEV_DB."`.items order by tier";
 		$result=$this->RunQueryMulti();
 		if(is_array($result)) {
 			$factionOptions = "";
@@ -4156,7 +4481,7 @@ class eq2Cls
 
 	function GetMerchantsItemList($id) 
 	{
-		$sql = sprintf("select item_id, item_name, price, level from ".PARSER_DB.".raw_merchant_items where spawn_id = %s order by item_name;", $id);
+		$sql = sprintf("select item_id, item_name, price, level from `".PARSER_DB."`.raw_merchant_items where spawn_id = %s order by item_name;", $id);
 		if( !$result = $this->db->sql_query($sql) )
 			$this->DBError($sql, array(__FILE__, __FUNCTION__, __LINE__));
 		print('<table width="100%" cellpadding="2" cellspacing="2" border="1" align="center">');
@@ -4189,7 +4514,7 @@ class eq2Cls
 	
 	function getSkillName($id) 
 	{
-		$sql = sprintf("select name from ".DEV_DB.".skills where id = %s",$id);
+		$sql = sprintf("select name from `".DEV_DB."`.skills where id = %s",$id);
 		if( !$result = $this->db->sql_query($sql) )
 			$this->DBError($sql, array(__FILE__, __FUNCTION__, __LINE__));
 		$data=$this->db->sql_fetchrow($result);
@@ -4204,12 +4529,12 @@ class eq2Cls
 												spawn_signs.spawn_id AS SIGN, 
 												spawn_widgets.spawn_id AS widget, 
 												spawn_ground.spawn_id AS ground 
-											FROM " . DEV_DB . ".spawn 
-											LEFT JOIN " . DEV_DB . ".spawn_npcs ON spawn.id = spawn_npcs.spawn_id
-											LEFT JOIN " . DEV_DB . ".spawn_objects ON spawn.id = spawn_objects.spawn_id
-											LEFT JOIN " . DEV_DB . ".spawn_signs ON spawn.id = spawn_signs.spawn_id
-											LEFT JOIN " . DEV_DB . ".spawn_widgets ON spawn.id = spawn_widgets.spawn_id
-											LEFT JOIN " . DEV_DB . ".spawn_ground ON spawn.id = spawn_ground.spawn_id
+											FROM `" . DEV_DB . "`.spawn 
+											LEFT JOIN `" . DEV_DB . "`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id
+											LEFT JOIN `" . DEV_DB . "`.spawn_objects ON spawn.id = spawn_objects.spawn_id
+											LEFT JOIN `" . DEV_DB . "`.spawn_signs ON spawn.id = spawn_signs.spawn_id
+											LEFT JOIN `" . DEV_DB . "`.spawn_widgets ON spawn.id = spawn_widgets.spawn_id
+											LEFT JOIN `" . DEV_DB . "`.spawn_ground ON spawn.id = spawn_ground.spawn_id
 											WHERE 
 												spawn.id = %lu", $id);
 		if( !$result = $this->db->sql_query($sql) )
@@ -4381,14 +4706,14 @@ class eq2Cls
 	
 	function getSpawnNameByID($spawnID)
 	{
-		$this->SQLQuery = sprintf("SELECT name FROM ".DEV_DB.".spawn WHERE id = %u", $spawnID);
+		$this->SQLQuery = sprintf("SELECT name FROM `".DEV_DB."`.spawn WHERE id = %u", $spawnID);
 		$row = $this->RunQuerySingle();
 		return $row['name'];
 	}
 
 	function getZoneNameByID($id)
 	{
-		$this->SQLQuery = sprintf("SELECT `description` FROM ".DEV_DB.".zones WHERE id = %u", $id);
+		$this->SQLQuery = sprintf("SELECT `description` FROM `".DEV_DB."`.zones WHERE id = %u", $id);
 		$row = $this->RunQuerySingle();
 		return $row['description'];
 	}
@@ -4442,119 +4767,110 @@ class eq2Cls
 	function DisplayScriptEditor($scriptPath, $editingName, $objectID, $table, $templates = NULL) {
 		global $eq2;
 		$script_exists = $this->CheckScriptExists($scriptPath);
-		?>
 
-		<div id="Editor" style="max-width:100%;">
-		<table class="SubPanel" cellspacing="0" border="0" style="width:100%;">
-			<tr>
-				<td id="EditorStatus" colspan="2"><?php if( isset($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
-			</tr>
-			<tr>
-				<td class="Title" colspan="2">
-					Editing: <?php echo $editingName ?> (<?php echo $scriptPath ?>) <?php if( !$script_exists ) echo "<strong>*New*</strong>" ?>
-				</td>
-			</tr>
-			<tr>
-			<td valign="top" style="width:20%;height:100%;background-color:white;">
-					<table class="SectionToggles" cellspacing="0" border="0" style="width:100%;">
-						<tr>
-							<td class="SectionTitle" align="center">
-								Templates
-							</td>
-						</tr>
-						<?php if (!isset($templates)) : ?>
-						<tr align="center">
-							<td><strong>None Yet.</strong></td>
-						</tr>
-						<?php else : ?>
-						<script>
-							function AddTextToEditor($name) {
-								var element = document.getElementById($name);
-								editor.insert(element.getAttribute("myFuncText"));
-							}
-						</script>
-						<?php $i = 0; foreach ($templates as $category=>$list) : ?>
-						<tr align="center">
-							<?php printf("<td><strong>%s</strong></td>", $category); ?>
-							</tr>
-							<tr>
-								<td align="center">
-								<?php
-								foreach ($list as $function=>$text) {
-									printf('<input type="button" id="scriptEditor_%s" value="%s" class="submit-template" myFuncText="%s" onclick="AddTextToEditor(\'scriptEditor_%s\');" /><br />',
-									$i, $function, htmlentities($text), $i++);
-								} 
-								?>
-								</td>
-							</tr>
-						<?php endforeach; ?>
-						<?php endif; ?>
-					</table>
-				</td>
-				<td valign="top" style="width:80%;">
-					<form method="post" name="ScriptForm">
-					<table class="SectionMain" cellspacing="0" border="0" style="width:100%;">
-						<tr>
-							<td class="SectionTitle" align="center">Script Editor</td>
-						</tr>
-						<tr>
-							<td id="ScriptToolbar">
-							</td>
-						</tr>
-						<tr>
-							<td height="480px"> 
-							<?php $scriptText = $this->LoadLUAScript($scriptPath); ?>
-							<div id="scripteditor" style="margin: 0; width: 100%; height: 100%"><?php echo $scriptText; ?></div>
-							<script src="../ace/src-noconflict/ace.js" charset="utf-8"></script>
-							<script src="../ace/src-noconflict/ext-language_tools.js"></script>	
-							<script>
-								var lang_tools = ace.require("../ace/ext/language_tools");
-								var editor = ace.edit("scripteditor");
-								editor.setTheme("../ace/theme/textmate");
-								editor.session.setMode("../ace/mode/lua"); 
-								lang_tools.setCompleters([lang_tools.snippetCompleter, lang_tools.keyWordCompleter]);
-								editor.setOptions({
-									enableLiveAutocompletion: true
-								});
-								editor.on("change", function() {updateCachedScript();});
-							</script>
-							</td>
-						</tr>
-						<?php if( $this->CheckAccess(G_DEVELOPER) ): ?>
-						<tr>
-							<td align="center">
-								<input type="submit" align="center" name="cmd" value="<?php echo $script_exists ? "Save" : "Create"; ?>" class="submit" id="savescript" />
-								<!--<input type="submit" name="cmd" value="Rebuild" class="submit" title="Rebuilds the script from scratch (overwrite old one)." />-->
-								<button id="scriptRevert" type="button">Revert</button>
-								<input type="hidden" id="script_name" name="script_name" value="<?php echo $scriptPath ?>" />
-								<input type="hidden" name="script_path" value="<?php echo substr($scriptPath, 0, strrpos($scriptPath, '/')); ?>" />
-								<input type="hidden" name="table_name" value="<?php echo $table; ?>" />
-								<input type="hidden" name="object_id" value="<?php echo $objectID; ?>" />
-								<input type="hidden" name="script_text" id="LuaScript" />
-								<script>
-								document.getElementById("savescript").onclick = 
-								function() {
-									document.getElementById("LuaScript").value = editor.getValue();
-								};
-								document.getElementById("scriptRevert").onclick =
-								function() {
-									if (confirm("Are you sure you want to revert? You will lose your local changes.")) {
-										editor.setValue(original_lua_script_text, 1);
-										clearCachedScript();
-									}
-								};
-								checkForCachedScript();
-								</script>
-							</td>
-						</tr>
-						<?php endif; ?>
-					</table>
-					</form>
-				</td>
-			</tr>
-		</table>
-		</div>
-		<?php
+		$return_string = "";
+		$return_string .= "<div id='Editor' style='max-width:100%;'>\n";
+		$return_string .= "  <table class='SubPanel' cellspacing='0' border='0' style='width:100%;'>\n";
+		$return_string .= "    <tr>\n";
+		$return_string .= "      <td id='EditorStatus' colspan='2'>" . (isset($eq2->Status)?$eq2->DisplayStatus():'') ."</td>\n";
+		$return_string .= "    </tr>\n";
+		$return_string .= "    <tr>\n";
+		$return_string .= "      <td class='Title' colspan='2'>\n";
+		$return_string .= "        Editing: " . $editingName . "(" . $scriptPath . ") " . (!$script_exists?"<strong>*New*</strong>":"") ."\n";
+		$return_string .= "      </td>\n";
+		$return_string .= "    </tr>\n";
+		$return_string .= "    <tr>\n";
+		$return_string .= "      <td valign='top' style='width:20%;height:100%;background-color:white;'>\n";
+		$return_string .= "        <table class='SectionToggles' cellspacing='0' border='0' style='width:100%;'>\n";
+		$return_string .= "          <tr>\n";
+		$return_string .= "            <td class='SectionTitle' align='center'>Templates</td>\n";
+		$return_string .= "          </tr>\n";
+		$return_string .= "          <script>\n";
+		$return_string .= "            function AddTextToEditor(element) {\n";
+		$return_string .= "              editor.insert(element.getAttribute('myFuncText'));\n";
+		$return_string .= "            }\n";
+		$return_string .= "          </script>\n";
+		$return_string .= "          <tr align='center'>\n";
+		$return_string .= "            <td align='center'>\n";
+		//BEGIN TEMPLATE SECTION
+		$return_string .= "              <table class='ContrastTable' width='100%'>\n";
+		$return_string .= $eq2->GetLuaBlocks('showList');
+		//END TEMPLATE SECTION
+
+		$return_string .= "            </td>\n";
+		$return_string .= "          </tr>\n";
+		$return_string .= "        </table>\n";
+		$return_string .= "      </td>\n";
+		$return_string .= "    </tr>\n";
+		$return_string .= "  </table>\n";
+		$return_string .= "</td>\n";
+		$return_string .= "<td valign='top' style='width:80%;'>\n";
+		$return_string .= "  <form method='post' name='ScriptForm'>\n";
+		$return_string .= "    <table class='SectionMain' cellspacing='0' border='0' style='width:100%;'>\n";
+		$return_string .= "      <tr>\n";
+		$return_string .= "        <td class='SectionTitle' align='center'>Script Editor</td>\n";
+		$return_string .= "          </tr>\n";
+		$return_string .= "            <tr>\n";
+		$return_string .= "              <td id='ScriptToolbar'>\n";
+		$return_string .= "              </td>\n";
+		$return_string .= "            </tr>\n";
+		$return_string .= "            <tr>\n";
+		$return_string .= "              <td height='480px'> \n";
+		
+		$scriptText = $this->LoadLUAScript($scriptPath);
+		$return_string .= "                <div id='scripteditor' style='margin: 0; width: 100%; height: 100%'>" . $scriptText . "</div>\n";
+		$return_string .= "                  <script src='../ace/src-noconflict/ace.js' charset='utf-8'></script>\n";
+		$return_string .= "                  <script src='../ace/src-noconflict/ext-language_tools.js'></script>\n";
+		$return_string .= "                  <script>\n";
+		$return_string .= "                    var lang_tools = ace.require('../ace/ext/language_tools');\n";
+		$return_string .= "                    var editor = ace.edit('scripteditor');\n";
+		$return_string .= "                    editor.setTheme('../ace/theme/textmate');\n";
+		$return_string .= "                    editor.session.setMode('../ace/mode/lua'); \n";
+		$return_string .= "                    lang_tools.setCompleters([lang_tools.snippetCompleter, lang_tools.keyWordCompleter]);\n";
+		$return_string .= "                    editor.setOptions({\n";
+		$return_string .= "                      enableLiveAutocompletion: true\n";
+		$return_string .= "                    });\n";
+		$return_string .= "                    editor.on('change', function() {updateCachedScript();});\n";
+		$return_string .= "                  </script>\n";
+		$return_string .= "                </td>\n";
+		$return_string .= "              </tr>\n";
+		
+		if( $this->CheckAccess(G_DEVELOPER) )
+		{
+			$return_string .= "              <tr>\n";
+			$return_string .= "                <td align='center'>\n";
+			$return_string .= "                  <input type='submit' align='center' name='cmd' value='" . ($script_exists ? 'Save' : 'Create') . "' class='submit' id='savescript' />\n";
+			$return_string .= "                  <!--<input type='submit' name='cmd' value='Rebuild' class='submit' title='Rebuilds the script from scratch (overwrite old one).' />-->\n";
+			$return_string .= "                  <button id='scriptRevert' type='button'>Revert</button>\n";
+			$return_string .= "                  <input type='hidden' id='script_name' name='script_name' value='" . $scriptPath . "' />\n";
+			$return_string .= "                  <input type='hidden' name='script_path' value='" . substr($scriptPath, 0, strrpos($scriptPath, '/')) . "' />\n";
+			$return_string .= "                  <input type='hidden' name='table_name' value='" . $table . "' />\n";
+			$return_string .= "                  <input type='hidden' name='object_id' value='" . $objectID . "' />\n";
+			$return_string .= "                  <input type='hidden' name='script_text' id='LuaScript' />\n";
+			$return_string .= "                  <script>\n";
+			$return_string .= "                    document.getElementById('savescript').onclick = \n";
+			$return_string .= "                    function() {\n";
+			$return_string .= "                      document.getElementById('LuaScript').value = editor.getValue();\n";
+			$return_string .= "                    };\n";
+			$return_string .= "                    document.getElementById('scriptRevert').onclick = \n";
+			$return_string .= "                    function() {\n";
+			$return_string .= "                      if (confirm('Are you sure you want to revert? You will lose your local changes.')) {\n";
+			$return_string .= "                        editor.setValue(original_lua_script_text, 1);\n";
+			$return_string .= "                        clearCachedScript();\n";
+			$return_string .= "                      }\n";
+			$return_string .= "                    };\n";
+			$return_string .= "                    checkForCachedScript();\n";
+			$return_string .= "                  </script>\n";
+			$return_string .= "                </td>\n";
+			$return_string .= "              </tr>\n";
+		}
+		$return_string .= "            </table>\n";
+		$return_string .= "          </form>\n";
+		$return_string .= "        </td>\n";
+		$return_string .= "      </tr>\n";
+		$return_string .= "    </table>\n";
+		$return_string .= "  </div>\n";
+		return($return_string);
 	}
 
 	//

@@ -124,6 +124,18 @@ $link = sprintf("%s",$_SERVER['SCRIPT_NAME']);
 					</td>
 				</tr>
 
+				<tr>
+					<td class="SectionTitle">Editor Admin</td>
+				</tr>
+
+				<tr>
+					<td class="SectionBody">
+						<ul class="menu-list">
+							<li class="<?= ( $page== "updateItemVals" ) ? "active-menu-list" : "menu-list" ?>">&raquo; <a href="<?php print($link) ?>?page=updateItemVals">Update Item Values</a></li>
+						</ul>
+					</td>
+				</tr>
+
 				<?php } ?>
 			</table>
 		</td>
@@ -165,6 +177,7 @@ $link = sprintf("%s",$_SERVER['SCRIPT_NAME']);
 						case "sql"					:	adhoc(); break;
 						case "soecompare"			: 	SOEDataCompare(); break;
 						case "syncspells"			:	SyncRawSpells(); break;
+						case "updateItemVals"		:	updateEditorItemVals();break;
 						default						:	Welcome(); break;
 					}
 					?>
@@ -571,7 +584,7 @@ function BuildDialogs()
 		<tr>
 			<td colspan="2">
 			<input type="hidden" name="script_text" id="LuaScript" />
-			<div id="scripteditor" style="height:400px;width:960px;"><?= $script_text ?></div>
+			//<div id="scripteditor" style="height:400px;width:960px;"><?= $script_text ?></div>
 			<script src="../ace/src-noconflict/ace.js" charset="utf-8"></script>
 			<script src="../ace/src-noconflict/ext-language_tools.js"></script>	
 			<script>
@@ -1993,7 +2006,7 @@ function PopZone() {
 		<tr>
 			<td colspan="9">&nbsp;<strong><?= $spawn_count ?> Spawn Points</strong>
 				<span style="font-size:10px; float:right;">
-					select * from <?= RAW_DB ?>.spawn s1, <?= RAW_DB ?>.spawn_<?= $s->spawn_type ?> s2 where s1.id = s2.spawn_id AND `name` = '<?= $data['name'] ?>' AND s1.id BETWEEN <?= $z->zone_id ?>0000 AND <?= $z->zone_id ?>9999;
+					select * from `<?= RAW_DB ?>`.spawn s1, `<?= RAW_DB ?>`.spawn_<?= $s->spawn_type ?> s2 where s1.id = s2.spawn_id AND `name` = '<?= $data['name'] ?>' AND s1.id BETWEEN <?= $z->zone_id ?>0000 AND <?= $z->zone_id ?>9999;
 				</span>
 			</td>
 		</tr>
@@ -2067,7 +2080,7 @@ function PurgeZone()
 	elseif( $z->zone_id > 0 )
 	{
 		// display items to purge
-		$eq2->SQLQuery = sprintf("SELECT id, name FROM ".DEV_DB.".spawn WHERE id LIKE '%s____'", $z->zone_id);
+		$eq2->SQLQuery = sprintf("SELECT id, name FROM `".DEV_DB."`.spawn WHERE id LIKE '%s____'", $z->zone_id);
 		$results = $eq2->RunQueryMulti();
 		
 		if( is_array($results) )
@@ -2584,7 +2597,7 @@ function CleanRawData()
 	global $eq2;
 	
 	// first, get all raw_zone data
-	$sql = "SELECT id, zone_file, zone_desc FROM ".PARSER_DB.".raw_zones ORDER BY zone_file, zone_desc";
+	$sql = "SELECT id, zone_file, zone_desc FROM `".PARSER_DB."`.raw_zones ORDER BY zone_file, zone_desc";
 	if( !$result = $eq2->db->sql_query($sql) )
 	{
 		$error = $eq2->db->sql_error();
@@ -2595,7 +2608,7 @@ function CleanRawData()
 		$raw_zone_data[$row['id']] = array($row['zone_file'], $row['zone_desc']);
 
 	// then, get all raw zone data that is a duplicate within raw_zones
-	$sql = "SELECT id, zone_file, zone_desc FROM ".PARSER_DB.".raw_zones WHERE zone_desc NOT IN (SELECT description FROM ".RAW_DB.".zones) GROUP BY zone_file HAVING COUNT(zone_file) > 1 ORDER BY zone_file, zone_desc";
+	$sql = "SELECT id, zone_file, zone_desc FROM `".PARSER_DB."`.raw_zones WHERE zone_desc NOT IN (SELECT description FROM `".RAW_DB."`.zones) GROUP BY zone_file HAVING COUNT(zone_file) > 1 ORDER BY zone_file, zone_desc";
 	if( !$result = $eq2->db->sql_query($sql) )
 	{
 		$error = $eq2->db->sql_error();
@@ -2606,7 +2619,7 @@ function CleanRawData()
 		$dupe_zone_data[$row['id']] = array($row['zone_file'], $row['zone_desc']);
 
 	// then, get all raw zone data that does not exist in destination DB
-	$sql = "SELECT rz.* FROM ".PARSER_DB.".raw_zones rz LEFT JOIN ".RAW_DB.".zones z ON rz.zone_desc = z.description AND rz.zone_file = z.file WHERE z.description IS NULL ORDER BY zone_file, zone_desc";
+	$sql = "SELECT rz.* FROM `".PARSER_DB."`.raw_zones rz LEFT JOIN `".RAW_DB."`.zones z ON rz.zone_desc = z.description AND rz.zone_file = z.file WHERE z.description IS NULL ORDER BY zone_file, zone_desc";
 	if( !$result = $eq2->db->sql_query($sql) )
 	{
 		$error = $eq2->db->sql_error();
@@ -2617,7 +2630,7 @@ function CleanRawData()
 		$bad_zone_data[$row['id']] = array($row['zone_file'], $row['zone_desc']);
 	
 	// funally, get all zones from desintation DB
-	$sql = "SELECT id, file, description FROM ".RAW_DB.".zones";
+	$sql = "SELECT id, file, description FROM `".RAW_DB."`.zones";
 	if( !$result = $eq2->db->sql_query($sql) )
 	{
 		$error = $eq2->db->sql_error();
@@ -2718,7 +2731,7 @@ function adhoc()
 <?php	
 	if( isset($_POST['cmd']) )
 	{
-		$query = sprintf("SELECT %s FROM ".DEV_DB.".%s", $_POST['queryselect'], $_POST['querytable']);
+		$query = sprintf("SELECT %s FROM `".DEV_DB."`.%s", $_POST['queryselect'], $_POST['querytable']);
 
 		if( !empty( $_POST['querywhere'] ) )
 			$query .= " WHERE ".$_POST['querywhere'];
@@ -3174,11 +3187,11 @@ function SpellLookupAJAX() {
 			if( $_GET['class'] == 50 ) // Show Tradeskills
 			{
 				$query = "SELECT DISTINCT s1.spell_id, s1.name, s1.description, adventure_class_id, tradeskill_class_id, s4.name as class, s5.name as mastery, round(spell_level / 10) as spell_level, s1.tier
-									FROM ".PARSER_DB.".raw_spells s1 
-									LEFT JOIN ".PARSER_DB.".raw_spell_levels s2 ON s1.spell_id = s2.spell_id
-									LEFT JOIN ".DEV_DB.".spells s3 ON s1.name = s3.name 
-									LEFT JOIN ".DEV_DB.".skills s4 on s1.class_skill = s4.id
-									LEFT JOIN ".DEV_DB.".skills s5 on s1.mastery_skill = s5.id
+									FROM `".PARSER_DB."`.raw_spells s1 
+									LEFT JOIN `".PARSER_DB."`.raw_spell_levels s2 ON s1.spell_id = s2.spell_id
+									LEFT JOIN `".DEV_DB."`.spells s3 ON s1.name = s3.name 
+									LEFT JOIN `".DEV_DB."`.skills s4 on s1.class_skill = s4.id
+									LEFT JOIN `".DEV_DB."`.skills s5 on s1.mastery_skill = s5.id
 									WHERE 
 										s3.id IS NULL AND 
 										s1.processed = 0 AND 
@@ -3192,11 +3205,11 @@ function SpellLookupAJAX() {
 			else if( $_GET['class'] == 100 ) // Show Traditions
 			{
 				$query = sprintf("SELECT DISTINCT s1.spell_id, s1.name, s1.description, s4.name as class, s5.name as mastery, s1.tier
-													FROM ".PARSER_DB.".raw_spells s1 
-													JOIN ".PARSER_DB.".raw_traditions s2 ON s1.spell_id = s2.tradition_id
-													LEFT JOIN ".DEV_DB.".spells s3 ON s1.name = s3.name 
-													LEFT JOIN ".DEV_DB.".skills s4 on s1.class_skill = s4.id
-													LEFT JOIN ".DEV_DB.".skills s5 on s1.mastery_skill = s5.id
+													FROM `".PARSER_DB."`.raw_spells s1 
+													JOIN `".PARSER_DB."`.raw_traditions s2 ON s1.spell_id = s2.tradition_id
+													LEFT JOIN `".DEV_DB."`.spells s3 ON s1.name = s3.name 
+													LEFT JOIN `".DEV_DB."`.skills s4 on s1.class_skill = s4.id
+													LEFT JOIN `".DEV_DB."`.skills s5 on s1.mastery_skill = s5.id
 													WHERE 
 														s3.id IS NULL AND 
 														s1.processed = 0
@@ -3210,11 +3223,11 @@ function SpellLookupAJAX() {
 					die("Cannot select ALL classes when popping spells");
 				
 				$query = sprintf("SELECT s1.spell_id, s1.name, s1.description, s4.name as class, s5.name as mastery, round(spell_level / 10) as spell_level
-									FROM ".PARSER_DB.".raw_spells s1 
-									LEFT JOIN ".PARSER_DB.".raw_spell_levels s2 ON s1.spell_id = s2.spell_id
-									LEFT JOIN ".DEV_DB.".skills s4 on s1.class_skill = s4.id
-									LEFT JOIN ".DEV_DB.".skills s5 on s1.mastery_skill = s5.id
-									LEFT JOIN ".DEV_DB.".spells s3 ON s1.name = s3.name 
+									FROM `".PARSER_DB."`.raw_spells s1 
+									LEFT JOIN `".PARSER_DB."`.raw_spell_levels s2 ON s1.spell_id = s2.spell_id
+									LEFT JOIN `".DEV_DB."`.skills s4 on s1.class_skill = s4.id
+									LEFT JOIN `".DEV_DB."`.skills s5 on s1.mastery_skill = s5.id
+									LEFT JOIN `".DEV_DB."`.spells s3 ON s1.name = s3.name 
 									WHERE 
 										s3.id IS NULL
 										AND s1.processed = 0
@@ -3230,11 +3243,11 @@ function SpellLookupAJAX() {
 		else if( isset($_GET['skill']) ) // By Skill
 		{
 			$query = sprintf("SELECT DISTINCT s1.spell_id, s1.name, s1.description, adventure_class_id, tradeskill_class_id, s4.name as class, s5.name as mastery, round(spell_level / 10) as spell_level, s1.tier
-												FROM ".PARSER_DB.".raw_spells s1 
-												LEFT JOIN ".PARSER_DB.".raw_spell_levels s2 ON s1.spell_id = s2.spell_id
-												LEFT JOIN ".DEV_DB.".spells s3 ON s1.name = s3.name 
-												LEFT JOIN ".DEV_DB.".skills s4 on s1.class_skill = s4.id
-												LEFT JOIN ".DEV_DB.".skills s5 on s1.mastery_skill = s5.id
+												FROM `".PARSER_DB."`.raw_spells s1 
+												LEFT JOIN `".PARSER_DB."`.raw_spell_levels s2 ON s1.spell_id = s2.spell_id
+												LEFT JOIN `".DEV_DB."`.spells s3 ON s1.name = s3.name 
+												LEFT JOIN `".DEV_DB."`.skills s4 on s1.class_skill = s4.id
+												LEFT JOIN `".DEV_DB."`.skills s5 on s1.mastery_skill = s5.id
 												WHERE 
 													s3.id IS NULL AND 
 													s1.processed = 0 AND 
@@ -3352,7 +3365,7 @@ function CountSpellClasses($id)
 {
 	global $eq2;
 	
-	$query = sprintf("SELECT COUNT(DISTINCT spell_id) AS cnt FROM ".PARSER_DB.".raw_spell_levels WHERE spell_id = %s GROUP BY adventure_class_id;", $id);
+	$query = sprintf("SELECT COUNT(DISTINCT spell_id) AS cnt FROM `".PARSER_DB."`.raw_spell_levels WHERE spell_id = %s GROUP BY adventure_class_id;", $id);
 	$result=$eq2->db->sql_query($query);
 	if( $eq2->db->sql_numrows($result) > 1 )
 		return true;
@@ -3422,9 +3435,9 @@ function popMerchants() {
 	$link = sprintf("%s?%s",$_SERVER['SCRIPT_NAME'], $_SERVER['QUERY_STRING']);
 
 	$query=sprintf("select distinct rz.id,zone_file,zone_desc
-									from ".PARSER_DB.".raw_zones rz
-									join ".PARSER_DB.".raw_spawns rs on rz.id = rs.zone_id
-									join ".PARSER_DB.".raw_merchant_items rmi on rs.spawn_id = rmi.spawn_id
+									from `".PARSER_DB."`.raw_zones rz
+									join `".PARSER_DB."`.raw_spawns rs on rz.id = rs.zone_id
+									join `".PARSER_DB."`.raw_merchant_items rmi on rs.spawn_id = rmi.spawn_id
 									order by zone_desc;"); //echo $query;
 	$result=$eq2->db->sql_query($query);
 	while($data=$eq2->db->sql_fetchrow($result)) {
@@ -3436,9 +3449,9 @@ function popMerchants() {
 	// once a zone is picked, display it's known merchant spawns
 	if( isset($_GET['z']) ) {
 		$query=sprintf("select distinct rsi.id, rsi.name, rsi.guild 
-										from ".PARSER_DB.".raw_spawn_info rsi
-										join ".PARSER_DB.".raw_spawns rs on rsi.id = rs.spawn_id
-										join ".PARSER_DB.".raw_merchant_items rmi on rsi.id = rmi.spawn_id
+										from `".PARSER_DB."`.raw_spawn_info rsi
+										join `".PARSER_DB."`.raw_spawns rs on rsi.id = rs.spawn_id
+										join `".PARSER_DB."`.raw_merchant_items rmi on rsi.id = rmi.spawn_id
 										where zone_id = %d
 										order by rsi.name;",$_GET['z']); //echo $query;
 		$result=$eq2->db->sql_query($query);
@@ -3524,9 +3537,9 @@ function popMerchants() {
 		</tr>
 		<?php
 		$query=sprintf("select i.id, i.item_type, i.name, i.description, rmi.price 
-										from ".DEV_DB.".items i
-										join ".PARSER_DB.".raw_items ri on i.name = ri.name
-										join ".PARSER_DB.".raw_merchant_items rmi on ri.item_id = rmi.item_id 
+										from `".DEV_DB."`.items i
+										join `".PARSER_DB."`.raw_items ri on i.name = ri.name
+										join `".PARSER_DB."`.raw_merchant_items rmi on ri.item_id = rmi.item_id 
 										where rmi.spawn_id = %s
 										group by i.name;",$_GET['s']); //echo $query;
 		$result=$eq2->db->sql_query($query);
@@ -3546,7 +3559,7 @@ function popMerchants() {
 			<td title="<?= $data['description'] ?>"><?= $description ?>
 				&nbsp;</td>
 			<td align="right"><?= $data['price'] ?>cp&nbsp;</td>
-			<td align="center">&nbsp;<? print($eq2->existsMerchantItem($data['id'])) ?></td>
+			<td align="center">&nbsp;<?= print($eq2->existsMerchantItem($data['id'])) ?></td>
 		</tr>
 		<?php
 			}
@@ -3583,8 +3596,8 @@ function copyZone()
 				<option>---</option>
 				<?php
 				$query = sprintf("SELECT DISTINCT z.id,z.name,z.description
-												FROM ".DEV_DB.".zones z
-												JOIN ".DEV_DB.".spawn_location_placement slp ON z.id = slp.zone_id
+												FROM `".DEV_DB."`.zones z
+												JOIN `".DEV_DB."`.spawn_location_placement slp ON z.id = slp.zone_id
 												ORDER BY z.description;");
 				if( !$result=$eq2->db->sql_query($query) ) 
 					$eq2->SQLError($query);
@@ -3605,8 +3618,8 @@ function copyZone()
 				<option>---</option>
 				<?php
 				$query = sprintf("SELECT DISTINCT z.id, z.name, z.description
-												FROM ".LIVE_DB.".zones z
-												LEFT JOIN ".LIVE_DB.".spawn_location_placement slp ON z.id = slp.zone_id
+												FROM `".LIVE_DB."`.zones z
+												LEFT JOIN `".LIVE_DB."`.spawn_location_placement slp ON z.id = slp.zone_id
 												ORDER BY z.description;");
 				
 				if( !$result=$eq2->db->sql_query($query) )
@@ -3702,7 +3715,7 @@ function listVoiceovers() {
 		}
 		$where = preg_replace("/\)\(/",") AND (", $where);
 		$where2 = preg_replace("/\)\(/",") AND (", $where2);
-		$query = sprintf("select distinct sound_file, chat_text, emote, key1, key2 from ".PARSER_DB.".raw_conversations where ((%s) OR (%s)) order by sound_file;", $where, $where2); 
+		$query = sprintf("select distinct sound_file, chat_text, emote, key1, key2 from `".PARSER_DB."`.raw_conversations where ((%s) OR (%s)) order by sound_file;", $where, $where2); 
 		//echo $query;
 	}
 	
@@ -3814,6 +3827,147 @@ else
 <?php
 }
 
+function updateEditorItemVals()
+{
+	$types = array(
+		0=>'item_slot',
+		1=>'item_flag',
+		2=>'wield_type',
+		3=>'item_type',
+		4=>'item_menu_type',
+		5=>'item_tag',
+		6=>'item_stat',
+		7=>'item_disp_flag'
+	);
+	$ih_url = "https://git.eq2emu.com/devn00b/EQ2EMu/raw/master/EQ2/source/WorldServer/Items/Items.h";
+	$ih_lines = file($ih_url);
+	print("<br>");
+	$query = "INSERT INTO eq2meta ('id','type','subtype','value','name') VALUES ";
+	foreach($ih_lines as $line)
+	{
+		$line_start = substr($line, 0, 7);
+		if($line_start == "#define" AND !strpos($line,'__'))
+		{
+			$regex = '/[\s]+|[\/\/]+/';
+			$stat = preg_split($regex, $line);
+
+			switch (substr($stat[1],0,7))
+			{
+				case "ITEM_TY":
+					$query .= "(NULL,0,''," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//print("[item_type]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					break;
+				case "ITEM_ME":
+					$query .= "(NULL,4,'current'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],15)))) . "'),\n";
+					//print("[menu_type]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					break;
+				case "ORIG_IT":
+					$query .= "(NULL,4,'original'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],15)))) . "'),\n";
+					//print("[menu_type]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					break;
+				case "ITEM_TA":
+					$query .= "(NULL,5,''," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],9)))) . "'),\n";
+					//print("[item_tag]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					break;
+				case "ITEM_BR":
+					if(strpos($stat[1],'STAT'))
+					{
+						//print("[broker_stat]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					}elseif(strpos($stat[1],'TYPE'))
+					{
+						//print("[broker_type]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					}elseif(strpos($stat[1],'SLOT'))
+					{
+						//print("[broker_slot]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					}else{
+						//print("[broker_unknown]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					}
+					
+					break;
+				case "ITEM_ST":
+					//BELOW 100 (Attributes)
+					if($stat[2] < 100)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//100-199 (unknown name)
+					}elseif($stat[2] > 99 AND $stat[2] < 200)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//200-299 (Resists)
+					}elseif($stat[2] > 199 AND $stat[2] < 300)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//300-399 (Damage)
+					}elseif($stat[2] > 299 AND $stat[2] < 400)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//400-499 (Unknown)
+					}elseif($stat[2] > 399 AND $stat[2] < 500)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//500-599 (Pools)
+					}elseif($stat[2] > 499  AND $stat[2] < 600)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//6[00]-6[99] (Item Stats)
+					}elseif($stat[2] > 599  AND $stat[2] < 700)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//6[100]-6[199](Item Stats)
+					}elseif($stat[2] > 6099  AND $stat[2] < 6200)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//700-799 (Spell Damage)
+					}elseif($stat[2] > 699  AND $stat[2] < 800)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					//800-899 (Non-Visable)
+					}elseif($stat[2] > 799  AND $stat[2] < 900)
+					{
+						$query .= "(NULL,6,'stat_subtype'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],10)))) . "'),\n";
+					}else{
+						print("[item_stat]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					}
+					break;
+				case "DISPLAY":
+					$query .= "(NULL,7,''," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],13)))) . "'),\n";
+					//print("[item_disp_flag]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					break;
+				case "ITEM_WI":
+					$query .= "(NULL,2,''," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],16)))) . "'),\n";
+					//print("[wield_type]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+					break;
+				default:
+					if($stat[1] == 'OVERFLOW_SLOT' OR $stat[1] == 'SLOT_INVALID' OR strpos($stat[1],'SLOT'))
+					{
+						if(substr($stat[1],0,2)=='EQ')
+						{
+							$query .= "(NULL,0,'decimal'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",substr($stat[1],4)))) . "'),\n";
+						}else{
+							$query .= "(NULL,0,'binary'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",$stat[1]))) . "'),\n";
+							//print("[slots]:" . $stat[1] . "-" .$stat[2]. "<br>\n");
+						}
+					}elseif(substr($stat[1],0,7) == 'BASE_EQ' OR substr($stat[1],0,7) == 'MAX_EQU' OR $stat[1] == 'APPEARANCE_EQUIPMENT'){
+						//print("[Drop this]: " . $stat[1] . "-" .$stat[2]. "<br>\n");
+					}else{
+						$query .= "(NULL,1,'***'," . $stat[2] . ",'" . ucwords(strtolower(str_replace("_"," ",$stat[1]))) . "'),\n";
+						//print("[flags]: " . $stat[1] . "-" .$stat[2]. "<br>\n");
+					}
+					break;
+			}
+		}
+	}
+	$strHTML = "";
+	$strHTML .= "<fieldset>";
+	$strHTML .= "<legend>NOTICE</legend>";
+	$strHTML .= "This page pulls the items.h file from <a href='https://git.eq2emu.com/devn00b/EQ2EMu/raw/master/EQ2/source/WorldServer/Items/Items.h'>here</a>, and builds a SQL query that can be run against eq2editor.eq2meta.  This will help keep the labels used in the editor consistent with what is in live. ";
+	$strHTML .= "</fieldset>";
+	$strHTML .= "<fieldset>";
+	$strHTML .= "<legend>SQL QUERY</legend>";
+	$strHTML .= $query;
+	$strHTML .= "</fieldset>";
+	print($strHTML);
+}
 
 
 // convo functions

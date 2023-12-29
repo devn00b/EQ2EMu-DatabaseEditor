@@ -42,8 +42,12 @@ if( isset($_GET['cl']) ) {
 	exit;
 }
 
-$query=sprintf("select id,name,level from %s.guilds order by name", DEV_DB);
+$query=sprintf("select id,name,level from `%s`.guilds order by name", DEV_DB);
 $result=$eq2->db->sql_query($query);
+$guildOptions=' ';
+if(!isset($_GET['g'])){
+	$_GET['g']='0';
+}
 while($data=$eq2->db->sql_fetchrow($result)) {
 	$selected=( $_GET['g'] == $data['id'] ) ? " selected" : "";
 	$guildOptions.='<option value="?g='.$data['id'].'"'.$selected.'>'.$data['name'].' ('.$data['level'].')</option>\n';

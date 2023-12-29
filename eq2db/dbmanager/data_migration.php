@@ -82,9 +82,9 @@ function CompareZones()
 	if( isset($_GET['zone']) )
 	{
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".DEV_DB.".spawn s
-											JOIN ".DEV_DB.".spawn_location_entry sle ON s.id = sle.spawn_id
-											JOIN ".DEV_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
+											FROM `".DEV_DB."`.spawn s
+											JOIN `".DEV_DB."`.spawn_location_entry sle ON s.id = sle.spawn_id
+											JOIN `".DEV_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
 											WHERE 
 												slp.zone_id = %d
 											ORDER BY s.id", $_GET['zone']);
@@ -100,9 +100,9 @@ function CompareZones()
 		$eq2->db->sql_freeresult($result);
 	
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".LIVE_DB.".spawn s
-											JOIN ".LIVE_DB.".spawn_location_entry sle ON s.id = sle.spawn_id
-											JOIN ".LIVE_DB.".spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
+											FROM `".LIVE_DB."`.spawn s
+											JOIN `".LIVE_DB."`.spawn_location_entry sle ON s.id = sle.spawn_id
+											JOIN `".LIVE_DB."`.spawn_location_placement slp ON sle.spawn_location_id = slp.spawn_location_id
 											WHERE 
 												slp.zone_id = %d
 											ORDER BY s.id", $_GET['zone']);
@@ -118,9 +118,9 @@ function CompareZones()
 
 		// spawns without spawn placements
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".DEV_DB.".spawn s
+											FROM `".DEV_DB."`.spawn s
 											WHERE 
-												s.id not in (select spawn_id from ".DEV_DB.".spawn_location_entry) AND
+												s.id not in (select spawn_id from `".DEV_DB."`.spawn_location_entry) AND
 												s.id LIKE '%d____'
 											ORDER BY s.id", $_GET['zone']);
 		//echo $query;
@@ -136,9 +136,9 @@ function CompareZones()
 
 		// spawns without spawn placements
 		$query = sprintf("SELECT DISTINCT s.* 
-											FROM ".LIVE_DB.".spawn s
+											FROM `".LIVE_DB."`.spawn s
 											WHERE 
-												s.id not in (select spawn_id from ".LIVE_DB.".spawn_location_entry) AND
+												s.id not in (select spawn_id from `".LIVE_DB."`.spawn_location_entry) AND
 												s.id LIKE '%d____'
 											ORDER BY s.id", $_GET['zone']);
 		//echo $query;
@@ -345,12 +345,12 @@ function DeleteSpawns()
 												spawn_ground.groundspawn_entry_id, 
 												spawn_ground.collection_skill
 												
-											FROM ".DEV_DB.".spawn 
-											LEFT JOIN ".DEV_DB.".spawn_npcs ON spawn.id = spawn_npcs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_objects ON spawn.id = spawn_objects.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_signs ON spawn.id = spawn_signs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_widgets ON spawn.id = spawn_widgets.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_ground ON spawn.id = spawn_ground.spawn_id
+											FROM `".DEV_DB."`.spawn 
+											LEFT JOIN `".DEV_DB."`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_objects ON spawn.id = spawn_objects.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_signs ON spawn.id = spawn_signs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_widgets ON spawn.id = spawn_widgets.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_ground ON spawn.id = spawn_ground.spawn_id
 											WHERE 
 												spawn.id IN (%s)", $spawn_ids);
 												
@@ -470,12 +470,12 @@ function DeleteSpawns()
 														spawn_ground.groundspawn_entry_id, 
 														spawn_ground.collection_skill
 														
-													FROM ".DEV_DB.".spawn 
-													LEFT JOIN ".DEV_DB.".spawn_npcs ON spawn.id = spawn_npcs.spawn_id
-													LEFT JOIN ".DEV_DB.".spawn_objects ON spawn.id = spawn_objects.spawn_id
-													LEFT JOIN ".DEV_DB.".spawn_signs ON spawn.id = spawn_signs.spawn_id
-													LEFT JOIN ".DEV_DB.".spawn_widgets ON spawn.id = spawn_widgets.spawn_id
-													LEFT JOIN ".DEV_DB.".spawn_ground ON spawn.id = spawn_ground.spawn_id
+													FROM `".DEV_DB."`.spawn 
+													LEFT JOIN `".DEV_DB."`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id
+													LEFT JOIN `".DEV_DB."`.spawn_objects ON spawn.id = spawn_objects.spawn_id
+													LEFT JOIN `".DEV_DB."`.spawn_signs ON spawn.id = spawn_signs.spawn_id
+													LEFT JOIN `".DEV_DB."`.spawn_widgets ON spawn.id = spawn_widgets.spawn_id
+													LEFT JOIN `".DEV_DB."`.spawn_ground ON spawn.id = spawn_ground.spawn_id
 													WHERE 
 														%s AND spawn.id != %lu", $compare_data, $data['id']);
 				//echo $query2; exit;

@@ -137,12 +137,12 @@ function CompareAllData()
 												spawn_ground.groundspawn_id, 
 												spawn_ground.collection_skill
 												
-											FROM ".DEV_DB.".spawn 
-											LEFT JOIN ".DEV_DB.".spawn_npcs ON spawn.id = spawn_npcs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_objects ON spawn.id = spawn_objects.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_signs ON spawn.id = spawn_signs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_widgets ON spawn.id = spawn_widgets.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_ground ON spawn.id = spawn_ground.spawn_id
+											FROM `".DEV_DB."`.spawn 
+											LEFT JOIN `".DEV_DB."`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_objects ON spawn.id = spawn_objects.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_signs ON spawn.id = spawn_signs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_widgets ON spawn.id = spawn_widgets.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_ground ON spawn.id = spawn_ground.spawn_id
 											WHERE 
 												spawn.id = %lu", $_SESSION['combine_from']);
 
@@ -244,12 +244,12 @@ function CompareAllData()
 												spawn_ground.groundspawn_id, 
 												spawn_ground.collection_skill
 												
-											FROM ".DEV_DB.".spawn 
-											LEFT JOIN ".DEV_DB.".spawn_npcs ON spawn.id = spawn_npcs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_objects ON spawn.id = spawn_objects.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_signs ON spawn.id = spawn_signs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_widgets ON spawn.id = spawn_widgets.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_ground ON spawn.id = spawn_ground.spawn_id
+											FROM `".DEV_DB."`.spawn 
+											LEFT JOIN `".DEV_DB."`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_objects ON spawn.id = spawn_objects.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_signs ON spawn.id = spawn_signs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_widgets ON spawn.id = spawn_widgets.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_ground ON spawn.id = spawn_ground.spawn_id
 											WHERE 
 												spawn.id = %lu", $_SESSION['combine_to']);
 		if( !$result2 = $eq2->db->sql_query($query) ) 
@@ -571,12 +571,12 @@ function ShowSpawnDetails()
 												spawn_ground.groundspawn_id, 
 												spawn_ground.collection_skill
 												
-											FROM ".DEV_DB.".spawn 
-											LEFT JOIN ".DEV_DB.".spawn_npcs ON spawn.id = spawn_npcs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_objects ON spawn.id = spawn_objects.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_signs ON spawn.id = spawn_signs.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_widgets ON spawn.id = spawn_widgets.spawn_id
-											LEFT JOIN ".DEV_DB.".spawn_ground ON spawn.id = spawn_ground.spawn_id
+											FROM `.DEV_DB."`.spawn 
+											LEFT JOIN `".DEV_DB."`.spawn_npcs ON spawn.id = spawn_npcs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_objects ON spawn.id = spawn_objects.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_signs ON spawn.id = spawn_signs.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_widgets ON spawn.id = spawn_widgets.spawn_id
+											LEFT JOIN `".DEV_DB."`.spawn_ground ON spawn.id = spawn_ground.spawn_id
 											WHERE 
 												spawn.id = %lu", $_SESSION['combine_from']);
 		//echo $query;

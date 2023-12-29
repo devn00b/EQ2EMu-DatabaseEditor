@@ -11,6 +11,8 @@ include("../class/eq2.spawns.php");
 $spawns = new eq2Spawns();
 include("../class/eq2.items.php");
 $eq2Items = new eq2Items();
+include("../class/eq2.icon.php");
+$eq2Icons = new eq2Icons();
 
 $link = sprintf("%s",$_SERVER['SCRIPT_NAME']);
 
@@ -75,7 +77,13 @@ if( isset($_POST['cmd']) )
 			$eq2->ProcessUpdates();
 			$s->PostUpdate();
 			break;
-		case "delete": $eq2->ProcessDeletes(); break;
+		case "delete": 
+            $eq2->ProcessDeletes();
+			$s->PostDeletes(); 
+            break;
+		case "multiinsert":
+			$eq2->ProcessMultiInsert();
+			break;
 	}
 	
 } 
@@ -102,21 +110,29 @@ if( isset($_POST['cmd']) )
 						switch($_GET['page']) 
 						{
 							//This looks like vanguard code...
-							//case "locations"						: $s->StartingLocations(); break;
-							//case "opcodes"							: $s->OpcodeEditor(); break;
-							case "variables"						: $s->ServerVariables(); break;
-							case "groundspawns"					: groundspawns(); break;
-							case "groundspawn_items"		: groundspawn_items(); break;
-							case "entity_commands"			: entity_commands(); break;
-							case "commands"							: commands(); break;
-							case "collections"					: collections(); break;
-							case "starting_spells"			: starting_spells(); break;
-							case "starting_factions"        : starting_factions(); break;
+							//case "locations"			: $s->StartingLocations(); break;
+							//case "opcodes"			: $s->OpcodeEditor(); break;
+							case "variables"			: $s->ServerVariables(); break;
+							case "groundspawns"			: groundspawns(); break;
+							case "groundspawn_items"	: groundspawn_items(); break;
+							case "entity_commands"		: entity_commands(); break;
+							case "commands"				: commands(); break;
+							case "collections"			: collections(); break;
+							case "starting_spells"		: starting_spells(); break;
+							case "starting_factions"	: starting_factions(); break;
 							case "npc_spells"			: npc_spells(); break;
 							case "recipes"				: recipes(); break;
-							case "recipe_comp"          : recipe_comp(); break;
-							case "loot_table"           : loot_table(); break;
-							case "loot_global"          : loot_global(); break;
+							case "recipe_comp"			: recipe_comp(); break;
+							case "loot_table"			: loot_table(); break;
+							case "loot_global"			: loot_global(); break;
+                            case "editor_lists"			: editor_lists(); break;
+							case "static_values"		: static_values(); break;
+							case "heroic_ops"			: heroic_ops(); break;
+							case "misc_scripts"			: misc_scripts(); break;
+							case "icons"				: icons(); break;
+							case "lua_blocks"			: lua_blocks(); break;
+
+
 							/*
 							case "spawn_npc_equipment"	: spawn_npc_equipment(); break;
 							case "spawn_npc_skills"			: spawn_npc_skills(); break;
@@ -1434,7 +1450,7 @@ function npc_spells() {
 					<option value="">Pick a category</option>
 					<option <?php if ($list == "new") echo "selected "?>value="server.php?page=npc_spells&list=new">Add new</option>
 					<option value="server.php?page=npc_spells&cat"<?php if ($cat === "") echo " selected" ?>>No Category</option>
-					<?php $data = $eq2->RunQueryMulti("SELECT DISTINCT `category` FROM ".DEV_DB.".spawn_npc_spell_lists WHERE LENGTH(`category`) ORDER BY `category`"); ?>
+					<?php $data = $eq2->RunQueryMulti("SELECT DISTINCT `category` FROM `".DEV_DB."`.spawn_npc_spell_lists WHERE LENGTH(`category`) ORDER BY `category`"); ?>
 					<?php foreach($data as $row) : ?>
 						<?php $bSelect = $cat == $row['category']; ?>
 						<option <?php if ($bSelect) echo "selected "?>value="server.php?page=npc_spells&cat=<?php echo $row['category']?>"><?php printf("%s", $row['category']) ?></option>
@@ -1446,7 +1462,7 @@ function npc_spells() {
 				<select name="spell_list" onchange="dosub(this.options[this.selectedIndex].value)" style="width:300px;">
 					<option value="">Pick a spell list</option>
 					<option <?php if ($list == "new") echo "selected "?>value="server.php?page=npc_spells&cat=<?php echo $cat ?>&list=new">Add new</option>
-					<?php $data = $eq2->RunQueryMulti("SELECT `id`, `description` FROM ".DEV_DB.".spawn_npc_spell_lists WHERE category='".$eq2->SQLEscape($cat)."' ORDER BY `description`"); ?>
+					<?php $data = $eq2->RunQueryMulti("SELECT `id`, `description` FROM `".DEV_DB."`.spawn_npc_spell_lists WHERE category='".$eq2->SQLEscape($cat)."' ORDER BY `description`"); ?>
 					<?php foreach($data as $row) : ?>
 						<?php 
 						$bSelect = $list == $row['id'];
@@ -3365,131 +3381,329 @@ function commands() {
 	global $eq2, $s;
 	$id = $_GET['id'] ?? null;
 	$search = $_GET['search'] ?? null;
-	?>
+    $searchtype = $_GET['searchtype'] ?? null;
+    $strOffset = str_repeat("\x20",22);
 
-	<a href="server.php?page=loot_table&id=new">Add New</a>
-	</br></br>
-	<fieldset>
-		<legend>Search</legend>
-		<form method="post" name="FormLootTableSearch">
-		<label>name:</label>
-		<input id="lt_txtSearch" type="text" value="<?=$search?>" style="width:200px" autocomplete="off" onkeyup="LootTableLookupAJAX();"/>
-		<input type="submit" name="cmd" value="Search"/>
-		<div id="lt_search_suggest"></div>
- 		</form>
-	</fieldset>
- 	</br>
-	<?php
-	$data = null;
-	if ($id != null && $id != "new") {
+    $strHTML = "";
+	$strHTML .= $strOffset . "<a href='server.php?page=loot_table&id=new'>Add New</a>\n";
+	$strHTML .= $strOffset . "</br></br>\n";
+
+    //ALLOW USER TO SELECT SEARCH TYPE
+    $strHTML .= $strOffset . "<fieldset>\n";
+    $strHTML .= $strOffset . "  <legend>Select Search Type</legend>\n";
+    $strHTML .= $strOffset . "  <form method='post' name='FormLootTableSearch'>\n";
+    $strHTML .= $strOffset . "    <input type='radio' id='name' name='searchtype' value='server.php?page=loot_table&searchtype=name' onchange='dosub(this.value)'>By Name\n";
+    $strHTML .= $strOffset . "    <input type='radio' id='zone' name='searchtype' value='server.php?page=loot_table&searchtype=zone' onchange='dosub(this.value)'>By Zone\n";
+    $strHTML .= $strOffset . "    <input type='radio' id='list' name='searchtype' value='server.php?page=loot_table&searchtype=list' onchange='dosub(this.value)'>By List\n";
+    $strHTML .= $strOffset . "    <input type='radio' id='all' name='searchtype' value='server.php?page=loot_table&searchtype=all&row_offset=0&row_size=20' onchange='dosub(this.value)'>All Loot Tables\n";
+    $strHTML .= $strOffset . "  </form>\n";
+    $strHTML .= $strOffset . "</fieldset>\n";
+
+    //SEARCHTYPE CAN BE NAME, ZONE, LIST, ALL
+    ////SEARCH BY NAME
+    if($searchtype == 'name'){
+        $strHTML .= $strOffset . "<fieldset>\n";
+        $strHTML .= $strOffset . "  <legend>Search By Name</legend>\n";
+        $strHTML .= $strOffset . "  <form method='post' name='FormLootTableSearch'>\n";
+        $strHTML .= $strOffset . "    <label>name:</label>\n";
+        $strHTML .= $strOffset . "    <input id='lt_txtSearch' type='text' value='" . $search . "' style='width:200px' autocomplete='off' onkeyup='LootTableLookupAJAX();'/>\n";
+        $strHTML .= $strOffset . "    <input type='submit' name='cmd' value='Search'/>\n";
+        $strHTML .= $strOffset . "    <div id='lt_search_suggest'></div>\n";
+        $strHTML .= $strOffset . "  </form>\n";
+        $strHTML .= $strOffset . "</fieldset>\n";
+
+    ////SEARCH BY ZONE
+    }elseif($searchtype == 'zone'){
+        $strHTML .= $strOffset . "<!-- SEARCH BY ZONE -->\n";
+		$strHTML .= $strOffset . "<fieldset>\n";
+		$strHTML .= $strOffset . "  <legend>Search By Zone:</legend>\n";
+		$strHTML .= $strOffset . "    <select name='loottable_zone' onchange='dosub(this.options[this.selectedIndex].value)' style='width:300px;'>\n";
+		$strHTML .= $strOffset . "      <option value=''>Pick a Zone</option>\n";
+				
+        ////GRAB A LIST OF ZONES THAT HAVE SPAWNS WITH LOOTLISTS ATTACHED
+        $lt_Query = "SELECT DISTINCT(z.name) AS zNAME, ";
+        $lt_Query .= "  z.id AS zID ";
+        $lt_Query .= "FROM `".DEV_DB."`.zones AS z ";
+        $lt_Query .= "  JOIN `".DEV_DB."`.spawn_location_placement AS s_place ";
+        $lt_Query .= "    ON z.id = s_place.zone_id ";
+        $lt_Query .= "  LEFT JOIN `".DEV_DB."`.spawn_location_entry AS s_loc ";
+        $lt_Query .= "    ON s_loc.spawn_location_id = s_place.spawn_location_id ";
+        $lt_Query .= "  LEFT JOIN `".DEV_DB."`.spawn_loot AS s_loot ";
+        $lt_Query .= "    ON s_loot.spawn_id = s_loc.spawn_id ";
+        $lt_Query .= "  LEFT JOIN `".DEV_DB."`.loottable AS lt ";
+        $lt_Query .= "    ON lt.id = s_loot.loottable_id ";
+        $lt_Query .= "WHERE lt.id IS NOT NULL ";
+        $lt_Query .= "ORDER BY zName ASC; ";
+        $data = $eq2->RunQueryMulti($lt_Query);
+        foreach($data as $row){
+            $isSelected = "";
+            if(isset($_GET['z_id'])){
+                if($_GET['z_id'] == $row['zID']){
+                    $isSelected = "selected ";
+                }
+            }
+            $strHTML .= $strOffset . "      <option " . $isSelected . "value='server.php?page=loot_table&searchtype=zone&z_id=" . $row['zID'] . "'>" . $row['zNAME'] . "</option>\n";
+        }
+        $strHTML .= $strOffset . "        </select>\n";
+
+
+		////IF WE KNOW THE ZONE ID, BUILD AT LIST OF LOOTTABLES FOR THAT ZONE
+		if($_GET['z_id'] !== NULL){
+			$strHTML .= $strOffset . "        <select name='loottable_list' onchange='dosub(this.options[this.selectedIndex].value)' style='width:300px;'>\n";
+			$strHTML .= $strOffset . "          <option value=''>Pick a Loot Table</option>\n";
+			$strHTML .= $strOffset . "          <option value='server.php?page=loot_table&id=new'>Add new loot table</option>\n";
+
+
+		    ////GRAB A LIST OF LOOTTABLES FOR A SPECIFIC ZONE
+			$lt_Query = "SELECT DISTINCT(lt.id) AS LOOTTABLE_ID, ";
+			$lt_Query .= "      lt.name AS LOOTTABLE_NAME ";
+			$lt_Query .= "FROM `".DEV_DB."`.spawn s ";
+			$lt_Query .= "	JOIN `".DEV_DB."`.spawn_npcs AS s_npc ";
+			$lt_Query .= "    ON s.id = s_npc.spawn_id ";
+			$lt_Query .= "	LEFT JOIN `".DEV_DB."`.spawn_location_entry AS s_loc ";
+			$lt_Query .= "    ON s.id = s_loc.spawn_id ";
+			$lt_Query .= "	LEFT JOIN `".DEV_DB."`.spawn_location_placement AS s_place ";
+			$lt_Query .= "    ON s_loc.spawn_location_id = s_place.spawn_location_id ";
+			$lt_Query .= "	LEFT JOIN `".DEV_DB."`.spawn_loot AS s_loot ";
+			$lt_Query .= "    ON s_npc.spawn_id = s_loot.spawn_id ";
+			$lt_Query .= "	LEFT JOIN `".DEV_DB."`.loottable AS lt ";
+			$lt_Query .= "    ON s_loot.loottable_id = lt.id ";
+			$lt_Query .= "WHERE s_place.zone_id = " . $_GET['z_id'] . " ";
+			$lt_Query .= "  AND s_loot.loottable_id IS NOT NULL";
+			$data = $eq2->RunQueryMulti($lt_Query);
+			foreach($data as $row){
+                $isSelected = '';
+				if($_GET['id'] == $row['LOOTTABLE_ID']){
+					$isSelected = 'selected';
+				}
+				$strHTML .= $strOffset . "          <option " . $isSelected . " value='server.php?page=loot_table&searchtype=zone&z_id=" . $_GET['z_id'] . "&id=" . $row['LOOTTABLE_ID'] . "'>" . $row['LOOTTABLE_NAME'] . "</option>\n";
+			}
+			$strHTML .= $strOffset . "        </select>\n";
+		}
+		$strHTML .= $strOffset . "</frameset>\n";
+
+    ////SEARCH BY LIST
+    }elseif($searchtype == 'list'){
+        $strHTML .= $strOffset . "<fieldset>\n";
+        $strHTML .= $strOffset . "  <legend>Search By List</legend>\n";
+        $strHTML .= $strOffset . "  <form method='post' name='FormLootTableSearch'>\n";
+        $strHTML .= $strOffset . $s->PrintAvailableLists('select', $_GET['page'], '', '');
+        $strHTML .= $strOffset . "  </form>\n";
+        $strHTML .= $strOffset . "</fieldset>\n";
+
+    ////SHOW ALL LOOT TABLES
+    }elseif($searchtype == 'all'){
+        $row_offset = (isSet($_GET['row_offset']))? intval($_GET['row_offset']) : 0;
+        $row_count = (isSet($_GET['row_count']))? intval($_GET['row_count']) : 25;
+
+        $strHTML .= $strOffset . "<fieldset>\n";
+
+        ////WE NEED TO KNOW HOW MANY RECORDS THERE ARE FOR PAGINATION
+        $count_query = "SELECT COUNT(*) as COUNT FROM " . DEV_DB .".loottable";
+		$data = $eq2->RunQuerySingle($count_query);
+        
+        ////PAGINATION DATA/OPTIONS
+        $strHTML .= $strOffset . "  <legend>Loot Tables(ROWS " . intval($row_offset) . " - " .  intval($row_offset) + intval($row_count) . " of " . $data['COUNT'] . ")\n";
+        $strHTML .= $strOffset . "    <select name='loottable_list' onchange='dosub(this.options[this.selectedIndex].value)'>\n";
+        $isSelect50 = ($row_count == 50)? "selected" : "";
+        $isSelect75 = ($row_count == 75)? "selected" : "";
+        $isSelect100 = ($row_count == 100)? "selected" : "";
+        $strHTML .= $strOffset . "      <option " . $isSelect50 . " value='server.php?page=loot_table&searchtype=all&row_offset=0&row_count=50'>50</option>\n";
+        $strHTML .= $strOffset . "      <option " . $isSelect75 . " value='server.php?page=loot_table&searchtype=all&row_offset=0&row_count=75'>75</option>\n";
+        $strHTML .= $strOffset . "      <option " . $isSelect100 . " value='server.php?page=loot_table&searchtype=all&row_offset=0&row_count=100'>100</option>\n";
+        $strHTML .= $strOffset . "    <select>\n";
+        $strHTML .= $strOffset . "  </legend>\n";
+
+        ////SHOW THE PAGES OF DATA TO AID NAVIGATION
+        $strHTML .= $strOffset . "<br>";
+        $page_count = $data['COUNT'] / $row_count;
+        for($x=0; $x<= $page_count; $x++)
+        {
+            $strHTML .= "[<a href='server.php?page=loot_table&searchtype=all&row_offset=" . $x*$row_count . "&row_count=" . $row_count . "'>" . $x . "</a>]\n";
+        }
+
+        ////MASSIVE FORM TO ENABLE LIST MANAGEMENT AT SCALE
+        $strHTML .= $strOffset . "  <form method='post' name='FormAllLootTables'>\n";
+        
+        ////LETS GET A LIST OF LISTS THAT WE CAN ADD LOOTTABLES TO
+        ////THIS IS DUPLICATED BELOW THE LIST AND JAVASCRIPT KEEPS THEM IN SYNC
+        $strHTML .= $strOffset . $s->PrintAvailableLists('select', $_GET['page'], 'assignMulti', '');
+        $strHTML .= $strOffset . "  <input type='hidden' name='list_values|id' value='MultiAdd'>\n";
+        $strHTML .= $strOffset . "  <input type='submit' name='cmd' value='MultiInsert'>\n";
+        
+        $strHTML .= $strOffset . "  <table class='ContrastTable'>\n";
+        $strHTML .= $strOffset . "      <tr>\n";
+        $strHTML .= $strOffset . "        <th>InList</th>\n";
+		$strHTML .= $strOffset . "        <th>show loot</th>\n";
+		$strHTML .= $strOffset . "        <th>Loot Table ID</th>\n";
+		$strHTML .= $strOffset . "        <th>name</th>\n";
+		$strHTML .= $strOffset . "        <th>max loot items</th>\n";
+		$strHTML .= $strOffset . "        <th>item prob</th>\n";
+		$strHTML .= $strOffset . "        <th>coin prob</th>\n";
+		$strHTML .= $strOffset . "        <th colspan='4'>min coin</th>\n";
+		$strHTML .= $strOffset . "        <th colspan='4'>max coin</th>\n";
+		$strHTML .= $strOffset . "      </tr>\n";
+
+        ////EACH LIST SHOULD BE READ ONLY EXCEPT FOR LIST CHECKBOX
+        $lt_Query = "SELECT * FROM `" . DEV_DB . "`.`loottable` ORDER BY id ASC LIMIT " . intval($row_offset) . "," . intval($row_count) .";";
+		$data = $eq2->RunQueryMulti($lt_Query);
+		$rowcnt=0;
+        foreach($data as $row)
+        {
+			$rowcnt ++;
+            $strHTML .= $s->PrintLootTableRow($row, 'simple', $rowcnt) . "\n";
+        }
+
+        $strHTML .= $strOffset . "  </table>\n";
+        ////LETS GET A LIST OF LISTS THAT WE CAN ADD LOOTTABLES TO
+        ////THIS IS DUPLICATED BELOW THE LIST AND JAVASCRIPT KEEPS THEM IN SYNC
+        $strHTML .= $strOffset . $s->PrintAvailableLists('select', $_GET['page'], 'assignMulti', '');
+		$strHTML .= $strOffset . "  <input type='hidden' name='numrows' value='" . $rowcnt . "'>\n";
+        $strHTML .= $strOffset . "  <input type='hidden' name='index' value='list_values|id'>\n";
+		$strHTML .= $strOffset . "  <input type='hidden' name='table_name' value='list_values'>\n";
+        $strHTML .= $strOffset . "  <input type='submit' name='cmd' value='MultiInsert'>\n";
+
+        $strHTML .= $strOffset . "  </form>\n";
+        $strHTML .= $strOffset . "</fieldset>\n";
+    }
+
+    $data = null;
+
+	//if ($id != null && $id != "new") {
+	//	$query = sprintf("SELECT * FROM %s.loottable WHERE id = %s", DEV_DB, $id);
+	//	$data = $eq2->RunQuerySingle($query);
+	//}
+    
+    //GET A LIST OF LISTS
+	if(intval($_GET['e_list'])>0){
+		$query = "SELECT list_values.value AS listitem ";
+		$query .= "FROM lists ";
+		$query .= "  JOIN list_values ";
+		$query .= "    ON lists.id = list_values.list_id ";
+		$query .= "WHERE lists.id=" . $_GET['e_list'];
+		$data = $eq2->RunQueryMulti($query);
+		//this data will be used in the section below
+	}elseif ($id != null && $id != "new") {
 		$query = sprintf("SELECT * FROM %s.loottable WHERE id = %s", DEV_DB, $id);
 		$data = $eq2->RunQuerySingle($query);
+		//this data will be used in the section below
+
 	}
 
-	if ($data != null) : ?>
-		<fieldset>
-			<legend><? printf("loottable (%s)", $id) ?></legend>
-			<table class="ContrastTable">
-				<tr>
-					<th>item id</th>
-					<th>icon</th>
-					<th>name</th>
-					<th>max loot items</th>
-					<th>item prob</th>
-					<th>coin prob</th>
-					<th colspan="4">min coin</th>
-					<th colspan="4">max coin</th>
-					<th></th>
-				</tr>
-				<?php $s->PrintLootTableRow($data) ?>
-			</table>
-		</fieldset>
-		<?php if ($id != "new") : ?>
-		</br>
-		<?php 
-		$query = sprintf("SELECT lt.*, i.name as item_name, i.icon, i.tier, i.crafted FROM %s.lootdrop lt LEFT JOIN %s.items i ON i.id = lt.item_id WHERE loot_table_id = %s", DEV_DB, DEV_DB, $id);
-		$data = $eq2->RunQueryMulti($query);
-		?>
-		<fieldset>
-		<legend><? printf("lootdrop (%s)", $id) ?></legend>
-		<table class="ContrastTable">
-			<tr>
-				<th>item id</th>
-				<th>item</th>
-				<th>probability</th>
-				<th>charges</th>
-				<th>equip item</th>
-				<th>no drop</br>quest completed</th>
-				<th></th>
-			</tr>
-			<?php
-			$newRow = array();
-			$newRow['id'] = "new";
-			$newRow['item_id'] = "";
-			$newRow['probability'] = 0;
-			$newRow['equip_item'] = 0;
-			$newRow['item_charges'] = 0;
-			$newRow['no_drop_quest_completed'] = 0;
-			$newRow['new'] = true;
-			$s->PrintLootDropRow($newRow);
-			?>
-			<?php foreach ($data as $ld) {
-				$s->PrintLootDropRow($ld);
+//SHOW LOOTTABLE(S)
+	if ($data != null){
+		$strHTML .= $strOffset . "<!-- SHOW DROPS TABLE -->\n";
+		$strHTML .= $strOffset . "<form method='post' name='LootTableForm'>\n";
+		$strHTML .= $strOffset . "  <fieldset>\n";
+		$strHTML .= $strOffset . "    <legend>loottable(s)</legend>\n";
+		$strHTML .= $strOffset . "    <table class='ContrastTable'>\n";
+		$strHTML .= $strOffset . "      <tr>\n";
+		$strHTML .= $strOffset . "        <th>show loot</th>\n";
+		$strHTML .= $strOffset . "        <th>item id</th>\n";
+		$strHTML .= $strOffset . "        <th>name</th>\n";
+		$strHTML .= $strOffset . "        <th>max loot items</th>\n";
+		$strHTML .= $strOffset . "        <th>item prob</th>\n";
+		$strHTML .= $strOffset . "        <th>coin prob</th>\n";
+		$strHTML .= $strOffset . "        <th colspan='4'>min coin</th>\n";
+		$strHTML .= $strOffset . "        <th colspan='4'>max coin</th>\n";
+		$strHTML .= $strOffset . "        <th>Loot Table Options</th>\n";
+        $strHTML .= $strOffset . "        <th>List Options</th>\n";
+		$strHTML .= $strOffset . "      </tr>\n";
+		if($_GET['e_list']>0)
+		{
+			$strHTML .= $strOffset . $s->PrintListLootTable($data);
+		}else{
+			$strHTML .= $strOffset . $s->PrintLootTableRow($data, '', '');
+		}
+		$strHTML .= $strOffset . "    </table>\n";
+		$strHTML .= $strOffset . "  </fieldset>\n";
+
+	    if ($id && $id != "new"){
+            $strHTML .= $strOffset . "</br>\n";
+            $strHTML .= $strOffset . "<!-- ID FOUND && NOT NEW -->\n";
+            $strHTML .= $strOffset . "<fieldset>\n";
+            $strHTML .= $strOffset . "  <legend>lootdrop (" . $id . ")</legend>\n";
+            $strHTML .= $strOffset . "  <table class='ContrastTable'>\n";
+            $strHTML .= $strOffset . "    <tr>\n";
+            $strHTML .= $strOffset . "      <th>item id</th>\n";
+            $strHTML .= $strOffset . "      <th>item</th>\n";
+            $strHTML .= $strOffset . "      <th>probability</th>\n";
+            $strHTML .= $strOffset . "      <th>charges</th>\n";
+            $strHTML .= $strOffset . "      <th>equip item</th>\n";
+            $strHTML .= $strOffset . "      <th>no drop</br>quest completed</th>\n";
+            $strHTML .= $strOffset . "      <th></th>\n";
+            $strHTML .= $strOffset . "    </tr>\n";
+
+			$newRow = array(
+				"id"=>"new",
+				"item_id"=>"",
+				"probability"=> 0,
+				"equip_item"=>0,
+				"item_charges"=>0,
+				"no_drop_quest_completed"=>0,
+				"new"=>true
+			);
+
+			$query = "SELECT lt.*, i.name as item_name, i.icon, i.tier, i.crafted FROM `" . DEV_DB . "`.`lootdrop` lt LEFT JOIN `" . DEV_DB . "`.`items` i ON i.id = lt.item_id WHERE loot_table_id = " . $id;
+			$data = $eq2->RunQueryMulti($query);
+			$strHTML .= $s->PrintLootDropRow($newRow);
+            
+            foreach ($data as $ld) {
+				$strHTML .= $strOffset . $s->PrintLootDropRow($ld);
 			}
-			?>
-		</table>
-		</fieldset>
-		<?php endif; ?>
-	<?php
-	elseif ($search != null) : 
-		$query = sprintf("SELECT id, name FROM %s.loottable WHERE name rlike '%s' ORDER BY name", DEV_DB, $eq2->SQLEscape($search));
-		$rows = $eq2->RunQueryMulti($query);
-	?>
-	<fieldset>
-		<legend>Search Results</legend>
-		<table class="ContrastTable">
-			<tr>
-				<th>id</th>
-				<th>name</th>
-			</tr>
-			<?php foreach($rows as $data) : ?>		
-				<tr>
-					<td>
-						<?=$data['id']?>
-					</td>
-					<td>
-						<a href="server.php?page=loot_table&id=<?=$data['id']?>"><?=$data['name']?></a>
-					</td>
-				</tr>			
-			<?php endforeach; ?>
-		</table>
-	</fieldset>
-	<?php elseif ($id == "new") : ?>
-		<fieldset style="width:max-content">
-			<legend>New Loot Table</legend>
-			<form name="FormNewLootTable" method="post">
-			<table>
-				<tr>
-					<td align="center">
-						<strong style="font-size:large">Add A New Loot Table</strong>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<label>name:</label>
-						<input type="text" name="loottable|name"/>
-						<input type="hidden" name="table_name" value="loottable"/>
-					</td>
-				</tr>
-				<tr>
-					<td align="center">
-						<input type="submit" name="cmd" value="Insert"/>
-					</td>
-				</tr>
-			</table>
-			</form>
-		</fieldset>
-	<?php endif;
+            $strHTML .= $strOffset . "  </table>\n";
+            $strHTML .= $strOffset . "</fieldset>\n";
+        }
+    }elseif($search != null){ 
+        $query = sprintf("SELECT id, name FROM %s.loottable WHERE name rlike '%s' ORDER BY name", DEV_DB, $eq2->SQLEscape($search));
+        $rows = $eq2->RunQueryMulti($query);
+
+        $strHTML .= $strOffset . "<fieldset>\n";
+        $strHTML .= $strOffset . "  <legend>Search Results</legend>\n";
+        $strHTML .= $strOffset . "  <table class='ContrastTable'>\n";
+        $strHTML .= $strOffset . "    <tr>\n";
+        $strHTML .= $strOffset . "      <th>id</th>\n";
+        $strHTML .= $strOffset . "      <th>name</th>\n";
+        $strHTML .= $strOffset . "    </tr>\n";
+        foreach($rows as $data){
+            $strHTML .= $strOffset . "    <tr>\n";
+            $strHTML .= $strOffset . "      <td>\n";
+            $strHTML .= $strOffset . $data['id'];
+            $strHTML .= $strOffset . "      </td>\n";
+            $strHTML .= $strOffset . "      <td>\n";
+            $strHTML .= $strOffset . "        <a href='server.php?page=loot_table&id=" . $data['id'] . "'>" . $data['name'] . "</a>\n";
+            $strHTML .= $strOffset . "      </td>\n";
+            $strHTML .= $strOffset . "    </tr>\n";		
+        }
+        $strHTML .= $strOffset . "  </table>\n";
+        $strHTML .= $strOffset . "</fieldset>\n";
+    }elseif ($id == "new"){
+        $strHTML .= $strOffset . "<fieldset style='width:max-content'>\n";
+        $strHTML .= $strOffset . "  <legend>New Loot Table</legend>\n";
+        $strHTML .= $strOffset . "  <form name='FormNewLootTable' method='post'>\n";
+        $strHTML .= $strOffset . "    <table>\n";
+        $strHTML .= $strOffset . "      <tr>\n";
+        $strHTML .= $strOffset . "        <td align='center'>\n";
+        $strHTML .= $strOffset . "          <strong style='font-size:large'>Add A New Loot Table</strong>\n";
+        $strHTML .= $strOffset . "        </td>\n";
+        $strHTML .= $strOffset . "      </tr>\n";
+        $strHTML .= $strOffset . "      <tr>\n";
+        $strHTML .= $strOffset . "        <td>\n";
+        $strHTML .= $strOffset . "          <label>name:</label>\n";
+        $strHTML .= $strOffset . "          <input type='text' name='loottable|name'/>\n";
+        $strHTML .= $strOffset . "          <input type='hidden' name='table_name' value='loottable'/>\n";
+        $strHTML .= $strOffset . "        </td>\n";
+        $strHTML .= $strOffset . "      </tr>\n";
+        $strHTML .= $strOffset . "      <tr>\n";
+        $strHTML .= $strOffset . "        <td align='center'>\n";
+        $strHTML .= $strOffset . "          <input type='submit' name='cmd' value='Insert'/>\n";
+        $strHTML .= $strOffset . "        </td>\n";
+        $strHTML .= $strOffset . "      </tr>\n";
+        $strHTML .= $strOffset . "    </table>\n";
+        $strHTML .= $strOffset . "  </form>\n";
+        $strHTML .= $strOffset . "</fieldset>\n";
+    }
+    print($strHTML);
  }
 
  function loot_global() {
@@ -3524,4 +3738,1305 @@ function commands() {
 	<?php
  }
  
+ function editor_lists(){
+    global $eq2, $s;
+	//LLAMA NOTE:
+    //IM WRITTING THIS WITH A FOCUS ON LOOTTABLES. I HOPE
+	//TO REWRITE IT TO MAKE IT MORE GENERIC FOR ALL LIST TYPES.
+	
+	$strOffset = str_repeat("\x20",22);
+
+	//ACTION VALUES ARE 'NEW', 'ADD', 'REMOVE'
+	if($_GET['action'] == 'new'){
+			//DISPLAY THE NEW LIST FORM
+			$strHTML = "\n";
+			$strHTML .= $strOffset . "<fieldset>\n";
+			$strHTML .= $strOffset . "  <legend>New Lists:</legend>\n";
+			$strHTML .= $strOffset . "  <form method='post' name='multiForm|addLootTableToNewList'>\n";
+			$strHTML .= $strOffset . "    <table cellpadding='5' id='EditorTable'>\n";
+			$strHTML .= $strOffset . "	    <tr>\n";
+			$strHTML .= $strOffset . "	      <td colspan='4' align='center'>Adding " . $_GET['id'] . " to a new list.</td>\n";
+			$strHTML .= $strOffset . "      </tr>\n";
+			$strHTML .= $strOffset . "      <tr style='font-weight:bold'>\n";
+			$strHTML .= $strOffset . "        <th width='100'>Name</th>\n";
+			$strHTML .= $strOffset . "        <th width='20'>Shared</th>\n";
+			$strHTML .= $strOffset . "        <th width='20'>Type</th>\n";
+			$strHTML .= $strOffset . "        <th width='20'>Action</th>\n";
+			$strHTML .= $strOffset . "      </tr>\n";
+			$strHTML .= $strOffset . "	    <tr>\n";
+			$strHTML .= $strOffset . "	      <td><input type='text' name='lists|name'></td>\n";
+			$strHTML .= $strOffset . "	      <td>\n";
+			$strHTML .= $strOffset . "	        <select name='lists|shared'>\n";
+			$strHTML .= $strOffset . "	          <option value='0'>No</option>\n";
+			$strHTML .= $strOffset . "	          <option value='1'>Yes</option>\n";
+			$strHTML .= $strOffset . "	        <select>\n";
+			$strHTML .= $strOffset . "	      <td>\n";
+			$strHTML .= $strOffset . "	        <select name='lists|list_type'>\n";
+			$query = "SELECT id, type_name, type_value FROM list_types;";
+			$data = $eq2->RunQueryMulti($query);
+            foreach ($data as $row) {
+			        $strHTML .= $strOffset . "	        <option value='" . $row['id'] . "'>" . $row['type_name'] . "</option>\n";
+            }
+            $strHTML .= $strOffset . "	        </select>\n";
+            $strHTML .= $strOffset . "	        <input type='hidden' name='lists|user_id' value='" . $eq2->userdata['id'] . "'>\n";
+            $strHTML .= $strOffset . "          <input type='hidden' name='idx_name' value='id' />\n";
+            $strHTML .= $strOffset . "          <input type='hidden' name='table_name' value='lists' />\n";
+			$strHTML .= $strOffset . "	      </td>\n";
+			$strHTML .= $strOffset . "	      <td><input type='submit' name='cmd' value='insert'></td>\n";
+			$strHTML .= $strOffset . "	    </tr>\n";
+			$strHTML .= $strOffset . "	  </table>\n";
+			$strHTML .= $strOffset . "	</form>\n";
+			$strHTML .= $strOffset . "</fieldset>\n";
+	}elseif($_GET['action'] == 'add'){
+		//ADD A LOOTTABLE TO AN EXISING TABLE
+			$strHTML = "\n";
+			$strHTML .= $strOffset . "<fieldset>\n";
+			$strHTML .= $strOffset . "  <legend>Confirm:</legend>\n";
+			$strHTML .= $strOffset . "  <form method='post' name='multiForm|addLootTableToExistingList'>\n";
+			$strHTML .= $strOffset . "    <table cellpadding='5' id='EditorTable'>\n";
+			$strHTML .= $strOffset . "      <tr style='font-weight:bold'>\n";
+			$strHTML .= $strOffset . "        <th width='150'>List</th>\n";
+			$strHTML .= $strOffset . "        <th width='100'>Loottable</th>\n";
+			$strHTML .= $strOffset . "        <th width='50'>Action</th>\n";
+			$strHTML .= $strOffset . "      </tr>\n";
+			$strHTML .= $strOffset . "	    <tr>\n";
+			$queryA = "SELECT name FROM lists WHERE id='" . $_GET['e_list'] . "';";
+			$dataA = $eq2->RunQuerySingle($queryA);
+			$queryB = "SELECT name FROM `" . DEV_DB . "`.`loottable` WHERE id='" . $_GET['id'] . "';";
+			$dataB = $eq2->RunQuerySingle($queryB);
+			$strHTML .= $strOffset . "        <td>" . $dataA['name'] . "</td>\n";
+			$strHTML .= $strOffset . "        <td>" . $dataB['name'] . "</td>\n";
+			$strHTML .= $strOffset . "        <td>\n";
+			$strHTML .= $strOffset . "          <input type='hidden' name='list_values|value' value='" . $_GET['id'] . "'/>\n";
+			$strHTML .= $strOffset . "          <input type='hidden' name='list_values|list_id' value='" . $_GET['e_list'] . "'/>\n";
+            $strHTML .= $strOffset . "          <input type='hidden' name='idx_name' value='id' />\n";
+            $strHTML .= $strOffset . "          <input type='hidden' name='table_name' value='list_values' />\n";
+			$strHTML .= $strOffset . "          <input type='submit' name='cmd' value='insert'/>\n";
+			$strHTML .= $strOffset . "         </td>\n";
+			$strHTML .= $strOffset . "        <td>\n";
+			$strHTML .= $strOffset . "	    </tr>\n";
+			$strHTML .= $strOffset . "	  </table>\n";
+			$strHTML .= $strOffset . "	</form>\n";
+			$strHTML .= $strOffset . "</fieldset>\n";
+	}elseif($_GET['action'] == 'view'){
+
+			$strHTML = "\n";
+			$strHTML .= $strOffset . "<fieldset>\n";
+			$strHTML .= $strOffset . "  <legend>Edit List(" . $_GET['e_list'] . "):</legend>\n";
+			$strHTML .= $strOffset . "  <table cellpadding='5' id='EditorTable'>\n";
+			$strHTML .= $s->PrintAvailableLists('editform',$_GET['page'], 'list', 'edit_single');
+			$strHTML .= $strOffset . "	</table>\n";
+			$strHTML .= $strOffset . "</fieldset>\n";
+
+	}else{
+		$strHTML = "\n";
+		$strHTML .= $strOffset . "<fieldset>\n";
+        $strHTML .= $strOffset . "<a href='server.php?page=editor_lists&action=new'>New List</a>\n";
+		$strHTML .= $strOffset . "  <legend>Your Lists:</legend>\n";
+		$strHTML .= $s->PrintAvailableLists('table',$_GET['page'], 'list', 'owner_only');
+		$strHTML .= $strOffset . "</fieldset>\n";
+		$strHTML .= $strOffset . "<fieldset>\n";
+		$strHTML .= $strOffset . "  <legend>Shared Lists:</legend>\n";
+		$strHTML .= $s->PrintAvailableLists('table',$_GET['page'], 'list', 'shared_only');
+		$strHTML .= $strOffset . "</fieldset>\n";
+	}
+	print($strHTML);
+ }
+
+ function static_values(){
+    print("static_values()");
+ }
+
+function heroic_ops(){
+	global $eq2, $s, $eq2Icons;
+	$strOffset = str_repeat("\x20",22);
+	//LLAMA NOTE:
+	//WE NEEDED A EASY WAY TO MANAGE HEROIC OPPORTUNITIES
+	//THIS IS MY FIRAT ATTEMPT UNTIL I UNDERSTAND MORE ABOUT
+	//HOW HO WORKS
+	$strHTML = "\n";
+	$strHTML .= $strOffset . "<fieldset>\n";
+	$strHTML .= $strOffset . "  <legend>Sort/Search:</legend>\n";
+	$strHTML .= $strOffset . "  <form method='post' name='heroic_ops|searchtype'>\n";
+    $strHTML .= $strOffset . "    <input type='radio' id='name' name='searchtype' value='server.php?page=heroic_ops&searchtype=starter' onchange='dosub(this.value)'>All (By Starter ID)\n";
+	//$strHTML .= $strOffset . "    <input type='radio' id='name' name='searchtype' value='server.php?page=heroic_ops&searchtype=class' onchange='dosub(this.value)'>By Class\n";
+	//$strHTML .= $strOffset . "    <input type='radio' id='name' name='searchtype' value='server.php?page=heroic_ops&searchtype=ability' onchange='dosub(this.value)'>By Ability\n";
+	$strHTML .= $strOffset . "  </form>";
+	$strHTML .= $strOffset . "\n";
+	$strHTML .= $strOffset . "</fieldset>\n";
+
+	//STARTERS
+	if($_GET['searchtype'] == 'starter'){
+		$strHTML .= $strOffset . "\n";
+		$strHTML .= $strOffset . "<fieldset>\n";
+		$strHTML .= $strOffset . "  <legend>By Starter</legend>\n";
+		$strHTML .= $strOffset . "  <table class='ContrastTable'>\n";
+		$strHTML .= $strOffset . "    <tr>\n";
+		$strHTML .= $strOffset . "      <th colspan='3' align='left'><button onclick='history.back()'> <<-BACK</button></th>\n";
+		$strHTML .= $strOffset . "      <th colspan='11'>Followup Symbol(s)</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2' align='right'></th>\n";
+		$strHTML .= $strOffset . "    </tr>\n";
+		$strHTML .= $strOffset . "    <tr>\n";
+		$strHTML .= $strOffset . "      <th>ID</th>\n";
+		$strHTML .= $strOffset . "      <th>Starter</th>\n";
+		$strHTML .= $strOffset . "      <th>Party</th>\n";
+		$strHTML .= $strOffset . "      <th>Ability1</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability2</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability3</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability4</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability5</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability6</th>\n";
+		$strHTML .= $strOffset . "      <th>Possible Outcomes</th>\n";
+		$strHTML .= $strOffset . "      <th>Actions</th>\n";
+		$strHTML .= $strOffset . "    </tr>\n";
+		$strHTML .= $strOffset . "    <script>\n";
+		$strHTML .= $strOffset . "      function update_icon(row){\n";
+		$strHTML .= $strOffset . "        console.log(document.getElementById('classIcon_select_' + row).value);\n";
+		$strHTML .= $strOffset . "        switch(parseInt(document.getElementById('classIcon_select_' + row).value)){\n";
+		$strHTML .= $strOffset . "          case 1:\n";
+		$strHTML .= $strOffset . "            document.getElementById('classIcon_hidden_' + row).value = 1;\n";
+		$strHTML .= $strOffset . "          break;\n";
+		$strHTML .= $strOffset . "          case 11:\n";
+		$strHTML .= $strOffset . "            document.getElementById('classIcon_hidden_' + row).value = 17;\n";
+		$strHTML .= $strOffset . "          break;\n";
+		$strHTML .= $strOffset . "          case 21:\n";
+		$strHTML .= $strOffset . "            document.getElementById('classIcon_hidden_' + row).value = 26;\n";
+		$strHTML .= $strOffset . "          break;\n";
+		$strHTML .= $strOffset . "          case 31:\n";
+		$strHTML .= $strOffset . "            document.getElementById('classIcon_hidden_' + row).value = 39;\n";
+		$strHTML .= $strOffset . "          break;\n";
+		$strHTML .= $strOffset . "          }\n";
+		$strHTML .= $strOffset . "        console.log(document.getElementById('classIcon_hidden_' + row).value);\n";
+		$strHTML .= $strOffset . "        }\n";
+		$strHTML .= $strOffset . "      </script>\n";
+
+		//TESTING ICON STANDIZATION
+		$IconType = 'ho';
+		$HO_Icons = $eq2Icons->GetIcons($IconType);
+		//var_dump($HO_Icons);
+				
+		$query = "SELECT * FROM `" . DEV_DB . "`.`heroic_ops` WHERE starter_link_id = 0 ORDER BY starter_class, enhancer_class;";
+		$data = $eq2->RunQueryMulti($query);
+		foreach($data as $row){
+			$strHTML1 = $strOffset . "  <form method='post' name='heroic_ops|staters" . $row['id'] . "' />\n";
+			$strHTML1 .= "<!-- HTML1 START ROW -->\n";
+			$strHTML1 .= $strOffset . "    <tr>\n";
+			$strHTML2 = "<!-- HTML2 START ROW -->\n";
+			$strHTML2 .= $strOffset . "    <tr>\n";
+			$strHTML1 .= "<!-- HTML1 ROW_ID -->\n";
+			$strHTML1 .= $strOffset . "      <td><a href='server.php?page=heroic_ops&searchtype=chains&starter=" . $row['id'] . "'><h2>" . $row['id'] . "</h2></a></td>\n";
+			$strHTML2 .= "<!-- HTML2 ROW_ID -->\n";
+			$strHTML2 .= $strOffset . "      <td><input type='hidden' name='orig_id' value='" . $row['id'] . "'></td>\n";
+			$strHTML1 .= "<!-- HTML1 SPELL_ID -->\n";
+			$strHTML1 .= $strOffset . "      <td align='center'><img src='" . $HO_Icons[$row['starter_icon']]['src'] . "' alt='" . $HO_Icons[$row['starter_icon']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $HO_Icons[$row['starter_icon']]['posX'] . "% " . $HO_Icons[$row['starter_icon']]['posY'] . "%'/></td>\n";
+			
+			//CLASS DROPDOWN
+			$isSelected = "";
+			$strHTML2 .= "<!-- HTML2 SPELL_ID -->\n";
+			$strHTML2 .= $strOffset . "      <td align='center'>\n";
+			$strHTML2 .= $strOffset . "        <select id='classIcon_select_" . $row['id'] . "' name='heroic_ops|starter_class' onchange=\"update_icon('" . $row['id'] . "');\">\n";
+			$allHOStarterClasses_query = "SELECT class_name, class_id, class_map FROM `eq2classes` WHERE ho_class = 1 AND class_id != 0 AND class_map != 0";
+			$allHOStarterClasses = $eq2->RunQueryMulti($allHOStarterClasses_query);
+			foreach($allHOStarterClasses as $HOStaterClass)
+			{
+				if(intval($HOStaterClass['class_id']) == intval($row['starter_class']))
+				{
+					$isSelected = "selected";
+				}
+				if($row['starter_class']==0)
+				{
+					$strHTML2 .= $strOffset . "          <option value='" . $row['starter_class'] . "' " . $isSelected . ">" . $classtype_data['class_name'] . "</option>\n";
+				}else{
+					$strHTML2 .= $strOffset . "          <option value='" . $HOStaterClass['class_id'] . "' " . $isSelected . ">" . $HOStaterClass['class_name'] . "</option>\n";
+				}
+				$isSelected = "";
+			}
+			$strHTML2 .= $strOffset . "        </select>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_starter_class' value='" . $row['starter_class'] . "'>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' id='classIcon_hidden_" . $row['id'] . "' name='heroic_ops|starter_icon' value='" . $row['starter_icon'] . "'>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_starter_icon' value='" . $row['starter_icon'] . "'>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			//REACH BACK AND GET THE ENHANCER CLASS(ES)
+			$enhancer_class_query = "SELECT class_name, class_id, class_map FROM `eq2classes` WHERE ho_class = 1 AND class_map =" . $row['enhancer_class'];
+			$enhancer_class_data = $eq2->RunQuerySingle($enhancer_class_query);
+			$strHTML1 .= "<!-- HTML1 ENHANCER/PARTY -->\n";
+			$strHTML1 .= $strOffset . "      <td align='center'>" . $enhancer_class_data['class_name'] . "</td>\n";
+
+			$strHTML2 .= "<!-- HTML2 ENHANCER/PARTY -->\n";
+			$isSelected = "";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <select name='heroic_ops|enhancer_class'>\n";
+			$allHOStarterClasses_query = "SELECT class_name, class_id, class_map FROM `eq2classes` WHERE ho_class = 1 ORDER BY class_map ASC";
+			$allHOStarterClasses = $eq2->RunQueryMulti($allHOStarterClasses_query);
+			foreach($allHOStarterClasses as $HOStaterClass)
+			{
+				if(intval($HOStaterClass['class_map']) == intval($row['enhancer_class']))
+				{
+					$isSelected = "selected";
+				}
+				$strHTML2 .= $strOffset . "          <option value='" . $HOStaterClass['class_map'] . "' " . $isSelected . ">" . $HOStaterClass['class_name'] . "</option>\n";
+				$isSelected = "";
+			
+			}
+			$strHTML2 .= $strOffset . "        <select>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_enhancer_class' value='" . $row['enhancer_class'] . "'>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			//SETUP CHAIN ORDER ICON FOR USE BELOW
+			if($row['chain_order'] == 1)
+			{
+				$chain_order = "<i class='fa fa-arrow-right' aria-hidden='true'></i>";
+			}else{
+				$chain_order = "<i class='fa fa-plus' aria-hidden='true'></i>";
+			}
+
+
+			if($row['ability1'] != '65535'){
+				$strHTML1 .= "<!-- HTML1 ABILITY1 -->\n";
+				$strHTML1 .= $strOffset . "      <td><img src='" . $HO_Icons[$row['ability1']]['src'] . "' alt='" . $HO_Icons[$row['ability1']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $HO_Icons[$row['ability1']]['posX'] . "% " . $HO_Icons[$row['ability1']]['posY'] . "%'/></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY1 -->\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability1' value='". $row['ability1'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability1' value='". $row['ability1'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+			}else{
+				$strHTML1 .= "<!-- HTML1 ABILITY1 -->\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY1 -->\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability1' value='". $row['ability1'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability1' value='". $row['ability1'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+
+			}
+
+			if($row['ability2'] != '65535'){
+				$strHTML1 .= "<!-- HTML1 ABILITY2 -->\n";
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='" . $HO_Icons[$row['ability2']]['src'] . "' alt='" . $HO_Icons[$row['ability2']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $HO_Icons[$row['ability2']]['posX'] . "% " . $HO_Icons[$row['ability2']]['posY'] . "%'/></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY2 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability2' value='". $row['ability2'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability2' value='". $row['ability2'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+			}else{
+				$strHTML1 .= "<!-- HTML1 ABILITY2 -->\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY2 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability2' value='". $row['ability2'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability2' value='". $row['ability2'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+
+			}
+
+			if($row['ability3'] != '65535'){
+				$strHTML1 .= "<!-- HTML1 ABILITY3 -->\n";
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='" . $HO_Icons[$row['ability3']]['src'] . "' alt='" . $HO_Icons[$row['ability3']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $HO_Icons[$row['ability3']]['posX'] . "% " . $HO_Icons[$row['ability3']]['posY'] . "%'/></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY3 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability3' value='". $row['ability3'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability3' value='". $row['ability3'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+			}else{
+				$strHTML1 .= "<!-- HTML1 ABILITY3 -->\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY3 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability3' value='". $row['ability3'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability3' value='". $row['ability3'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+
+			}
+
+			if($row['ability4'] != '65535'){
+				$strHTML1 .= "<!-- HTML1 ABILITY4 -->\n";
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='" . $HO_Icons[$row['ability4']]['src'] . "' alt='" . $HO_Icons[$row['ability4']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $HO_Icons[$row['ability4']]['posX'] . "% " . $HO_Icons[$row['ability4']]['posY'] . "%'/></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY4 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability4' value='". $row['ability4'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability4' value='". $row['ability4'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+			}else{
+				$strHTML1 .= "<!-- HTML1 ABILITY4 -->\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY4 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability4' value='". $row['ability4'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability4' value='". $row['ability4'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+
+			}
+
+			if($row['ability5'] != '65535'){
+				$strHTML1 .= "<!-- HTML1 ABILITY5 -->\n";
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='" . $HO_Icons[$row['ability5']]['src'] . "' alt='" . $HO_Icons[$row['ability5']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $HO_Icons[$row['ability5']]['posX'] . "% " . $HO_Icons[$row['ability5']]['posY'] . "%'/></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY5 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability5' value='". $row['ability5'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability5' value='". $row['ability5'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+			}else{
+				$strHTML1 .= "<!-- HTML1 ABILITY5 -->\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY5 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability5' value='". $row['ability5'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability5' value='". $row['ability5'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+
+			}
+			
+			if($row['ability6'] != '65535'){
+				$strHTML1 .= "<!-- HTML1 ABILITY6 -->\n";
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='" . $HO_Icons[$row['ability6']]['src'] . "' alt='" . $HO_Icons[$row['ability6']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $HO_Icons[$row['ability6']]['posX'] . "% " . $HO_Icons[$row['ability6']]['posY'] . "%'/></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY6 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability6' value='". $row['ability5'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability6' value='". $row['ability5'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+			}else{
+				$strHTML1 .= "<!-- HTML1 ABILITY6 -->\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= "<!-- HTML2 ABILITY6 -->\n";
+				$strHTML2 .= $strOffset . "      <td></td>\n";
+				$strHTML2 .= $strOffset . "      <td>\n";
+				$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability6' value='". $row['ability6'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability6' value='". $row['ability6'] . "' size='3'/>\n";
+				$strHTML2 .= $strOffset . "      </td>\n";
+
+			}
+			
+			//LIST OF POSSIBLE OUTCOMES
+			$strHTML1 .= "<!-- HTML1 POSSIBLE_OUTCOMES -->\n";
+			$strHTML1 .= $strOffset . "      <td>\n";
+			$strHTML1 .= $strOffset . "        <ul>\n";
+			$outcomes_setup_query = "SELECT spell_id FROM `" . DEV_DB . "`.`heroic_ops` WHERE starter_link_id = " . $row['id'];
+			$outcomes_setup_data = $eq2->RunQueryMulti($outcomes_setup_query);
+			foreach ($outcomes_setup_data as $outcome_setup)
+			{
+				$outcome_query = "SELECT name FROM `" . DEV_DB . "`.`spells` WHERE id=" . $outcome_setup['spell_id'];
+				$outcome_data = $eq2->RunQuerySingle($outcome_query);
+				$strHTML1 .= $strOffset . "          <li>" . $outcome_data['name'] . "</li>\n";
+			}
+			$strHTML1 .= $strOffset . "        </ul>\n";
+			$strHTML1 .= $strOffset . "      </td>\n";
+			$strHTML2 .= "<!-- HTML2 POSSIBLE_OUTCOMES -->\n";
+			$strHTML2 .= $strOffset . "      <td></td>\n";
+
+			//ACTIONS
+			$strHTML1 .= "<!-- HTML1 FORM COMMANDS -->\n";
+			$strHTML1 .= $strOffset . "      <td>\n";
+			$strHTML1 .= $strOffset . "      </td>\n";
+			$strHTML2 .= "<!-- HTML2 FORM COMMANDS -->\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='idx_name' value='id' />\n";
+            $strHTML2 .= $strOffset . "        <input type='hidden' name='table_name' value='heroic_ops' />\n";
+			$strHTML2 .= $strOffset . "        <input type='submit' name='cmd' value='update'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='submit' name='cmd' value='delete'/>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			$strHTML1 .= "<!-- HTML1 END ROW -->\n";
+			$strHTML1 .= $strOffset . "    </tr>\n";
+			$strHTML2 .= "<!-- HTML2 END ROW -->\n";
+			$strHTML2 .= $strOffset . "    </tr>\n";
+			$strHTML2 .= $strOffset . "    <tr>\n";
+			//NOT SURE WHY THIS IS NEEDED, BUT IT'S HERE TO CORRECT THE EVEN/ODD STYLESHEET COLORS
+			$strHTML2 .= $strOffset . "    <td colspan='16'>&nbsp;</td>\n";
+			$strHTML2 .= $strOffset . "    </tr>\n";
+			$strHTML2 .= $strOffset . "  </form>\n";
+			$strHTML .= $strHTML1;
+			$strHTML .= $strHTML2;
+		}
+		//ONE LAST ROW TO ALLOW A NEW STARTER CHAIN FROM THIS INTERFACE
+		$strHTML .= $strOffset . "  <form method='post' name='heroic_ops|newStater'>\n";
+		$strHTML .= $strOffset . "    <tr>\n";
+		$strHTML .= $strOffset . "    <td><h3>New<h3></td>\n";
+		//STARTER_CLASS
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <select name='heroic_ops|starter_class'>\n";
+		$allHOStarterClasses_query = "SELECT class_name, class_id, class_map FROM `eq2classes` WHERE ho_class = 1 AND class_id != 0 AND class_map != 0";
+		$allHOStarterClasses = $eq2->RunQueryMulti($allHOStarterClasses_query);
+		foreach($allHOStarterClasses as $HOStaterClass)
+		{
+			$strHTML .= $strOffset . "          <option value='" . $HOStaterClass['class_id'] . "' " . $isSelected . ">" . $HOStaterClass['class_name'] . "</option>\n";
+		}
+		$strHTML .= $strOffset . "        </select>\n";
+		$strHTML .= $strOffset . "      </select>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//ENHANCER_CLASS
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "        <select name='heroic_ops|enhancer_class'>\n";
+		$allHOStarterClasses_query = "SELECT class_name, class_id, class_map FROM `eq2classes` WHERE ho_class = 1 ORDER BY class_map ASC";
+		$allHOStarterClasses = $eq2->RunQueryMulti($allHOStarterClasses_query);
+		foreach($allHOStarterClasses as $HOStaterClass)
+		{
+			$strHTML .= $strOffset . "          <option value='" . $HOStaterClass['class_map'] . "' " . $isSelected . ">" . $HOStaterClass['class_name'] . "</option>\n";
+		
+		}
+		$strHTML .= $strOffset . "      </select>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//ABILITY1
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' size='3' name='heroic_ops|ability1' value='65535'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//ABILITY2
+		$strHTML .= $strOffset . "    <td></td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' size='3' name='heroic_ops|ability2' value='65535'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//ABILITY3
+		$strHTML .= $strOffset . "    <td></td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' size='3' name='heroic_ops|ability3' value='65535'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//ABILITY4
+		$strHTML .= $strOffset . "    <td></td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' size='3' name='heroic_ops|ability4' value='65535'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//ABILITY5
+		$strHTML .= $strOffset . "    <td></td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' size='3' name='heroic_ops|ability5' value='65535'>\n";
+		$strHTML .= $strOffset . "      <input type='hidden'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//ABILITY6
+		$strHTML .= $strOffset . "    <td></td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' size='3' name='heroic_ops|ability6' value='65535'>\n";
+		$strHTML .= $strOffset . "      <input type='hidden'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		//EMPTY SECTION FOR OUTCOMES
+		$strHTML .= $strOffset . "    <td></td>\n";
+		//COMMAND
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='heroic_ops|ho_type' value='Starter'/>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='heroic_ops|starter_link_id' value='0'/>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='heroic_ops|chain_order' value='0'/>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='heroic_ops|shift_icon' value='0'/>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='heroic_ops|spell_id' value='0'/>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='heroic_ops|chance' value='0'/>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='idx_name' value='id' />\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='table_name' value='heroic_ops' />\n";
+		$strHTML .= $strOffset . "      <input type='submit' name='cmd' value='insert'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		$strHTML .= $strOffset . "  </form>\n";
+		$strHTML .= $strOffset . "    </tr>\n";
+		$strHTML .= $strOffset . "  </table>\n";
+		$strHTML .= $strOffset . "</fieldset>\n";
+
+	//CHAINS
+	}elseif($_GET['searchtype'] == 'chains'){
+		$strHTML .= $strOffset . "<fieldset>\n";
+		$strHTML .= $strOffset . "  <legend>By Chain(" . $_GET['starter'] . ")</legend>\n";
+		$strHTML .= $strOffset . "  <table class='ContrastTable'>\n";
+		$strHTML .= $strOffset . "    <tr>\n";
+		$strHTML .= $strOffset . "      <th>ID</th>\n";
+		$strHTML .= $strOffset . "      <th>Icon</th>\n";
+		$strHTML .= $strOffset . "      <th>Result Name</th>\n";
+		$strHTML .= $strOffset . "      <th>Starter</th>\n";
+		$strHTML .= $strOffset . "      <th>Enhancer(s)</th>\n";
+		$strHTML .= $strOffset . "      <th>Chance</th>\n";
+		$strHTML .= $strOffset . "      <th>Order<br>Required</th>\n";
+		$strHTML .= $strOffset . "      <th>Shift<br>Icon</th>\n";
+		$strHTML .= $strOffset . "      <th>Ability1</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability2</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability3</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability4</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability5</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Ability6</th>\n";
+		$strHTML .= $strOffset . "      <th colspan='2'>Actions</th>\n";
+		$strHTML .= $strOffset . "    </tr>\n";
+		//TESTING ICON STANDIZATION
+		$IconType = 'ho';
+		$HO_Icons = $eq2Icons->GetIcons($IconType);
+		$Spell_Icons = $eq2Icons->GetIcons('spells');
+		
+		$query = "SELECT * FROM `" . DEV_DB . "`.`heroic_ops` WHERE starter_link_id = " . $_GET['starter'] . " ORDER BY id ASC;";
+		$data = $eq2->RunQueryMulti($query);
+		foreach($data as $row){
+			$strHTML1 = "<!-- CHAIN ID -->\n";
+			$strHTML2 = "<!-- CHAIN ID -->\n";
+			
+			$isSelected = "";
+			$strHTML1 .= $strOffset . "   <form method='post' name='heroic_ops|chains" . $row['id'] . ">\n";
+			$strHTML1 .= $strOffset . "    <tr>\n";
+			$strHTML1 .= $strOffset . "      <td>\n";
+			$strHTML1 .= $strOffset . "        <input type='hidden' name='heroic_ops|id' value='" . $row['id'] . "'>\n";
+			$strHTML1 .= $strOffset . "        <input type='hidden' name='orig_id' value='" . $row['id'] . "'>\n";
+			$strHTML1 .= $strOffset . "        </td>\n";
+			$strHTML2 .= $strOffset . "     <tr>\n";
+			$strHTML2 .= $strOffset . "      <td>" . $row['id'] . "</td>\n";
+
+			//LETS GRAB SOME SPELL DATA
+			$strHTML1 .= "<!-- RESULT SPELL -->\n";
+			$strHTML2 .= "<!-- RESULT SPELL -->\n";
+			$strHTML1 .= $strOffset . "      <td></td>\n";
+			$spell_query = "SELECT * FROM `" . DEV_DB . "`.`spells` WHERE id = " . $row['spell_id'] . ";";
+			$spell_data = $eq2->RunQuerySingle($spell_query);
+			$strHTML1 .= $strOffset . "      <td><img src='" . $Spell_Icons[$row['ability1']]['src'] . "' alt='" . $Spell_Icons[$row['ability1']]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $Spell_Icons[$row['ability1']]['posX'] . "% " . $Spell_Icons[$row['ability1']]['posY'] . "%'/></td>\n";
+			$strHTML1 .= $strOffset . "      <td>" . $spell_data['name'] . "</td>\n";
+			$strHTML2 .= $strOffset . "      <td><input type='hidden' name='orig_spell_id' value='" . $row['spell_id'] . "'></td>\n";
+			$strHTML2 .= $strOffset . "      <td><input type='text' name='heroic_ops|spell_id' value='" . $row['spell_id'] . "' size='5'/></td>\n";
+			
+			//REACH BACK AND GET THE START CLASS NAME
+			$strHTML1 .= "<!-- STARTER CLASS -->\n";
+			$strHTML2 .= "<!-- STARTER CLASS -->\n";
+			$classtype_query = "SELECT class_name FROM `eq2classes` WHERE class_id = (SELECT starter_class FROM `" . DEV_DB . "`.`heroic_ops` WHERE id=" . $row['starter_link_id'] . ");";
+			$classtype_data = $eq2->RunQuerySingle($classtype_query);
+			$isSelected = "";
+			$strHTML1 .= $strOffset . "      <td>" . $classtype_data['class_name'] . "</td>\n";
+			$strHTML2 .= $strOffset . "      <td></td>\n";
+
+			//REACH BACK AND GET THE ENHANCER CLASS(ES)
+			$strHTML1 .= "<!-- ENCHANCER -->\n";
+
+			$classtype_query = "SELECT class_name FROM `eq2classes` WHERE class_map = " . $row['enhancer_class'] . ";";
+			$classtype_data = $eq2->RunQuerySingle($classtype_query);
+			$strHTML1 .= $strOffset . "      <td>" . $classtype_data['class_name'] . "</td>\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <select name='heroic_ops|enhancer_class'>\n";
+			$enhancer_class_query = "SELECT class_name, class_id, class_map FROM `eq2classes` WHERE ho_class = 1 ORDER BY class_map ASC";
+			$enhancer_class_data = $eq2->RunQueryMulti($enhancer_class_query);
+			foreach($enhancer_class_data as $enhancer_class)
+			{
+					$strHTML2 .= $strOffset . "          <option value='" . $enhancer_class['class_map'] . "'>" . $enhancer_class['class_name'] . "</option>\n";
+			}
+			$strHTML2 .= $strOffset . "        </select>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_enhancer_class' value='" . $row['enhancer_class'] . "'>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			//CHANCE
+			$strHTML1 .= "<!-- CHANCE -->\n";
+			$strHTML2 .= "<!-- CHANCE -->\n";
+			$strHTML1 .= $strOffset . "      <td></td>\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|chance' value='" . $row['chance'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_chance' value='" . $row['chance'] . "'>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			//CHAIN ORDER
+			$strHTML1 .= "<!-- CHAIN ORDER -->\n";
+			$strHTML2 .= "<!-- CHAIN ORDER -->\n";
+			$strHTML1 .= $strOffset . "      <td></td>\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <select name='heroic_ops|chain_order'>\n";
+			$strHTML2 .= $strOffset . "          <option value='0'>0 - False</option>\n";
+			$strHTML2 .= $strOffset . "          <option value='1' " . (intval($row['chain_order']) == 1?'selected':'') . ">1 - True</option>\n";
+			$strHTML2 .= $strOffset . "        <select>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_chain_order' value='" . $row['chain_order'] . "'>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+			if($row['chain_order'] == 1)
+			{
+				$chain_order = "<i class='fa fa-arrow-right' aria-hidden='true'></i>";
+			}else{
+				$chain_order = "<i class='fa fa-plus' aria-hidden='true'></i></td>";
+			}
+
+			//SHIFT ICON
+			$strHTML1 .= "<!-- SHIFT ICON -->\n";
+			$strHTML2 .= "<!-- SHIFT ICON -->\n";
+			$strHTML1 .= $strOffset . "      <td><img src='eq2Icon.php?type=ho&id=" . $row['shift_icon'] . "'/></td> \n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|shift_icon' value='" . $row['shift_icon'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_shift_icon' value='" . $row['shift_icon'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			//ABILITIES
+			$strHTML1 .= "<!-- ABILITIES 1 -->\n";
+			$strHTML2 .= "<!-- ABILITIES 1 -->\n";
+			if($row['ability1'] != '65535'){
+				$strHTML1 .= $strOffset . "      <td><img src='eq2Icon.php?type=ho&id=" . $row['ability1'] . "'/></td> \n";
+			}else{
+				$strHTML1 .= $strOffset . "      <td></td>\n";
+			}
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability1' value='" . $row['ability1'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability1' value='" . $row['ability1'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			$strHTML1 .= "<!-- ABILITIES 2 -->\n";
+			$strHTML2 .= "<!-- ABILITIES 2 -->\n";
+			if($row['ability2'] != '65535'){
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='eq2Icon.php?type=ho&id=" . $row['ability2'] . "'/></td> \n";
+			}else{
+				$strHTML1 .= $strOffset . "      <td></td><td></td>\n";
+
+			}
+			$strHTML2 .= $strOffset . "      <td></td>\n";			
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability2' value='" . $row['ability2'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability2' value='" . $row['ability2'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "      <t/d>\n";
+
+			$strHTML1 .= "<!-- ABILITIES 3 -->\n";
+			$strHTML2 .= "<!-- ABILITIES 3 -->\n";
+			if($row['ability3'] != '65535'){
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='eq2Icon.php?type=ho&id=" . $row['ability3'] . "'/></td> \n";
+			}else{
+				$strHTML1 .= $strOffset . "      <td></td><td></td>\n";
+			}
+			$strHTML2 .= $strOffset . "      <td></td>\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability3' value='" . $row['ability3'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name=orig_ability3' value='" . $row['ability3'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "      </td> \n";
+
+			$strHTML1 .= "<!-- ABILITIES 4 -->\n";
+			$strHTML2 .= "<!-- ABILITIES 4 -->\n";
+			if($row['ability4'] != '65535'){
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='eq2Icon.php?type=ho&id=" . $row['ability4'] . "'/></td> \n";
+			}else{
+				$strHTML1 .= $strOffset . "      <td></td><td></td>\n";
+			}
+			$strHTML2 .= $strOffset . "      <td></td>\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability4' value='" . $row['ability4'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability4' value='" . $row['ability4'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "      </td> \n";
+
+			$strHTML1 .= "<!-- ABILITIES 5 -->\n";
+			$strHTML2 .= "<!-- ABILITIES 5 -->\n";
+			if($row['ability5'] != '65535'){
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='eq2Icon.php?type=ho&id=" . $row['ability5'] . "'/></td> \n";
+			}else{
+				$strHTML1 .= $strOffset . "      <td></td><td></td>\n";
+			}
+			$strHTML2 .= $strOffset . "      <td></td>\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability5' value='" . $row['ability5'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability5' value='" . $row['ability5'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "      </td> \n";
+
+			$strHTML1 .= "<!-- ABILITIES 6 -->\n";
+			$strHTML2 .= "<!-- ABILITIES 6 -->\n";
+			if($row['ability6'] != '65535'){
+				$strHTML1 .= $strOffset . "      <td>" . $chain_order . "</td>\n";
+				$strHTML1 .= $strOffset . "      <td><img src='eq2Icon.php?type=ho&id=" . $row['ability6'] . "'/></td> \n";
+			}else{
+				$strHTML1 .= $strOffset . "      <td></td><td></td>\n";
+			}
+			$strHTML2 .= $strOffset . "      <td></td>\n";
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='text' name='heroic_ops|ability6' value='" . $row['ability6'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='orig_ability6' value='" . $row['ability6'] . "' size='3'/>\n";
+			$strHTML2 .= $strOffset . "      </td> \n";
+
+			//ACTIONS
+			$strHTML1 .= $strOffset . "      <td></td>\n";
+
+			$strHTML2 .= $strOffset . "      <td>\n";
+			$strHTML2 .= $strOffset . "        <input type='hidden' name='idx_name' value='id' />\n";
+            $strHTML2 .= $strOffset . "        <input type='hidden' name='table_name' value='heroic_ops' />\n";
+			$strHTML2 .= $strOffset . "        <input type='submit' name='cmd' value='update'/>\n";
+			$strHTML2 .= $strOffset . "        <input type='submit' name='cmd' value='delete'/>\n";
+			$strHTML2 .= $strOffset . "      </td>\n";
+
+			$strHTML1 .= $strOffset . "    </tr>\n";
+			$strHTML2 .= $strOffset . "    </tr>\n";
+			$strHTML2 .= $strOffset . "    </form>\n";
+			$strHTML .= $strHTML1;
+			$strHTML .= $strHTML2;
+		}
+
+		//ONE MORE LINE TO ALLOW USERS TO ADD NEW HO CHAINS
+		$strHTML .= $strOffset . "    <form method='post' name='heroic_ops|newChain'>\n";
+		$strHTML .= $strOffset . "      <tr></tr>\n";
+		$strHTML .= "<!-- CHAIN ID -->\n";
+		$strHTML .= $strOffset . "      <tr>\n";
+		$strHTML .= $strOffset . "        <td>\n";
+		$strHTML .= $strOffset . "          New\n";
+		$strHTML .= $strOffset . "        </td>\n";
+
+		$strHTML .= "<!-- ICON -->\n";
+		$strHTML .= $strOffset . "        <td>\n";
+		$strHTML .= $strOffset . "        </td>\n";
+
+		$strHTML .= "<!-- SPELL -->\n";
+		$strHTML .= $strOffset . "         <td>\n";
+		$strHTML .= $strOffset . "           <input type='text' name='heroic_ops|spell_id' size='5'>\n";
+		$strHTML .= $strOffset . "         </td>\n";
+
+		$strHTML .= "<!-- STARTER -->\n";
+		$strHTML .= $strOffset . "        <td>\n";
+		$strHTML .= $strOffset . "          <i>AUTOMATIC</i>\n";
+		$strHTML .= $strOffset . "        </td>\n";
+
+		$strHTML .= "<!-- ENHANCER -->\n";
+		$strHTML .= $strOffset . "        <td>\n";
+		$strHTML .= $strOffset . "          <select name='heroic_ops|enhancer_class'>\n";
+		$enhancer_class_query = "SELECT class_name, class_id, class_map FROM `eq2classes` WHERE ho_class = 1 ORDER BY class_map ASC";
+		$enhancer_class_data = $eq2->RunQueryMulti($enhancer_class_query);
+		foreach($enhancer_class_data as $enhancer_class)
+		{
+				$strHTML .= $strOffset . "            <option value='" . $enhancer_class['class_map'] . "'>" . $enhancer_class['class_name'] . "</option>\n";
+		}
+		$strHTML .= $strOffset . "          </select>\n";
+		$strHTML .= $strOffset . "        </td>\n";
+
+		$strHTML .= "<!-- CHANCE -->\n";
+		$strHTML .= $strOffset . "        <td>\n";
+		$strHTML .= $strOffset . "          <input type='text' name='heroic_ops|chance'  value='" . $row['chance'] . "' size='3'/>\n";
+		$strHTML .= $strOffset . "      </td>\n";
+
+		$strHTML .= "<!-- ORDER REQ -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "        <select name='heroic_ops|chain_order'>\n";
+		$strHTML .= $strOffset . "          <option value='0'>0 - False</option>\n";
+		$strHTML .= $strOffset . "          <option value='1'>1 - True</option>\n";
+		$strHTML .= $strOffset . "        <select>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- SHIFT ICON -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' name='heroic_ops|shift_icon' size='3'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- ABILITY1 -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' name='heroic_ops|ability1' size='3'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- ABILITY2 -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' name='heroic_ops|ability2' size='3'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- ABILITY3 -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' name='heroic_ops|ability3' size='3'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- ABILITY4 -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' name='heroic_ops|ability4' size='3'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- ABILITY5 -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' name='heroic_ops|ability5' size='3'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- ABILITY6 -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='text' name='heroic_ops|ability6' size='3'>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+
+		$strHTML .= "<!-- FORM ACTIONS -->\n";
+		$strHTML .= $strOffset . "    <td>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='heroic_ops|starter_link_id' value='" . $_GET['starter'] . "'>\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='idx_name' value='id' />\n";
+		$strHTML .= $strOffset . "      <input type='hidden' name='table_name' value='heroic_ops' />\n";
+		$strHTML .= $strOffset . "      <input type='submit' name='cmd' value='insert'/>\n";
+		$strHTML .= $strOffset . "    </td>\n";
+		$strHTML .= $strOffset . "    </tr>\n";
+		$strHTML .= $strOffset . "    </form>\n";
+		$strHTML .= $strOffset . "  </table>\n";
+		$strHTML .= $strOffset . "</fieldset>\n";
+		
+	}
+	print($strHTML);
+
+}
+function icons()
+{
+	global $eq2, $s, $eq2Icons;
+	$strOffset = str_repeat("\x20",22);
+	$strHTML = "\n";
+	$strHTML .= $strOffset . "<fieldset>\n";
+	$strHTML .= $strOffset . "  <legend>Icon Type:</legend>\n";
+	$strHTML .= $strOffset . "  <form method='post' name='FormLootTableSearch'>\n";
+    $strHTML .= $strOffset . "    <input type='radio' id='name' name='searchtype' value='server.php?page=icons&searchtype=heroic_ops' onchange='dosub(this.value)'>Heroic Ops\n";
+	$strHTML .= $strOffset . "    <input type='radio' id='name' name='searchtype' value='server.php?page=icons&searchtype=spells' onchange='dosub(this.value)'>Spells\n";
+	$strHTML .= $strOffset . "  </form>";
+	$strHTML .= $strOffset . "\n";
+	$strHTML .= $strOffset . "</fieldset>\n";
+
+	if($_GET['searchtype'] == 'spells')
+	{
+		$IconType = "spells";
+	}else
+	{
+		$IconType = 'ho';
+	}
+
+	$Icons = $eq2Icons->GetIcons($IconType);
+
+	$strHTML .= $strOffset . "<table class='ContrastTable'>";
+	$cntA = 0;
+	while($cntA <= count($Icons))
+	{
+		$tblRow = 1;
+		$strHTML .= $strOffset . "<tr>";
+		for($tblCol = 0; $tblCol <= 9; $tblCol++)
+		{
+			if($cntA <= count($Icons))
+			{
+				$strHTML .= $strOffset . "<td>";
+				$strHTML .= $strOffset . "<span>" . $cntA . "</span><br>";
+				$strHTML .= $strOffset . "<span class='iconBG'>";
+				$strHTML .= $strOffset . "<img src='" . $Icons[$cntA]['src'] . "' alt='" . $Icons[$cntA]['name'] . "' style='width: 40px; height: 40px; object-fit: none; object-position: " . $Icons[$cntA]['posX'] . "% " . $Icons[$cntA]['posY'] . "%'/>\n";
+				$strHTML .= $strOffset . "</span>\n";
+				$strHTML .= $strOffset . "</div>";
+				$strHTML .= $strOffset . "</td>";
+				$cntA++;
+			}else{
+				$strHTML .= $strOffset . "<td></td>";
+			}
+
+		}
+		$strHTML .= $strOffset . "</tr>";
+	}
+	$strHTML .= $strOffset . "</table>";
+	print($strHTML);
+}
+
+function lua_blocks()
+{
+	global $eq2, $s;
+	$strOffset = str_repeat("\x20",22);
+	$strHTML = "\n";
+	
+	switch($_GET['action'])
+	{
+		case "add_category":
+			$strHTML .= $strOffset . "<table class='SubPanel ContrastTable'>\n";
+			$strHTML .= $strOffset . "   <tr>\n";
+			$strHTML .= $strOffset . "     <td>\n";
+			$strHTML .= $strOffset . "       <fieldset>\n";
+			$strHTML .= $strOffset . "         <legend>Add Lua Blocks Category:</legend>\n";
+			$strHTML .= $strOffset . "         <button onclick='history.back()'> <<-BACK</button>\n";
+			$strHTML .= $strOffset . "         <form method='post' name='multiform|addNewCategory'>\n";
+			$strHTML .= $strOffset . "           <table>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <th>Name</th>\n";
+			$strHTML .= $strOffset . "               <th>Type</th>\n";
+			$strHTML .= $strOffset . "               <th>Action</th>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td><input type='text' name='eq2lua_categories|name'></td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_categories|type'>\n";
+			$cat_query = "SELECT * from `eq2lua_types`";
+			$cat_data=$eq2->RunQueryMulti($cat_query);
+			foreach($cat_data as $cat)
+			{
+					$strHTML .= $strOffset . "                 <option value='" . $cat['id'] . "'>" . $cat['name'] . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "	               <input type='hidden' name='eq2lua_categories|user_id' value='" . $eq2->userdata['id'] . "'>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='idx_name' value='id' />\n";
+            $strHTML .= $strOffset . "                 <input type='hidden' name='table_name' value='eq2lua_categories' />\n";
+			$strHTML .= $strOffset . "                 <input type='submit' name='cmd' value='insert'>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "           </table>\n";
+			$strHTML .= $strOffset . "         </form>\n";
+			$strHTML .= $strOffset . "       </fieldset>\n";
+
+			break;
+		case "edit_category":
+			$strHTML .= $strOffset . "<table class='SubPanel ContrastTable'>\n";
+			$strHTML .= $strOffset . "   <tr>\n";
+			$strHTML .= $strOffset . "     <td>\n";
+			$strHTML .= $strOffset . "       <fieldset>\n";
+			$strHTML .= $strOffset . "         <legend>Lua Blocks Category:</legend>\n";
+			$strHTML .= $strOffset . "         <button onclick='history.back()'> <<-BACK</button>\n";
+			$strHTML .= $strOffset . "         <form method='post' name='lua_blocks|edit_category'>\n";
+			$strHTML .= $strOffset . "           <table>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <th>ID</th>\n";
+			$strHTML .= $strOffset . "               <th>Name</th>\n";
+			$strHTML .= $strOffset . "               <th>Type</th>\n";
+			$strHTML .= $strOffset . "               <th>User</th>\n";
+			$strHTML .= $strOffset . "               <th>Action</th>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$item_query = "SELECT * from `eq2lua_categories` WHERE id=" . $_GET['id'];
+			$item_data=$eq2->RunQuerySingle($item_query);
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 " . $item_data['id'] . "\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='eq2lua_categories|id' value='" . $item_data['id'] ."' />\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_id' value='" . $item_data['id'] ."' />\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <input type='text' name='eq2lua_categories|name' value='" . $item_data['name'] ."'>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_name' value='" . $item_data['name'] ."' />\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_categories|type'>\n";
+			$cat_query = "SELECT * from `eq2lua_types`";
+			$cat_data=$eq2->RunQueryMulti($cat_query);
+			foreach($cat_data as $cat)
+			{
+				$isSelected = ($cat['id'] == $item_data['id']?' selected ':'');
+					$strHTML .= $strOffset . "                 <option value='" . $cat['id'] . "' " . $isSelected . ">" . $cat['name'] . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_name' value='" . $item_data['name'] ."' />\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$user_query = "SELECT id,displayname from `users` WHERE id=" . $item_data['user_id'];
+			$user_data=$eq2->RunQuerySingle($user_query);
+			$strHTML .= $strOffset . "               <td>" . $user_data['displayname'] . "</td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "	               <input type='hidden' name='eq2lua_categories|user_id' value='" . $user_data['id'] . "'>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='idx_name' value='id' />\n";
+            $strHTML .= $strOffset . "                 <input type='hidden' name='table_name' value='eq2lua_categories' />\n";
+			if($item_data['user_id'] == $eq2->userdata['id'])
+			{
+				$strHTML .= $strOffset . "                 <input type='submit' name='cmd' value='update'>\n";
+				$strHTML .= $strOffset . "                 <input type='submit' name='cmd' value='delete'>\n";
+			}
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "           </table>\n";
+			$strHTML .= $strOffset . "         </form>\n";
+
+			$strHTML .= $strOffset . "       </fieldset>\n";
+			break;
+		case "add_block":
+			$strHTML .= $strOffset . "<table class='SubPanel ContrastTable'>\n";
+			$strHTML .= $strOffset . "   <tr>\n";
+			$strHTML .= $strOffset . "     <td>\n";
+			$strHTML .= $strOffset . "       <fieldset>\n";
+			$strHTML .= $strOffset . "         <legend>Lua Blocks Editor:</legend>\n";
+			$strHTML .= $strOffset . "         <button onclick='history.back()'> <<-BACK</button>\n";
+			$strHTML .= $strOffset . "         <form method='post' id='blockForm' name='lua_blocks|add_block'>\n";
+			$strHTML .= $strOffset . "           <table>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <th>Name</th>\n";
+			$strHTML .= $strOffset . "               <th>Category</th>\n";
+			$strHTML .= $strOffset . "               <th>Type</th>\n";
+			$strHTML .= $strOffset . "               <th>Shared</th>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <input type='text' name='eq2lua_blocks|name'></td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_blocks|category'>\n";
+			$cat_query = "SELECT * from `eq2lua_categories`";
+			$cat_data=$eq2->RunQueryMulti($cat_query);
+			foreach($cat_data as $cat)
+			{
+				$strHTML .= $strOffset . "                 <option value='" . $cat['id'] . "'>" . $cat['name'] . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_blocks|type'>\n";
+			$type_query = "SELECT * from `eq2lua_types`";
+			$type_data=$eq2->RunQueryMulti($type_query);
+			foreach($type_data as $type)
+			{
+					$strHTML .= $strOffset . "                 <option value='" . $type['id'] . "'>" . $type['name'] . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_blocks|shared'>\n";
+			$strHTML .= $strOffset . "                   <option value='0'>No</option>\n";
+			$strHTML .= $strOffset . "                   <option value='1'>Yes</option>\n";
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "                 <td colspan='5'>\n";
+			$strHTML .= $strOffset . "                   Description\n";
+			$strHTML .= $strOffset . "                   <textarea  id='src_desc' name='eq2lua_blocks|description'></textarea>\n";
+			$strHTML .= $strOffset . "                 </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td colspan='5'>\n";
+			$strHTML .= $strOffset . "                 Code Block\n";
+			$strHTML .= $strOffset . "                 <textarea id='src_text' name='eq2lua_blocks|text'></textarea>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td colspan='4' align='center'>\n";
+			$strHTML .= $strOffset . "	               <input type='hidden' name='eq2lua_blocks|user_id' value='" . $eq2->userdata['id'] . "'>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='idx_name' value='id' />\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='table_name' value='eq2lua_blocks' />\n";
+			$strHTML .= $strOffset . "                 <input type='submit' name='cmd' value='insert'>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "           </table>\n";
+			$strHTML .= $strOffset . "         </form>\n";
+			$strHTML .= $strOffset . "       </fieldset>\n";
+			break;
+		case "edit_block":
+			$strHTML .= $strOffset . "<table class='SubPanel ContrastTable'>\n";
+			$strHTML .= $strOffset . "   <tr>\n";
+			$strHTML .= $strOffset . "     <td>\n";
+			$strHTML .= $strOffset . "       <fieldset>\n";
+			$strHTML .= $strOffset . "         <legend>Lua Blocks Editor:</legend>\n";
+			$strHTML .= $strOffset . "         <button onclick='history.back()'> <<-BACK</button>\n";
+			$strHTML .= $strOffset . "         <form method='post' name='lua_blocks|edit_block'>\n";
+			$strHTML .= $strOffset . "           <table>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <th>ID</th>\n";
+			$strHTML .= $strOffset . "               <th>Name</th>\n";
+			$strHTML .= $strOffset . "               <th>Category</th>\n";
+			$strHTML .= $strOffset . "               <th>Type</th>\n";
+			$strHTML .= $strOffset . "               <th>Shared</th>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$block_query = "SELECT * from `eq2lua_blocks` WHERE id=" . $_GET['id'];
+			$block_data=$eq2->RunQuerySingle($block_query);
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td>" . $block_data['id'] ."\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='eq2lua_blocks|id' value='" . $block_data['id'] ."'>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_id' value='" . $block_data['id'] ."'>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <input type='text' name='eq2lua_blocks|name' value='" . $block_data['name'] ."'></td>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_name' value='" . $block_data['name'] ."'></td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_blocks|category'>\n";
+			$cat_query = "SELECT * from `eq2lua_categories`";
+			$cat_data=$eq2->RunQueryMulti($cat_query);
+			foreach($cat_data as $cat)
+			{
+				$isSelected = ($cat['id'] == $block_data['category']?' selected ':'');
+					$strHTML .= $strOffset . "                 <option value='" . $cat['id'] . "' " . $isSelected . ">" . $cat['name'] . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_category' value='" . $block_data['category'] ."'></td>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_blocks|type'>\n";
+			$type_query = "SELECT * from `eq2lua_types`";
+			$type_data=$eq2->RunQueryMulti($type_query);
+			foreach($type_data as $type)
+			{
+				$isSelected = ($type['id'] == $block_data['type']?' selected ':'');
+					$strHTML .= $strOffset . "                 <option value='" . $type['id'] . "' " . $isSelected . ">" . $type['name'] . "</option>\n";
+			}
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_type' value='" . $block_data['type'] ."'></td>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "               <td>\n";
+			$strHTML .= $strOffset . "                 <select name='eq2lua_blocks|shared'>\n";
+			$strHTML .= $strOffset . "                   <option value='0'>No</option>\n";
+			$strHTML .= $strOffset . "                   <option value='1' " . ($block_data['shared'] == 1?'selected':'') . ">Yes</option>\n";
+			$strHTML .= $strOffset . "                 </select>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_shared' value='" . $block_data['type'] ."'></td>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td colspan='5'>\n";
+			$strHTML .= $strOffset . "                 <textarea name='eq2lua_blocks|description'>" . $block_data['description'] . "</textarea>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_description' value='" . $block_data['description'] . "'>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td colspan='5'>\n";
+			$strHTML .= $strOffset . "                 <textarea name='eq2lua_blocks|text'>" . $block_data['text'] . "</textarea>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='orig_text' value='" . $block_data['text'] . "'>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "             <tr>\n";
+			$strHTML .= $strOffset . "               <td colspan='5' align='center'>\n";			$strHTML .= $strOffset . "	               <input type='hidden' name='eq2lua_blocks|user_id' value='" . $eq2->userdata['id'] . "'>\n";
+			$strHTML .= $strOffset . "                 <input type='hidden' name='idx_name' value='id' />\n";
+            $strHTML .= $strOffset . "                 <input type='hidden' name='table_name' value='eq2lua_blocks' />\n";
+			$strHTML .= $strOffset . "                 <input type='submit' name='cmd' value='update'>\n";
+			$strHTML .= $strOffset . "                 <input type='submit' name='cmd' value='delete'>\n";
+			$strHTML .= $strOffset . "               </td>\n";
+			$strHTML .= $strOffset . "             </tr>\n";
+			$strHTML .= $strOffset . "           </table>\n";
+			$strHTML .= $strOffset . "         </form>\n";
+			$strHTML .= $strOffset . "       </fieldset>\n";
+			break;
+		default:
+			$strHTML .= $strOffset . "<script>\n";
+			$strHTML .= $strOffset . "  function AddTextToEditor(element) {\n";
+			$strHTML .= $strOffset . "    editor.insert(element.getAttribute('myFuncText'));\n";
+			$strHTML .= $strOffset . "  }\n";
+			$strHTML .= $strOffset . "</script>\n";			
+			$strHTML .= $strOffset . "<table>\n";
+			$strHTML .= $strOffset . "   <tr>\n";
+			$strHTML .= $strOffset . "     <td>\n";
+			$strHTML .= $strOffset . "       <fieldset>\n";
+			$strHTML .= $strOffset . "         <legend>Lua Blocks Editor:</legend>\n";
+			$strHTML .= $strOffset . "         <form method='post' name='lua_blocks|EditorActions'>\n";
+			$strHTML .= $strOffset . "           <select name='new' onchange='dosub(this.options[this.selectedIndex].value)'>\n";
+			$strHTML .= $strOffset . "             <option value=''>Select Action</option>\n";
+			$strHTML .= $strOffset . "             <option value='./server.php?page=lua_blocks&action=add_category'>New Category</option>\n";
+			$strHTML .= $strOffset . "             <option value='./server.php?page=lua_blocks&action=add_block'>New Block</option>\n";
+			$strHTML .= $strOffset . "           </select>\n";
+			$strHTML .= $strOffset . "           <table class='ContrastTable'>\n";
+			$strHTML .= $strOffset . "             <!-- START LUA BLOCKS --> \n";
+			$strHTML .= $strOffset . $eq2->GetLuaBlocks('showList');
+			$strHTML .= $strOffset . "             <!-- END LUA BLOCKS --> \n";
+			$strHTML .= $strOffset . "           </table>\n";
+			$strHTML .= $strOffset . "         </form>\n";
+			$strHTML .= $strOffset . "       </fieldset>\n";
+			$strHTML .= $strOffset . "     </td>\n";
+			/*
+			$strHTML .= $strOffset . "     <td width='80%'>\n";
+			$strHTML .= $strOffset . "       <form method='post' name='ScriptForm'>\n";
+			$strHTML .= $strOffset . "         <table class='SectionMain' cellspacing='0' border='0' style='width:100%;'>\n";
+			$strHTML .= $strOffset . "           <tr>\n";
+			$strHTML .= $strOffset . "             <td class='SectionTitle' align='center'>Script Editor</td>\n";
+			$strHTML .= $strOffset . "           </tr>\n";
+			$strHTML .= $strOffset . "           <tr>\n";
+			$strHTML .= $strOffset . "             <td id='ScriptToolbar'>\n";
+			$strHTML .= $strOffset . "           </tr>\n";
+			$strHTML .= $strOffset . "           <tr>\n";
+			$strHTML .= $strOffset . "             <td height='480px'> \n";
+			//$scriptText = $this->LoadLUAScript($scriptPath);
+			$strHTML .= $strOffset . "               <!-- START EDITOR --> \n";
+			$strHTML .= $strOffset . "               <div id='scripteditor' style='margin: 0; width: 100%; height: 100%'>" . $scriptText . "</div>\n";
+			$strHTML .= $strOffset . "               <script src='../ace/src-noconflict/ace.js' charset='utf-8'></script>\n";
+			$strHTML .= $strOffset . "               <script src='../ace/src-noconflict/ext-language_tools.js'></script>\n";
+			$strHTML .= $strOffset . "               <script>\n";
+			$strHTML .= $strOffset . "                 var lang_tools = ace.require('../ace/ext/language_tools');\n";
+			$strHTML .= $strOffset . "                 var editor = ace.edit('scripteditor');\n";
+			$strHTML .= $strOffset . "                 editor.setTheme('../ace/theme/textmate');\n";
+			$strHTML .= $strOffset . "                 editor.session.setMode('../ace/mode/lua'); \n";
+			$strHTML .= $strOffset . "                 lang_tools.setCompleters([lang_tools.snippetCompleter, lang_tools.keyWordCompleter]);\n";
+			$strHTML .= $strOffset . "                 editor.setOptions({\n";
+			$strHTML .= $strOffset . "                   enableLiveAutocompletion: true\n";
+			$strHTML .= $strOffset . "                 });\n";
+			$strHTML .= $strOffset . "                 editor.on('change', function() {updateCachedScript();});\n";
+			$strHTML .= $strOffset . "               </script>\n";
+			$strHTML .= $strOffset . "             </td>\n";
+			$strHTML .= $strOffset . "           </tr>\n";
+		//if( $this->CheckAccess(G_DEVELOPER) )
+		//{
+			$strHTML .= $strOffset . "           <tr>\n";
+			$strHTML .= $strOffset . "             <td align='center'>\n";
+			$strHTML .= $strOffset . "               <input type='submit' align='center' name='cmd' value='" . ($script_exists ? 'Save' : 'Create') . "' class='submit' id='savescript' />\n";
+			$strHTML .= $strOffset . "               <!--<input type='submit' name='cmd' value='Rebuild' class='submit' title='Rebuilds the script from scratch (overwrite old one).' />-->\n";
+			$strHTML .= $strOffset . "               <button id='scriptRevert' type='button'>Revert</button>\n";
+			$strHTML .= $strOffset . "               <input type='hidden' id='script_name' name='script_name' value='" . $scriptPath . "' />\n";
+			$strHTML .= $strOffset . "               <input type='hidden' name='script_path' value='" . substr($scriptPath, 0, strrpos($scriptPath, '/')) . "' />\n";
+			$strHTML .= $strOffset . "               <input type='hidden' name='table_name' value='" . $table . "' />\n";
+			$strHTML .= $strOffset . "               <input type='hidden' name='object_id' value='" . $objectID . "' />\n";
+			$strHTML .= $strOffset . "               <input type='hidden' name='script_text' id='LuaScript' />\n";
+			$strHTML .= $strOffset . "               <script>\n";
+			$strHTML .= $strOffset . "                 document.getElementById('savescript').onclick = \n";
+			$strHTML .= $strOffset . "                 function() {\n";
+			$strHTML .= $strOffset . "                   document.getElementById('LuaScript').value = editor.getValue();\n";
+			$strHTML .= $strOffset . "                 };\n";
+			$strHTML .= $strOffset . "                 document.getElementById('scriptRevert').onclick = \n";
+			$strHTML .= $strOffset . "                 function() {\n";
+			$strHTML .= $strOffset . "                   if (confirm('Are you sure you want to revert? You will lose your local changes.')) {\n";
+			$strHTML .= $strOffset . "                     editor.setValue(original_lua_script_text, 1);\n";
+			$strHTML .= $strOffset . "                     clearCachedScript();\n";
+			$strHTML .= $strOffset . "                   }\n";
+			$strHTML .= $strOffset . "                 };\n";
+			$strHTML .= $strOffset . "                 checkForCachedScript();\n";
+			$strHTML .= $strOffset . "               </script>\n";
+			$strHTML .= $strOffset . "             </td>\n";
+			$strHTML .= $strOffset . "           </tr>\n";
+		//}
+			$strHTML .= $strOffset . "         </table>\n";
+			$strHTML .= $strOffset . "       </form>\n";
+			$strHTML .= $strOffset . "     </td>\n";
+			*/
+			$strHTML .= $strOffset . "   </tr>\n";
+			$strHTML .= $strOffset . " </table>\n";
+			break;
+	}
+	print($strHTML);
+}
+
+function misc_scripts()
+{
+	global $eq2, $s;
+	$strOffset = str_repeat("\x20",22);
+	$strHTML = "\n";
+
+	switch($_GET['script_type'])
+	{
+		case "open":
+			break;
+		case "region":
+			$strHTML .= $strOffset . "<fieldset>\n";
+			$strHTML .= $strOffset . "  <legend>Select a Script Type:</legend>";
+			$strHTML .= $strOffset . "  <table class='SectionMainFloat' style='width:100%'>\n";
+			$strHTML .= $strOffset . "    <tr>\n";
+			$strHTML .= $strOffset . "<!-- LEFT COL -->\n";
+			$strHTML .= $strOffset . "      <td valign='top'>\n";
+			$strHTML .= $strOffset . "      <div style='width:300px;height:640px;overflow-y:scroll;overflow-x:scroll'>\n";
+			$strHTML .= $strOffset . "        <table class='ContrastTable'>\n";
+			$scriptDir = "RegionScripts/";
+			$fileSet = $s->GenerateFileList($scriptDir);
+			//$strHTML .= $strOffset . "[>" . var_dump($fileSet);
+			foreach($fileSet as $fileItem)
+			{
+				$strHTML .= $strOffset . "<tr>\n";
+				$strHTML .= $strOffset . "  <td><i class='fa fa-folder'></i></td><td colspan='2'>" . $fileItem['Directory'] . "</td>\n";
+				$strHTML .= $strOffset . "</tr>\n";
+				$files = $fileItem['Files'];
+				foreach($files as $file)
+				{
+					$strHTML .= $strOffset . "<tr>\n";
+					$strHTML .= $strOffset . "  <td></td>\n";
+					$strHTML .= $strOffset . "  <td><i class='fa fa-file'></i></td>\n";
+					$strPathAndFile = $scriptDir . $fileItem['Directory'] . "/" . $file;
+					$strHTML .= $strOffset . "  <td><a href='server.php?page=misc_scripts&script_type=region&file=" . base64_encode($strPathAndFile) . "'>" . $file . "</td>\n";
+					$strHTML .= $strOffset . "</tr>\n";
+				}
+				
+				
+			}
+
+			$strHTML .= $strOffset . "        </table>\n";
+			$strHTML .= $strOffset . "        </div>\n";
+			$strHTML .= $strOffset . "      </td>\n";
+			$strHTML .= $strOffset . "<!-- RIGHT COL -->\n";
+			$strHTML .= $strOffset . "      <td valign='top' width='100%'>\n";
+			if(isset($_GET['file']))
+			{
+				$strHTML .= $eq2->DisplayScriptEditor(base64_decode($_GET['file']), '[Llama: Replace this Text]',null,"spells", $finalTemplates);
+			}
+			$strHTML .= $strOffset . "      </td>\n";
+			$strHTML .= $strOffset . "    </tr>\n";
+			$strHTML .= $strOffset . "  </table>\n";
+			$strHTML .= $strOffset . "</div>\n";
+			$strHTML .= $strOffset . "</fieldset>\n";
+			break;
+		default:
+			$strHTML .= $strOffset . "<a href='server.php?page=misc_scripts&script_type=region'>Region</a>";
+			break;
+	}
+
+	print($strHTML);
+}
 ?>

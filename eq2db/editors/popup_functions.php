@@ -60,10 +60,10 @@ function FindProximitySpawns()
 	$z_high = round($_GET['z']) + $distance_offset;
 
 	$eq2->SQLQuery = sprintf("SELECT s1.id, s1.name, sub_title, model_type, x, z, s4.spawn_location_id
-														FROM ".RAW_DB.".spawn s1 
-														JOIN ".RAW_DB.".spawn_npcs s2 ON s1.id = s2.spawn_id 
-														JOIN ".RAW_DB.".spawn_location_entry s3 ON s1.id = s3.spawn_id 
-														JOIN ".RAW_DB.".spawn_location_placement s4 ON s4.spawn_location_id = s3.spawn_location_id 
+														FROM `".DEV_DB."`.spawn s1 
+														JOIN `".DEV_DB."`.spawn_npcs s2 ON s1.id = s2.spawn_id 
+														JOIN `".DEV_DB."`.spawn_location_entry s3 ON s1.id = s3.spawn_id 
+														JOIN `".DEV_DB."`.spawn_location_placement s4 ON s4.spawn_location_id = s3.spawn_location_id 
 														WHERE 
 															s4.zone_id = %s 
 															AND (
@@ -129,7 +129,7 @@ function ParseSpellData()
 	if( isset($_POST['cmd']) )
 	{
 		$index_field = GetNextIndex();
-		$query = "INSERT INTO ".DEV_DB.".spell_data (spell_id, tier, index_field, value_type, value) VALUES ";
+		$query = "INSERT INTO `".DEV_DB."`.spell_data (spell_id, tier, index_field, value_type, value) VALUES ";
 		
 		foreach($_POST as $key=>$val)
 		{
@@ -186,7 +186,7 @@ function ParseSpellData()
 			</td>
 		</tr>
 		<tr>
-			<td id="EditorStatus" colspan="2"><? if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
+			<td id="EditorStatus" colspan="2"><?php if( !empty($eq2->Status) ) $eq2->DisplayStatus(); ?></td>
 		</tr>
 	<?
 	/* this one was hiding inserted records until index 1 turned into 3 pieces of data and the index match got completely fucked.
@@ -197,9 +197,9 @@ function ParseSpellData()
 											s2.index_field IS NULL AND
 											s1.spell_id = %s", $_GET['id']);*/
 	$eq2->SQLQuery = sprintf("SELECT DISTINCT s1.* " .
-										"FROM ".DEV_DB.".spell_display_effects s1 " .
-										"LEFT JOIN ".DEV_DB.".spell_data s2 ON s1.spell_id = s2.spell_id " .
-										"WHERE s1.spell_id = %s", $_GET['id']);
+										"FROM `".DEV_DB."`.spell_display_effects s1 " .
+										"LEFT JOIN `".DEV_DB."`.spell_data s2 ON s1.spell_id = s2.spell_id " .
+										"WHERE s1.spell_id = %`s", $_GET['id']);
 	
 	$rows = $eq2->RunQueryMulti();
 	
@@ -278,7 +278,7 @@ function ParseSpellData()
 	?>
 	</table>
 	</div>
-<? 
+<?= 
 }
 
 
@@ -286,7 +286,7 @@ function GetNextIndex()
 {
 	global $eq2;
 	
-	$eq2->SQLQuery = sprintf("SELECT MAX(index_field) AS next_idx FROM ".DEV_DB.".spell_data WHERE spell_id = %s AND tier = %s", $_POST['spellid'], $_POST['tier']);
+	$eq2->SQLQuery = sprintf("SELECT MAX(index_field) AS next_idx FROM `".DEV_DB."`.spell_data WHERE spell_id = %s AND tier = %s", $_POST['spellid'], $_POST['tier']);
 	$data = $eq2->RunQuerySingle();
 	
 	if( strlen($data['next_idx']) > 0 )
